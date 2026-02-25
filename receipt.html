@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint | Receipt</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .receipt-container {
+            background: white;
+            width: 300px; /* Standard 80mm thermal width approx */
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header { text-align: center; margin-bottom: 15px; }
+        .store-name { font-size: 18px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .store-info { font-size: 12px; color: #333; margin-bottom: 2px; }
+        
+        .divider { border-top: 1px dashed #333; margin: 10px 0; }
+        
+        .txn-details { font-size: 12px; margin-bottom: 10px; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        
+        .items-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+        .items-table th { text-align: left; border-bottom: 1px dashed #333; padding-bottom: 5px; }
+        .items-table td { padding-top: 5px; vertical-align: top; }
+        .qty-col { width: 30px; text-align: center; }
+        .price-col { text-align: right; white-space: nowrap; }
+        
+        .totals-section { margin-top: 10px; font-size: 12px; }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        .grand-total { font-size: 16px; font-weight: bold; margin-top: 5px; border-top: 1px dashed #333; padding-top: 5px; }
+        
+        .footer { text-align: center; font-size: 11px; margin-top: 15px; color: #555; }
+        
+        .actions { display: flex; gap: 10px; width: 300px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: sans-serif; }
+        .btn-print { background: #1a2a6c; color: white; }
+        .btn-back { background: #e0e0e0; color: #333; }
+
+        @media print {
+            body { background: white; padding: 0; margin: 0; display: block; }
+            .receipt-container { box-shadow: none; width: 300px; margin: 0; padding: 0; }
+            .actions { display: none; }
+            @page { margin: 0; size: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="receipt-container">
+        <div class="header">
+            <img src="logo.png" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 5px;">
+            <div class="store-name" id="rStoreName">Footprint Retail</div>
+            <div class="store-info" id="rAddress">Headquarters</div>
+            <div class="store-info" id="rPhone">Tel: 055-555-5555</div>
+        </div>
+
+        <div class="txn-details">
+            <div class="detail-row"><span>Date:</span> <span id="rDate">...</span></div>
+            <div class="detail-row"><span>Receipt #:</span> <span id="rId">...</span></div>
+            <div class="detail-row"><span>Cashier:</span> <span id="rCashier">...</span></div>
+            <div class="detail-row"><span>Payment:</span> <span id="rMethod">...</span></div>
+            <div class="detail-row" id="rCustomerRow" style="display:none;"><span>Customer:</span> <span id="rCustomer">...</span></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="qty-col">Qty</th>
+                    <th class="price-col">Total</th>
+                </tr>
+            </thead>
+            <tbody id="rItems">
+                <!-- Items go here -->
+            </tbody>
+        </table>
+
+        <div class="divider"></div>
+
+        <div class="totals-section">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span id="rSubtotal">0.00</span>
+            </div>
+            
+            <div id="rTaxContainer">
+                <!-- Dynamic Taxes -->
+            </div>
+
+            <div class="total-row" id="rDiscountRow" style="display:none;">
+                <span>Discount</span>
+                <span id="rDiscount">0.00</span>
+            </div>
+
+            <div class="total-row grand-total">
+                <span>TOTAL</span>
+                <span id="rTotal">0.00</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p id="rFooter">Thank you for your business!</p>
+            <p style="font-size:9px; margin-top:5px;">Powered by Footprint</p>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-back" onclick="window.location.href='pos'">Back to POS</button>
+        <button class="btn btn-print" onclick="window.print()">Print Receipt</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            
+            if(!id) {
+                alert("No receipt ID provided");
+                window.location.href = 'pos';
+                return;
+            }
+
+            try {
+                const token = sessionStorage.getItem('authToken');
+                
+                // 1. Fetch Settings (for Store Name/Footer)
+                const settingsRes = await fetch('/api/settings', { headers: { 'Authorization': `Bearer ${token}` } });
+                if(settingsRes.ok) {
+                    const settings = await settingsRes.json();
+                    if(settings.store_name) document.getElementById('rStoreName').textContent = settings.store_name;
+                    if(settings.receipt_footer) document.getElementById('rFooter').textContent = settings.receipt_footer;
+                }
+
+                // 2. Fetch Transaction
+                const res = await fetch(`/transactions/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if(!res.ok) throw new Error("Transaction not found");
+                
+                const data = await res.json();
+                
+                // Populate Data
+                const date = new Date(data.created_at);
+                document.getElementById('rDate').textContent = date.toLocaleString();
+                document.getElementById('rId').textContent = data.receipt_number || data.id;
+                document.getElementById('rCashier').textContent = data.cashier_name || 'Staff';
+                
+                if(data.customer_name) {
+                    document.getElementById('rCustomer').textContent = data.customer_name;
+                    document.getElementById('rCustomerRow').style.display = 'flex';
+                }
+
+                // Items
+                const tbody = document.getElementById('rItems');
+                let items = data.items;
+                if(typeof items === 'string') items = JSON.parse(items);
+                
+                tbody.innerHTML = items.map(item => `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td class="qty-col">${item.qty}</td>
+                        <td class="price-col">₵${(item.price * item.qty).toFixed(2)}</td>
+                    </tr>
+                `).join('');
+
+                // Totals
+                document.getElementById('rSubtotal').textContent = '₵' + parseFloat(data.subtotal).toFixed(2);
+                document.getElementById('rTotal').textContent = '₵' + parseFloat(data.total_amount).toFixed(2);
+                document.getElementById('rMethod').textContent = (data.payment_method || 'Cash').toUpperCase();
+
+                if(data.discount > 0) {
+                    document.getElementById('rDiscount').textContent = '-₵' + parseFloat(data.discount).toFixed(2);
+                    document.getElementById('rDiscountRow').style.display = 'flex';
+                }
+
+                // Dynamic Taxes
+                const taxContainer = document.getElementById('rTaxContainer');
+                if(data.taxBreakdown && data.taxBreakdown.length > 0) {
+                    taxContainer.innerHTML = data.taxBreakdown.map(t => `
+                        <div class="total-row">
+                            <span>${t.name} (${t.rate}%)</span>
+                            <span>₵${parseFloat(t.amount).toFixed(2)}</span>
+                        </div>
+                    `).join('');
+                } else if (data.tax > 0) {
+                    taxContainer.innerHTML = `
+                        <div class="total-row">
+                            <span>VAT</span>
+                            <span>₵${parseFloat(data.tax).toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+
+            } catch(e) {
+                console.error(e);
+                alert("Error loading receipt");
+            }
+        });
+    </script>
+</body>
+</html>

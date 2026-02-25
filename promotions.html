@@ -1,0 +1,323 @@
+<!-- c:\Users\GUYMAN-GH\OneDrive\Documents\2025 PROJECT\2025 POS\2025 POS\promotions.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint | Promotions</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary-color: #1a2a6c; --secondary-color: #b21f1f; --accent-color: #fdbb2d; --text-color: #333; --gray-light: #f5f7fa; --sidebar-width: 260px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--gray-light); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+        .brand { padding: 25px; font-size: 24px; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+        .nav-links { flex: 1; padding-top: 20px; }
+        .nav-item { display: flex; align-items: center; padding: 15px 25px; color: rgba(255,255,255,0.7); text-decoration: none; transition: 0.3s; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left: 4px solid var(--accent-color); }
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+        .nav-section { padding: 15px 25px 5px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; }
+        .user-profile { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; }
+        .user-avatar { width: 40px; height: 40px; background: var(--secondary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; }
+
+        /* Main Content */
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 30px 40px; }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        
+        /* Form */
+        .add-form { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 30px; background: white; padding: 20px; border-radius: 12px; }
+        .form-group { flex: 1; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn-add { background: var(--primary-color); color: white; padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; height: 42px; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; color: #888; font-weight: 500; border-bottom: 1px solid #eee; }
+        td { padding: 15px; border-bottom: 1px solid #eee; color: var(--text-color); font-size: 14px; }
+        
+        .btn-delete { color: #c62828; background: none; border: none; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .btn-delete:hover { transform: scale(1.1); }
+
+        footer { margin-left: var(--sidebar-width); padding: 10px; text-align: center; color: white; font-size: 12px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); }
+
+        /* Mobile Responsive Styles */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 20px; padding-top: 70px; }
+            .mobile-menu-btn { display: block; }
+            .overlay.active { display: block; }
+            .add-form { flex-direction: column; align-items: stretch; }
+            .btn-add { width: 100%; }
+            footer { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="sidebar">
+        <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <div class="nav-links">
+            <a href="dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            <div class="nav-section">Sales & Finance</div>
+            <a href="sales-dashboard" class="nav-item"><i class="fas fa-chart-pie"></i> Sales Dashboard</a>
+            <a href="profitability" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Profitability</a>
+            <a href="promotions" class="nav-item active"><i class="fas fa-tags"></i> Promotions</a>
+            <div class="nav-section">Operations</div>
+            <a href="pos-register" class="nav-item"><i class="fas fa-users"></i> Staff Management</a>
+            <a href="credit-customers" class="nav-item"><i class="fas fa-address-book"></i> Credit Clients</a>
+            <a href="inventory" class="nav-item"><i class="fas fa-warehouse"></i> Inventory & Supply Chain</a>
+            <a href="reports" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
+            <a href="settings" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="user-profile">
+            <div class="user-avatar"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+                <div style="font-weight: bold;" id="userName">...</div>
+                <div style="font-size: 12px; opacity: 0.7;" id="userRole">...</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="margin-left: auto; cursor: pointer;" onclick="logout()" title="Logout"></i>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h2>Manage Promotions</h2>
+        </div>
+
+        <div class="add-form">
+            <div class="form-group">
+                <label>Promo Code</label>
+                <input type="text" id="newCode" placeholder="e.g. SAVE20" style="text-transform: uppercase;">
+            </div>
+            <div class="form-group">
+                <label>Discount Percentage (%)</label>
+                <input type="number" id="newDiscount" placeholder="e.g. 20" min="1" max="100">
+            </div>
+            <button class="btn-add" onclick="addPromotion()">Add Promo</button>
+        </div>
+
+        <div class="card">
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="promoSearch" placeholder="Search promotions..." onkeyup="filterPromotions()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none;">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Discount</th>
+                        <th>Total Discounted</th>
+                        <th>Created At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="promoTable">
+                    <tr><td colspan="4" style="text-align:center; padding:20px;">Loading...</td></tr>
+                </tbody>
+            </table>
+            <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center; border-top: 1px solid #eee; margin-top: 15px;">
+                <span style="font-size: 13px; color: #666;">Rows per page:</span>
+                <select id="promoRowsPerPage" onchange="changePromoRows()" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 6px; outline: none;">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="100">100</option>
+                </select>
+                <span id="promoPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                <button onclick="changePromoPage(-1)" id="btnPromoPrev" disabled style="padding: 5px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                <button onclick="changePromoPage(1)" id="btnPromoNext" disabled style="padding: 5px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <footer>© 2025 Footprint Retail Systems</footer>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', checkAuth);
+
+        let allPromotions = [];
+        let filteredPromotions = [];
+        let promoPage = 1;
+        let promoRows = 10;
+
+        async function checkAuth() {
+            // Immediate UI update from session storage
+            const userStr = sessionStorage.getItem('currentUser');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('userName').textContent = user.name || 'User';
+                document.getElementById('userRole').textContent = user.role === 'manager' ? 'Store Manager' : (user.role === 'admin' ? 'Administrator' : (user.role || 'Staff'));
+            }
+
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const response = await fetch('/api/session', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Not authenticated');
+                const data = await response.json();
+                const user = data.user;
+
+                document.getElementById('userName').textContent = user.name || 'User';
+                document.getElementById('userRole').textContent = user.role === 'manager' ? 'Store Manager' : (user.role === 'admin' ? 'Administrator' : (user.role || 'Staff'));
+                
+                loadPromotions();
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+
+        async function loadPromotions() {
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const res = await fetch('/api/promotions', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                allPromotions = await res.json();
+                filteredPromotions = [...allPromotions];
+                renderPromoTable();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('promoTable').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Error loading data</td></tr>';
+            }
+        }
+
+        function renderPromoTable() {
+            const tbody = document.getElementById('promoTable');
+            const start = (promoPage - 1) * promoRows;
+            const end = start + promoRows;
+            const pageData = filteredPromotions.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#888;">No active promotions</td></tr>';
+            } else {
+                tbody.innerHTML = pageData.map(p => `
+                        <tr>
+                            <td style="font-weight:bold; color:var(--primary-color);">${p.code}</td>
+                            <td>${p.discount_percentage}%</td>
+                            <td>₵${parseFloat(p.total_discounted || 0).toFixed(2)}</td>
+                            <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn-delete" onclick="deletePromotion('${p.code}')" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`).join('');
+            }
+            updatePromoPagination();
+        }
+
+        function filterPromotions() {
+            const query = document.getElementById('promoSearch').value.toLowerCase();
+            filteredPromotions = allPromotions.filter(p => p.code.toLowerCase().includes(query));
+            promoPage = 1;
+            renderPromoTable();
+        }
+
+        function changePromoPage(delta) {
+            promoPage += delta;
+            renderPromoTable();
+        }
+
+        function changePromoRows() {
+            promoRows = parseInt(document.getElementById('promoRowsPerPage').value);
+            promoPage = 1;
+            renderPromoTable();
+        }
+
+        function updatePromoPagination() {
+            const totalItems = filteredPromotions.length;
+            const totalPages = Math.ceil(totalItems / promoRows) || 1;
+            
+            document.getElementById('promoPageInfo').textContent = `Page ${promoPage} of ${totalPages}`;
+            document.getElementById('btnPromoPrev').disabled = promoPage === 1;
+            document.getElementById('btnPromoNext').disabled = promoPage === totalPages;
+        }
+
+        async function addPromotion() {
+            const code = document.getElementById('newCode').value.trim().toUpperCase();
+            const discount = document.getElementById('newDiscount').value;
+
+            if (!code || !discount) return alert("Please fill all fields");
+
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const res = await fetch('/api/promotions', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ code, discount })
+                });
+
+                if (res.ok) {
+                    document.getElementById('newCode').value = '';
+                    document.getElementById('newDiscount').value = '';
+                    loadPromotions();
+                } else {
+                    alert("Error adding promotion (Code might already exist)");
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function deletePromotion(code) {
+            if (!confirm(`Are you sure you want to delete promo code: ${code}?`)) return;
+
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const res = await fetch(`/api/promotions/${code}`, { 
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    loadPromotions();
+                } else {
+                    alert("Error deleting promotion");
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function logout() {
+            try {
+                const token = sessionStorage.getItem('authToken');
+                await fetch('/api/logout', { 
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                window.location.href = '/login';
+            } catch (e) {
+                console.error(e);
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</body>
+</html>

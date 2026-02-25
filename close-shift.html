@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint | Close Shift</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --gray-light: #f5f7fa;
+            --success-color: #2e7d32;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background: var(--gray-light); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 0 25px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .brand { font-size: 24px; font-weight: 700; letter-spacing: 1px; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+        .back-btn { color: white; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 14px; opacity: 0.9; }
+        .back-btn:hover { opacity: 1; }
+
+        /* Container */
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            width: 90%;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h2 { color: var(--primary-color); margin-bottom: 20px; text-align: center; }
+
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .summary-item { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
+        .summary-item label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
+        .summary-item span { font-size: 18px; font-weight: 600; color: #333; }
+        .summary-item.highlight { background: #e3f2fd; border: 1px solid #bbdefb; }
+        .summary-item.highlight span { color: var(--primary-color); }
+
+        .digital-totals { margin-bottom: 30px; padding: 15px; border: 1px dashed #ddd; border-radius: 8px; display: flex; justify-content: space-around; font-size: 14px; color: #555; }
+        .digital-totals strong { color: #333; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 8px; }
+        .input-field {
+            width: 100%; padding: 15px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s;
+        }
+        .input-field:focus { border-color: var(--primary-color); }
+        textarea.input-field { resize: vertical; min-height: 80px; }
+
+        .diff-display { text-align: center; margin-bottom: 20px; font-weight: 600; font-size: 16px; padding: 10px; border-radius: 6px; }
+        .diff-display.balanced { background: #e8f5e9; color: var(--success-color); }
+        .diff-display.short { background: #ffebee; color: #c62828; }
+        .diff-display.over { background: #fff3e0; color: #ef6c00; }
+
+        .btn-close {
+            width: 100%; padding: 15px; background: var(--secondary-color); color: white; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .btn-close:hover { opacity: 0.9; }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 8px 25px;
+            display: flex;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            margin-top: auto;
+        }
+
+        /* Success Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none; justify-content: center; align-items: center;
+            z-index: 3000; backdrop-filter: blur(4px);
+        }
+        .modal-box {
+            background: white; padding: 40px; border-radius: 16px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90%; width: 350px;
+        }
+        .modal-icon { font-size: 64px; color: var(--success-color); margin-bottom: 20px; }
+        .modal-title { font-size: 20px; font-weight: 700; color: #333; margin-bottom: 10px; }
+        .modal-text { color: #666; font-size: 14px; }
+        
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <a href="pos" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Register</a>
+    </header>
+
+    <div class="container">
+        <h2>Close Shift & Reconcile</h2>
+        
+        <div class="summary-grid">
+            <div class="summary-item">
+                <label>Opening Cash</label>
+                <span id="startCash">₵0.00</span>
+            </div>
+            <div class="summary-item">
+                <label>Cash Sales</label>
+                <span id="cashSales">₵0.00</span>
+            </div>
+            <div class="summary-item highlight">
+                <label>Expected Cash</label>
+                <span id="expectedCash">₵0.00</span>
+            </div>
+        </div>
+
+        <div class="digital-totals">
+            <div>Mobile Money: <strong id="momoTotal">₵0.00</strong></div>
+            <div>Card Payments: <strong id="cardTotal">₵0.00</strong></div>
+        </div>
+
+        <form onsubmit="closeShift(event)">
+            <div class="form-group">
+                <label>Actual Cash Counted (₵)</label>
+                <input type="number" id="actualCash" class="input-field" placeholder="0.00" step="0.01" required oninput="calcDiff()">
+            </div>
+            
+            <div class="diff-display" id="diffDisplay">Difference: ₵0.00</div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="notes" class="input-field" placeholder="Explain any discrepancies..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn-close">Submit & Close Shift</button>
+        </form>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="modal-title">Shift Closed</div>
+            <div class="modal-text">Logging out...</div>
+        </div>
+    </div>
+
+    <footer>
+        <div>&copy; 2026 Footprint Retail Systems. All rights reserved.</div>
+    </footer>
+
+    <script>
+        let expectedVal = 0;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Check session
+                const token = sessionStorage.getItem('authToken');
+                const sessionRes = await fetch('/api/session', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!sessionRes.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // Load Summary
+                const res = await fetch('/api/shifts/summary', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('startCash').textContent = `₵${data.startCash.toFixed(2)}`;
+                    document.getElementById('cashSales').textContent = `₵${data.cashSales.toFixed(2)}`;
+                    document.getElementById('expectedCash').textContent = `₵${data.expectedCash.toFixed(2)}`;
+                    document.getElementById('momoTotal').textContent = `₵${data.momoSales.toFixed(2)}`;
+                    document.getElementById('cardTotal').textContent = `₵${data.cardSales.toFixed(2)}`;
+                    expectedVal = data.expectedCash;
+                } else {
+                    alert("Could not load shift summary. You may not have an active shift.");
+                }
+            } catch (e) { console.error(e); }
+        });
+
+        function calcDiff() {
+            const actual = parseFloat(document.getElementById('actualCash').value) || 0;
+            const diff = actual - expectedVal;
+            const display = document.getElementById('diffDisplay');
+            
+            display.textContent = `Difference: ${diff >= 0 ? '+' : ''}₵${diff.toFixed(2)}`;
+            display.className = 'diff-display ' + (diff === 0 ? 'balanced' : (diff > 0 ? 'over' : 'short'));
+        }
+
+        async function closeShift(e) {
+            e.preventDefault();
+            const endCash = document.getElementById('actualCash').value;
+            const notes = document.getElementById('notes').value;
+            const token = sessionStorage.getItem('authToken');
+
+            const res = await fetch('/api/shifts/close', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ endCash, notes })
+            });
+
+            if (res.ok) {
+                const channel = new BroadcastChannel('footprint_customer_display');
+                channel.postMessage({ type: 'CLOSE' });
+                
+                document.getElementById('successModal').style.display = 'flex';
+                
+                // Logout
+                await fetch('/api/logout', { 
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            } else {
+                alert("Error closing shift.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint | Tax Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+            --text-color: #333;
+            --light-text: #fff;
+            --gray-light: #f5f7fa;
+            --sidebar-width: 260px;
+            --success-color: #2e7d32;
+            --warning-color: #ef6c00;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--gray-light); display: flex; min-height: 100vh; }
+        
+        .sidebar { width: var(--sidebar-width); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; transition: 0.3s; }
+        .brand { padding: 25px; font-size: 24px; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+        .nav-links { flex: 1; padding-top: 20px; }
+        .nav-item { display: flex; align-items: center; padding: 15px 25px; color: rgba(255,255,255,0.7); text-decoration: none; transition: 0.3s; font-size: 14px; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left: 4px solid var(--accent-color); }
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+        
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 30px 40px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { font-size: 24px; color: var(--primary-color); font-weight: 700; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; color: #64748b; background: white; padding: 10px 20px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .back-link:hover { color: var(--primary-color); transform: translateX(-5px); }
+
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 30px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .card-title { font-size: 16px; font-weight: 700; color: var(--primary-color); }
+
+        /* Form Styles */
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; }
+        .form-input:focus { border-color: var(--primary-color); }
+        .btn-primary { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; }
+        .btn-primary:hover { opacity: 0.9; }
+
+        /* Tax List */
+        .tax-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; }
+        .tax-item:last-child { border-bottom: none; }
+        .tax-badge { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+        .btn-delete { background: none; border: none; color: #ef4444; cursor: pointer; }
+
+        /* Report Table */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px 15px; color: #64748b; font-weight: 600; font-size: 12px; text-transform: uppercase; background: #f8fafc; }
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; color: #333; font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; align-items: flex-end; }
+        .filter-group { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand">
+            <img src="logo.png" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
+            <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                <span style="font-size: 20px; line-height: 1;">FOOTPRINT</span>
+                <span style="font-size: 10px; letter-spacing: 2px; color: var(--accent-color);">CEO PORTAL</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="ceo-portal?tab=overview" class="nav-item"><i class="fas fa-globe"></i> Overview</a>
+            <a href="ceo-portal?tab=operations-hub" class="nav-item active"><i class="fas fa-cogs"></i> Operations</a>
+            <a href="ceo-portal?tab=admin-hub" class="nav-item"><i class="fas fa-user-shield"></i> Administration</a>
+        </div>
+        <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center;">
+            <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div>
+                <div style="font-weight: bold;">CEO</div>
+                <div style="font-size: 12px; opacity: 0.7;">Owner</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="margin-left: auto; cursor: pointer;" onclick="logout()" title="Logout"></i>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div onclick="window.location.href='ceo-portal?tab=operations-hub'" class="back-link" style="margin-bottom: 20px;"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+        <div class="header">
+            <div>
+                <h1>Tax Management & Reporting</h1>
+                <p style="color: #64748b; font-size: 14px; margin-top: 5px;">Configure tax rules and view liability reports per branch.</p>
+            </div>
+        </div>
+
+        <div class="grid-container">
+            <!-- Left Column: Configuration -->
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                    <div class="card-title">Add New Tax Rule</div>
+                </div>
+                <form onsubmit="handleAddTax(event)">
+                    <div class="form-group">
+                        <label class="form-label">Tax Name</label>
+                        <input type="text" id="newTaxName" class="form-input" placeholder="e.g. NHIS Levy" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rate (%)</label>
+                        <input type="number" id="newTaxRate" class="form-input" placeholder="2.5" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Add Rule</button>
+                </form>
+            </div>
+
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                    <div class="card-title">Active Tax Rules</div>
+                </div>
+                <div id="taxList">
+                    <p style="text-align:center; color:#666; padding:20px;">Loading taxes...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Width Reporting Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Tax Liability Report</div>
+            </div>
+            
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" id="reportStart" class="form-input">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">End Date</label>
+                    <input type="date" id="reportEnd" class="form-input">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Branch</label>
+                    <select id="reportBranch" class="form-input">
+                        <option value="All Branches">All Branches</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 2px;">
+                    <button onclick="generateReport()" class="btn-primary" style="width: auto; padding: 10px 25px;"><i class="fas fa-search"></i> Generate</button>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table id="reportTable">
+                    <thead>
+                        <tr>
+                            <th>Branch</th>
+                            <th>Gross Sales</th>
+                            <th>Net Sales</th>
+                            <th>Total Tax</th>
+                            <!-- Dynamic Tax Headers will go here -->
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <tr><td colspan="4" style="text-align:center; padding:30px; color:#666;">Select filters and click Generate to view report.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTaxes();
+            loadBranches();
+            
+            // Set default dates (This Month)
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            document.getElementById('reportStart').valueAsDate = firstDay;
+            document.getElementById('reportEnd').valueAsDate = now;
+            
+            // Initial Report Load
+            generateReport();
+        });
+
+        async function loadBranches() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/branches', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    const branches = await res.json();
+                    const select = document.getElementById('reportBranch');
+                    branches.forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b.location || b.name;
+                        opt.textContent = b.name;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadTaxes() {
+            const list = document.getElementById('taxList');
+            try {
+                const token = sessionStorage.getItem('authToken');
+                
+                // Fetch both taxes and settings (for System VAT)
+                const [taxesRes, settingsRes] = await Promise.all([
+                    fetch('/api/taxes', { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch('/api/settings', { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
+
+                const taxes = await taxesRes.json();
+                const settings = await settingsRes.json();
+                // Use 0 if explicitly set to 0, otherwise default to 15 if undefined (legacy behavior)
+                // If the user deletes it, it becomes 0.
+                const vatRate = settings.vat_rate !== undefined && settings.vat_rate !== null ? parseFloat(settings.vat_rate) : 15.00;
+
+                let html = '';
+
+                // Only show System VAT if it's greater than 0
+                if (vatRate > 0) {
+                    html += `
+                    <div class="tax-item">
+                        <div>
+                            <strong style="font-size: 14px; color: #333;">VAT</strong>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span class="tax-badge">${vatRate}%</span>
+                            <button onclick="deleteSystemVat()" class="btn-delete" title="Remove Tax">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>`;
+                }
+
+                if (taxes.length === 0 && vatRate <= 0) {
+                    html += '<p style="color: #666; font-style: italic; text-align: center; padding: 20px;">No active tax rules.</p>';
+                }
+
+                html += taxes.map(tax => `
+                    <div class="tax-item">
+                        <div>
+                            <strong style="font-size: 14px; color: #333;">${tax.name}</strong>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span class="tax-badge">${tax.rate}%</span>
+                            <button onclick="deleteTax(${tax.id})" class="btn-delete" title="Remove Tax">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                list.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+                list.innerHTML = '<p style="color: red; text-align: center;">Error loading taxes.</p>';
+            }
+        }
+
+        async function handleAddTax(e) {
+            e.preventDefault();
+            const name = document.getElementById('newTaxName').value;
+            const rate = document.getElementById('newTaxRate').value;
+            const token = sessionStorage.getItem('authToken');
+
+            try {
+                const res = await fetch('/api/taxes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ name, rate })
+                });
+                if (res.ok) {
+                    document.getElementById('newTaxName').value = '';
+                    document.getElementById('newTaxRate').value = '';
+                    loadTaxes();
+                    generateReport(); // Refresh report as rules changed
+                } else alert('Failed to add tax rule');
+            } catch (err) { console.error(err); alert('Error connecting to server'); }
+        }
+
+        async function deleteSystemVat() {
+            if (!confirm('Are you sure you want to remove the System VAT?')) return;
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/settings/vat', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) { 
+                    loadTaxes(); 
+                    generateReport(); 
+                } else alert('Failed to delete VAT');
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteTax(id) {
+            if (!confirm('Are you sure you want to remove this tax rule?')) return;
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch(`/api/taxes/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) { 
+                    loadTaxes(); 
+                    generateReport(); // Refresh report
+                }
+                else alert('Failed to delete tax rule');
+            } catch (err) { console.error(err); }
+        }
+
+        async function generateReport() {
+            const start = document.getElementById('reportStart').value;
+            const end = document.getElementById('reportEnd').value;
+            const branch = document.getElementById('reportBranch').value;
+            const token = sessionStorage.getItem('authToken');
+            
+            const tbody = document.getElementById('reportTableBody');
+            const theadRow = document.querySelector('#reportTable thead tr');
+            
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:30px;">Generating report...</td></tr>';
+
+            try {
+                const res = await fetch(`/api/ceo/tax-report?startDate=${start}&endDate=${end}&branch=${encodeURIComponent(branch)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if(res.ok) {
+                    const data = await res.json();
+                    const rules = data.rules || [];
+                    const report = data.report || [];
+
+                    // 1. Rebuild Header dynamically based on active rules
+                    let headerHTML = `
+                        <th>Branch</th>
+                        <th style="text-align:right;">Gross Sales</th>
+                        <th style="text-align:right;">Net Sales</th>
+                        <th style="text-align:right; color:var(--primary-color);">Total Tax</th>
+                    `;
+                    
+                    rules.forEach(r => {
+                        headerHTML += `<th style="text-align:right; font-size:11px;">${r.name} (${r.rate}%)</th>`;
+                    });
+                    theadRow.innerHTML = headerHTML;
+
+                    // 2. Build Body
+                    if(report.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="${4 + rules.length}" style="text-align:center; padding:30px;">No sales data found for this period.</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = report.map(row => {
+                        let rowHTML = `
+                            <tr>
+                                <td style="font-weight:600;">${row.branch}</td>
+                                <td style="text-align:right;">₵${row.grossRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td style="text-align:right;">₵${row.netRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td style="text-align:right; font-weight:bold; color:var(--primary-color);">₵${row.totalTax.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        `;
+                        
+                        // Add columns for each rule
+                        rules.forEach(rule => {
+                            // Find matching breakdown item
+                            const breakdownItem = row.breakdown.find(b => b.name === rule.name);
+                            const amount = breakdownItem ? breakdownItem.amount : 0;
+                            rowHTML += `<td style="text-align:right; color:#666;">₵${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>`;
+                        });
+                        
+                        rowHTML += `</tr>`;
+                        return rowHTML;
+                    }).join('');
+                    
+                    // Add Total Row
+                    if(report.length > 0) {
+                        const totalGross = report.reduce((sum, r) => sum + r.grossRevenue, 0);
+                        const totalNet = report.reduce((sum, r) => sum + r.netRevenue, 0);
+                        const totalTax = report.reduce((sum, r) => sum + r.totalTax, 0);
+                        
+                        let totalRowHTML = `
+                            <tr style="background:#f8fafc; font-weight:bold; border-top:2px solid #e2e8f0;">
+                                <td>TOTAL</td>
+                                <td style="text-align:right;">₵${totalGross.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td style="text-align:right;">₵${totalNet.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td style="text-align:right; color:var(--primary-color);">₵${totalTax.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        `;
+                        
+                        rules.forEach(rule => {
+                            const ruleTotal = report.reduce((sum, row) => {
+                                const item = row.breakdown.find(b => b.name === rule.name);
+                                return sum + (item ? item.amount : 0);
+                            }, 0);
+                            totalRowHTML += `<td style="text-align:right;">₵${ruleTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>`;
+                        });
+                        
+                        totalRowHTML += `</tr>`;
+                        tbody.innerHTML += totalRowHTML;
+                    }
+
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function logout() {
+            const token = sessionStorage.getItem('authToken');
+            await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }});
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint POS | Register</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+    :root {
+        --primary:#1a2a6c;
+        --secondary:#b21f1f;
+        --accent:#fdbb2d;
+        --bg:#f5f7fa;
+        --border:#e0e0e0;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; font-family:Poppins, sans-serif; }
+    body { background:var(--bg); height:100vh; display:flex; flex-direction:column; }
+
+    /* ================= HEADER ================= */
+    header {
+        height:70px;
+        background:linear-gradient(135deg,var(--primary),var(--secondary));
+        color:white;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:0 25px;
+        position:relative;
+    }
+    .brand { font-size:24px; letter-spacing:1px; font-weight:700; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+
+    .user-menu {
+        display:flex;
+        align-items:center;
+        gap:18px;
+        position:relative;
+    }
+
+    #dateTime {
+        font-size:13px;
+        opacity:.85;
+    }
+
+    /* USER */
+    .user-pill {
+        display:flex;
+        align-items:center;
+        gap:10px;
+        background:rgba(0,0,0,.25);
+        padding:6px 14px 6px 6px;
+        border-radius:30px;
+        cursor:pointer;
+    }
+    .user-avatar {
+        width:32px;height:32px;
+        background:white;color:var(--primary);
+        display:flex;align-items:center;justify-content:center;
+        border-radius:50%;
+    }
+
+    /* DROPDOWN */
+    .user-dropdown {
+        position:absolute;
+        right:0;
+        top:120%;
+        background:white;
+        min-width:220px;
+        border-radius:10px;
+        box-shadow:0 10px 25px rgba(0,0,0,.25);
+        display:none;
+        overflow:hidden;
+        z-index:999;
+    }
+    .user-dropdown.show { display:block; }
+
+    .user-dropdown .header {
+        padding:15px;
+        background:#f9fafb;
+        border-bottom:1px solid #eee;
+    }
+    .user-dropdown .header strong {
+        display:block;
+        color:#111;
+    }
+    .user-dropdown .header span {
+        font-size:12px;
+        color:#666;
+    }
+
+    .user-dropdown a {
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:12px 18px;
+        color:#333;
+        text-decoration:none;
+        font-size:14px;
+    }
+    .user-dropdown a:hover {
+        background:#f0f7ff;
+        color:var(--primary);
+    }
+
+    /* ================= MAIN ================= */
+    .container { flex:1; display:flex; overflow:hidden; }
+
+    /* MAIN POS LAYOUT */
+    .pos-layout {
+        flex:1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        max-width: 800px; /* Optimal width for single-column POS */
+        margin: 0 auto;   /* Center horizontally */
+    }
+
+    /* BARCODE */
+    .search-bar {
+        display:flex;
+        gap:10px;
+        margin-bottom:15px;
+    }
+    .search-bar input {
+        width: 100%;
+        padding:16px;
+        font-size:18px;
+        border-radius:10px;
+        border:1px solid var(--border);
+    }
+    .search-bar button {
+        padding:0 22px;
+        background:var(--primary);
+        border:none;
+        color:white;
+        border-radius:10px;
+        cursor:pointer;
+    }
+    #scanResult {
+        font-size:14px;
+        margin: 5px 0 10px 0;
+        color:#555;
+        min-height:20px;
+        padding-left: 5px;
+    }
+    
+    /* SUGGESTIONS DROPDOWN */
+    .suggestions-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 0 0 10px 10px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        display: none;
+    }
+    .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .suggestion-item:hover, .suggestion-item.active { background-color: #f0f7ff; }
+    .suggestion-item strong { color: var(--primary); }
+
+    /* SCANNER CONTROLS */
+    .scanner-controls {
+        display:flex;
+        gap:10px;
+        margin-top:20px;
+        flex-wrap:wrap;
+    }
+    .scanner-btn {
+        padding:10px 16px;
+        background:white;
+        border:1px solid var(--border);
+        border-radius:6px;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        transition:all 0.2s;
+    }
+    .scanner-btn:hover {
+        background:#f0f7ff;
+        border-color:var(--primary);
+    }
+    .scanner-btn.active {
+        background:var(--primary);
+        color:white;
+        border-color:var(--primary);
+    }
+
+    /* CAMERA SCANNER MODAL */
+    .scanner-modal {
+        display:none;
+        position:fixed;
+        top:0;left:0;
+        width:100%;height:100%;
+        background:rgba(0,0,0,0.9);
+        z-index:10000;
+        align-items:center;
+        justify-content:center;
+    }
+    .scanner-modal.active {
+        display:flex;
+    }
+    .scanner-content {
+        background:white;
+        border-radius:10px;
+        width:90%;
+        max-width:500px;
+        overflow:hidden;
+    }
+    .scanner-header {
+        background:var(--primary);
+        color:white;
+        padding:15px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+    }
+    .scanner-body {
+        padding:20px;
+        text-align:center;
+    }
+    #reader {
+        width:100%;
+        max-width:400px;
+        margin:0 auto;
+        background:#000;
+        border-radius:5px;
+    }
+    .scanner-guide {
+        margin-top:15px;
+        font-size:14px;
+        color:#666;
+    }
+
+    /* RIGHT CART */
+    .cart-section {
+        background:white;
+        border:1px solid var(--border);
+        border-radius: 12px;
+        display:flex;
+        flex-direction:column;
+        flex: 1;
+        min-height: 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    .cart-header {
+        padding:15px;
+        font-weight:600;
+        border-bottom:1px solid var(--border);
+        display:flex;
+        justify-content:space-between;
+    }
+    .cart-items { flex:1; overflow:auto; padding:10px; }
+
+    .cart-item {
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:10px 0;
+        border-bottom:1px solid #eee;
+    }
+    .qty-btn {
+        width:24px;height:24px;
+        border-radius:50%;
+        border:1px solid #ccc;
+        background:white;
+        cursor:pointer;
+    }
+
+    .cart-summary {
+        padding:20px;
+        background:#fafafa;
+        border-top:1px solid var(--border);
+    }
+    .summary-row {
+        display:flex;
+        justify-content:space-between;
+        margin-bottom:8px;
+    }
+    .total {
+        font-size:18px;
+        font-weight:bold;
+        color:var(--primary);
+        border-top:1px dashed #ccc;
+        padding-top:10px;
+    }
+
+    .actions {
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+        margin-top:15px;
+    }
+    .btn {
+        padding:12px;
+        border:none;
+        color:white;
+        font-weight:600;
+        border-radius:6px;
+        cursor:pointer;
+    }
+    .btn-pay { background:#2e7d32; }
+    .btn-cancel { background:var(--secondary); }
+    .btn-park { background: #f39c12; color: white; }
+
+    /* FOOTER */
+    footer {
+        height:35px;
+        background:linear-gradient(135deg,var(--primary),var(--secondary));
+        color:white;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:12px;
+    }
+
+    /* NOTIFICATION */
+    .notification {
+        position:fixed;
+        top:20px; left:50%;
+        transform:translateX(-50%);
+        background:#333;
+        color:white;
+        padding:12px 22px;
+        border-radius:40px;
+        opacity:0;
+        transition:.3s;
+        z-index:10001;
+    }
+    .notification.show { opacity:1; top:40px; }
+    .notification.success { background:#2e7d32; }
+    .notification.error { background:#c62828; }
+
+    /* SCANNER STATUS */
+    .scanner-status {
+        margin-top:10px;
+        padding:10px;
+        background:#f0f7ff;
+        border-radius:6px;
+        font-size:13px;
+        display:none;
+    }
+    .scanner-status.active {
+        display:block;
+    }
+
+    /* MANAGER TOKEN MODAL */
+    .token-modal {
+        display:none;
+        position:fixed;
+        top:0;left:0;
+        width:100%;height:100%;
+        background:rgba(0,0,0,0.6);
+        z-index:10002;
+        align-items:center;
+        justify-content:center;
+        backdrop-filter: blur(2px);
+    }
+    .token-modal.active {
+        display:flex;
+    }
+    .token-content {
+        background:white;
+        border-radius:12px;
+        width:90%;
+        max-width:350px;
+        padding:30px;
+        text-align:center;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .token-input {
+        width: 100%;
+        padding: 15px;
+        font-size: 24px;
+        letter-spacing: 8px;
+        text-align: center;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        margin: 20px 0;
+        outline: none;
+        transition: 0.3s;
+        font-family: monospace;
+    }
+    .token-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(26, 42, 108, 0.1);
+    }
+
+    /* CREDIT SALE MODAL */
+    .credit-modal-body { text-align: left; }
+    .customer-search-box {
+        width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+        font-size: 16px; margin-bottom: 15px; outline: none;
+    }
+    .customer-list {
+        max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; margin-bottom: 15px;
+        display: none; /* Hidden until search */
+    }
+    .customer-item {
+        padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between;
+    }
+    .customer-item:hover { background: #f9f9f9; }
+    .customer-item:last-child { border-bottom: none; }
+    
+    .selected-customer-card {
+        background: #f0f7ff; border: 1px solid #cce5ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;
+    }
+    .customer-detail-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+    .limit-badge { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    
+    .credit-summary {
+        background: #fafafa; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px;
+    }
+    .credit-total { font-size: 24px; font-weight: bold; color: var(--primary); }
+    
+    .btn-credit-pay {
+        width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
+    }
+
+    /* Parked Order Item */
+    .parked-item {
+        border-bottom: 1px solid #eee;
+        padding: 12px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .parked-item:last-child { border-bottom: none; }
+    .parked-btn {
+        padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; color: white; margin-left: 5px;
+    }
+    
+    </style>
+</head>
+
+<body>
+
+<div id="notification" class="notification"></div>
+
+<!-- Camera Scanner Modal -->
+<div id="scannerModal" class="scanner-modal">
+    <div class="scanner-content">
+        <div class="scanner-header">
+            <h3>Scan Barcode with Camera</h3>
+            <button onclick="closeCameraScanner()" style="background:none;border:none;color:white;cursor:pointer;font-size:20px;">✕</button>
+        </div>
+        <div class="scanner-body">
+            <div style="position: relative;">
+                <div id="reader"></div>
+                <div style="position:absolute; top:50%; left:10%; right:10%; height:2px; background:red; opacity:0.6; pointer-events:none; box-shadow: 0 0 4px red;"></div>
+            </div>
+            <div class="scanner-guide">
+                <p>Align the red line across the entire barcode.</p>
+                <p>Move camera closer or further to focus.</p>
+            </div>
+            <div style="margin-top:20px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                <input type="file" id="barcodeFile" accept="image/*" style="display:none" onchange="handleFileUpload(this)">
+                <button class="scanner-btn" onclick="document.getElementById('barcodeFile').click()">
+                    <i class="fas fa-upload"></i> Upload
+                </button>
+                <button class="scanner-btn" onclick="switchCamera()">
+                    <i class="fas fa-camera-rotate"></i> Switch Camera
+                </button>
+                <button type="button" class="scanner-btn" onclick="closeCameraScanner()" style="background:var(--secondary);color:white;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Credit Sale Modal -->
+<div id="creditSaleModal" class="token-modal">
+    <div class="token-content" style="max-width: 450px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="color:var(--primary); margin:0;">Credit Sale</h3>
+            <button onclick="closeCreditSaleModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div class="credit-modal-body">
+            <input type="text" id="creditCustomerSearch" class="customer-search-box" placeholder="Search Client Name or Phone..." onkeyup="searchCreditCustomers()">
+            <div id="creditCustomerList" class="customer-list"></div>
+
+            <div id="selectedCustomerCard" class="selected-customer-card">
+                <h4 id="ccName" style="margin:0 0 10px 0;">Customer Name</h4>
+                <div class="customer-detail-row"><span>Phone:</span> <span id="ccPhone">-</span></div>
+                <div class="customer-detail-row"><span>Credit Limit:</span> <span id="ccLimit" class="limit-badge">₵0.00</span></div>
+                <div class="customer-detail-row"><span>Current Debt:</span> <span id="ccDebt" style="color:#c62828;">₵0.00</span></div>
+                <div class="customer-detail-row" style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;">
+                    <strong>Available Credit:</strong> <strong id="ccAvailable" style="color:#2e7d32;">₵0.00</strong>
+                </div>
+            </div>
+
+            <div class="credit-summary">
+                <div style="font-size:12px; color:#666; margin-bottom:5px;">TOTAL TO PAY</div>
+                <div class="credit-total" id="creditSaleTotal">₵0.00</div>
+            </div>
+
+            <button id="btnConfirmCredit" class="btn-credit-pay" onclick="processCreditSale()" disabled>Select Client to Proceed</button>
+        </div>
+    </div>
+</div>
+
+<!-- Manager Token Modal -->
+<div id="managerTokenModal" class="token-modal">
+    <div class="token-content">
+        <div style="margin-bottom:20px;">
+            <i class="fas fa-user-shield" style="font-size:40px; color:var(--primary);"></i>
+        </div>
+        <h3 style="color:var(--primary); margin-bottom:10px;">Manager Authorization</h3>
+        <p style="color:#666; font-size:14px;">Enter 6-digit security token to access Credit Portal</p>
+        
+        <input type="password" id="managerTokenInput" class="token-input" maxlength="6" placeholder="••••••" autocomplete="off">
+        <div id="tokenError" style="color:#c62828; font-size:13px; margin-bottom:15px; display:none;">Invalid Token</div>
+        
+        <div style="display:flex; gap:10px;">
+            <button onclick="closeManagerTokenModal()" class="btn btn-cancel" style="flex:1;">Cancel</button>
+            <button onclick="verifyManagerToken()" class="btn btn-pay" style="flex:1; background:var(--primary);">Verify</button>
+        </div>
+    </div>
+</div>
+
+<!-- Parked Orders Modal -->
+<div id="parkedModal" class="token-modal">
+    <div class="token-content" style="max-width: 500px; text-align:left; width: 95%;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+            <h3 style="color:var(--primary); margin:0;"><i class="fas fa-clock"></i> Parked Orders</h3>
+            <button onclick="document.getElementById('parkedModal').classList.remove('active')" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <div id="parkedOrdersList" style="max-height:300px; overflow-y:auto;"></div>
+    </div>
+</div>
+
+<!-- Park Name Modal -->
+<div id="parkNameModal" class="token-modal">
+    <div class="token-content" style="max-width: 400px;">
+        <h3 style="color:var(--primary); margin-bottom:10px;">Park Order</h3>
+        <p style="color:#666; font-size:14px; margin-bottom:20px;">Enter reference name (e.g. Customer Name):</p>
+        
+        <input type="text" id="parkRefInput" class="token-input" style="text-align:left; letter-spacing:normal; font-size:16px; font-family:sans-serif;" placeholder="Customer Name" autocomplete="off">
+        
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button onclick="document.getElementById('parkNameModal').classList.remove('active')" class="btn btn-cancel" style="flex:1;">Cancel</button>
+            <button onclick="confirmParkOrder()" class="btn btn-pay" style="flex:1; background:var(--primary);">Park</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= HEADER ================= -->
+<header>
+    <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+
+    <div class="user-menu">
+        <span id="dateTime"></span>
+
+        <div class="user-pill" onclick="toggleUserMenu()">
+            <div class="user-avatar"><i class="fas fa-user"></i></div>
+            <span id="userName">Cashier</span>
+            <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+        </div>
+
+        <div class="user-dropdown" id="userDropdown">
+            <div class="header">
+                <strong>Cashier</strong>
+                <span>Cashier</span>
+            </div>
+            <a href="profile"><i class="fas fa-user-cog"></i> Profile</a>
+            <a href="transactions"><i class="fas fa-history"></i> Sales History</a>
+            <a href="javascript:void(0)" onclick="openCustomerDisplay()"><i class="fas fa-desktop"></i> Customer Display</a>
+            <a href="close-shift"><i class="fas fa-door-closed"></i> Close Shift</a>
+            <a href="javascript:void(0)" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- MAIN POS INTERFACE -->
+    <div class="pos-layout">
+        <div class="search-bar">
+            <div style="position: relative; flex: 1;">
+                <input id="barcodeInput" placeholder="Scan barcode or type product name..." autofocus autocomplete="off">
+                <div id="searchSuggestions" class="suggestions-dropdown"></div>
+            </div>
+            <button onclick="manualScan()" title="Search"><i class="fas fa-search"></i></button>
+            <button onclick="openCameraScanner()" title="Scan with Camera"><i class="fas fa-camera"></i></button>
+            <button id="refreshProducts" title="Refresh Products" style="background: #4CAF50;">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+
+        <!-- Scan Feedback (Placed here for visibility) -->
+        <div id="scanResult"></div>
+        <div id="scannerStatus" class="scanner-status"></div>
+
+        <div class="cart-section">
+            <div class="cart-header">
+                <span>Current Sale</span>
+            <div style="display:flex; gap:15px; align-items:center;">
+                <button onclick="openParkedModal()" title="View Parked Orders" style="background:none;border:none;color:#f39c12;cursor:pointer;position:relative;">
+                    <i class="fas fa-clock" style="font-size: 18px;"></i>
+                    <span id="parkedCount" style="position:absolute; top:-8px; right:-8px; background:#c62828; color:white; font-size:10px; padding:2px 5px; border-radius:50%; display:none;">0</span>
+                </button>
+                <span id="cartCount">0 items</span>
+                <button onclick="clearCart()" title="Clear Cart" style="background:none;border:none;color:#c62828;cursor:pointer;">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+            </div>
+
+            <div class="cart-items" id="cartItems">
+                <p style="text-align:center;color:#aaa;margin-top:50px;">Cart is empty</p>
+            </div>
+
+            <div class="cart-summary">
+                <div style="display:flex;gap:5px;margin-bottom:15px;">
+                    <input id="promoCode" placeholder="Promo Code (e.g. SAVE10)" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:4px;">
+                    <button onclick="applyPromo()" style="background:var(--primary);color:white;border:none;padding:0 12px;border-radius:4px;cursor:pointer;">Apply</button>
+                </div>
+
+                <div class="summary-row"><span>Subtotal</span><span id="subTotal">₵0.00</span></div>
+                <div class="summary-row" id="discountRow" style="display:none;color:var(--secondary);"><span>Discount</span><span id="discountAmt">-₵0.00</span></div>
+                <div id="taxRows"></div>
+                <div class="summary-row total"><span>Total</span><span id="grandTotal">₵0.00</span></div>
+
+                <div class="actions">
+                    <button class="btn btn-park" onclick="parkOrder()" style="grid-column: span 2;">Park Order</button>
+                    <button class="btn btn-cancel" onclick="clearCart()">Cancel</button>
+                    <button class="btn btn-pay" onclick="checkout()">Pay</button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+</div>
+
+<footer>
+    © 2026 Footprint Retail Systems
+</footer>
+
+<!-- Include barcode scanning library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js" crossorigin="anonymous"></script>
+<script>
+let currentUser = null;
+
+const customerChannel = new BroadcastChannel('footprint_customer_display');
+// Will be loaded from DB
+let products = [];
+
+let cart = [];
+let scannerMode = 'hardware'; // 'hardware' or 'camera'
+let cameraScanner = null;
+let currentCameraId = null;
+let discountRate = 0;
+let currentPromoCode = null;
+let lastScanTime = 0;
+let lastScannedCode = null;
+let activeTaxes = []; // Array to store tax rules
+let customers = [];
+let parkedOrders = JSON.parse(localStorage.getItem('parkedOrders')) || [];
+
+/* ======================
+   HARDWARE SCANNER SETUP
+   ====================== */
+
+// Detect hardware barcode scanner input
+function setupHardwareScanner() {
+    const barcodeInput = document.getElementById('barcodeInput');
+    let barcodeBuffer = '';
+    let lastKeyTime = Date.now();
+    
+    // Hardware scanners typically send characters quickly
+    barcodeInput.addEventListener('keydown', function(e) {
+        const currentTime = Date.now();
+        
+        // Reset buffer if too much time has passed (not a scanner input)
+        if (currentTime - lastKeyTime > 50) {
+            barcodeBuffer = '';
+        }
+        
+        lastKeyTime = currentTime;
+        
+        // If Enter key is pressed, process the barcode
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            
+            // If buffer has content, it's likely from a scanner
+            if (barcodeBuffer.length > 3) {
+                processScan(barcodeBuffer);
+                barcodeBuffer = '';
+                barcodeInput.value = '';
+            } else {
+                // Regular manual entry
+                processScan(barcodeInput.value.trim());
+                barcodeInput.value = '';
+            }
+        } else if (e.key.length === 1) {
+            // Add character to buffer
+            barcodeBuffer += e.key;
+        }
+    });
+}
+
+/* ======================
+   CAMERA SCANNER SETUP
+   ====================== */
+
+async function openCameraScanner() {
+    try {
+        document.getElementById('scannerModal').classList.add('active');
+        notify('Initializing camera scanner...', 'success');
+        
+        // Initialize camera scanner
+        if (!cameraScanner) {
+            // Configure to support Code 128 (used for generated labels) and other common formats
+            const formats = [
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.QR_CODE
+            ];
+            cameraScanner = new Html5Qrcode("reader", { 
+                formatsToSupport: formats, 
+                verbose: false
+            });
+        }
+        
+        const cameras = await Html5Qrcode.getCameras();
+        if (cameras.length === 0) {
+            throw new Error("No cameras found");
+        }
+        
+        // Default to first camera (machine camera/webcam)
+        currentCameraId = cameras[0].id;
+        
+        // If back camera exists (mobile), prefer it
+        const backCamera = cameras.find(c => c.label.toLowerCase().includes('back'));
+        if (backCamera) {
+            currentCameraId = backCamera.id;
+        }
+        
+        // Start scanning
+        await cameraScanner.start(
+            currentCameraId,
+            {
+                fps: 25, // Higher FPS for smoother scanning
+                // qrbox and aspectRatio removed to allow full-frame scanning (critical for wide 1D barcodes)
+                videoConstraints: {
+                    facingMode: "environment",
+                    focusMode: "continuous", // Attempt continuous focus
+                    width: { min: 1024, ideal: 1280, max: 1920 }, 
+                    height: { min: 576, ideal: 720, max: 1080 }
+                }
+            },
+            onCameraScanSuccess,
+            onCameraScanError
+        );
+        
+        notify('Camera scanner active', 'success');
+        
+    } catch (error) {
+        console.error("Camera scanner error:", error);
+        let msg = "Camera scanner failed: " + error.message;
+        if (error.name === 'NotReadableError' || error.toString().includes('NotReadableError')) {
+            msg = "Camera is in use by another app or permission denied.";
+        }
+        notify(msg, "error");
+        // Clean up UI without trying to stop a non-running scanner
+        document.getElementById('scannerModal').classList.remove('active');
+        cameraScanner = null;
+    }
+}
+
+function onCameraScanSuccess(decodedText) {
+    // Throttle duplicate scans from camera to prevent accidental double-adds
+    const currentTime = Date.now();
+    if (decodedText === lastScannedCode && currentTime - lastScanTime < 1500) {
+        return;
+    }
+    
+    lastScanTime = currentTime;
+    lastScannedCode = decodedText;
+
+    // Process the scanned barcode
+    processScan(decodedText);
+    
+    // Provide visual feedback
+    const reader = document.getElementById('reader');
+    if(reader) {
+        reader.style.border = '3px solid #4CAF50';
+        setTimeout(() => reader.style.border = '', 300);
+    }
+}
+
+function onCameraScanError(error) {
+    // Errors are normal during scanning, just log them
+    console.debug("Scanner error:", error);
+}
+
+async function switchCamera() {
+    if (!cameraScanner) return;
+    
+    try {
+        await cameraScanner.stop();
+        const cameras = await Html5Qrcode.getCameras();
+        
+        // Find next camera
+        const currentIndex = cameras.findIndex(c => c.id === currentCameraId);
+        const nextIndex = (currentIndex + 1) % cameras.length;
+        currentCameraId = cameras[nextIndex].id;
+        
+        // Restart with new camera
+        await cameraScanner.start(
+            currentCameraId,
+            {
+                fps: 25,
+                videoConstraints: {
+                    focusMode: "continuous",
+                    width: { min: 1024, ideal: 1280, max: 1920 }, 
+                    height: { min: 576, ideal: 720, max: 1080 }
+                }
+            },
+            onCameraScanSuccess,
+            onCameraScanError
+        );
+        
+        notify(`Switched to ${cameras[nextIndex].label || 'camera'}`, "success");
+    } catch (error) {
+        notify("Failed to switch camera", "error");
+    }
+}
+
+function closeCameraScanner() {
+    if (cameraScanner) {
+        try {
+            cameraScanner.stop().catch(err => {
+                // Ignore "not running" errors
+                if (!err.toString().includes("not running")) {
+                    console.warn("Scanner stop ignored:", err);
+                }
+            }).finally(() => {
+                cameraScanner = null;
+            });
+        } catch (e) {
+            if (!e.toString().includes("not running")) {
+                console.warn("Scanner stop error:", e);
+            }
+            cameraScanner = null;
+        }
+    }
+    document.getElementById('scannerModal').classList.remove('active');
+    document.getElementById('barcodeInput').focus();
+}
+
+async function handleFileUpload(input) {
+    if (!input.files || !input.files[0]) return;
+    if (!cameraScanner) {
+        notify("Scanner not initialized.", "error");
+        return;
+    }
+    
+    const file = input.files[0];
+    try {
+        // Stop camera stream if running to prevent conflicts with file rendering
+        try {
+            await cameraScanner.stop();
+            await cameraScanner.clear(); // Clear the video element to make room for the image
+        } catch (e) {
+            // Camera might not be running, ignore
+        }
+
+        notify("Processing image...", "success");
+        // Scan the file using the existing scanner instance
+        const decodedText = await cameraScanner.scanFile(file, true);
+        // Process directly (bypass camera throttle)
+        processScan(decodedText);
+        setTimeout(() => closeCameraScanner(), 500);
+    } catch (err) {
+        console.error("File scan error:", err);
+        notify("No barcode found in image.", "error");
+    }
+    input.value = ''; // Reset
+}
+
+function updateScannerStatus(message) {
+    const statusEl = document.getElementById('scannerStatus');
+    if (message) {
+        statusEl.textContent = message;
+        statusEl.classList.add('active');
+    } else {
+        statusEl.classList.remove('active');
+    }
+}
+
+/* ======================
+   SCAN PROCESSING
+   ====================== */
+
+async function processScan(val) {
+    if (!val) {
+        console.error('No barcode value provided');
+        return;
+    }
+    
+    const cleanVal = val.toString().trim();
+    console.log('Processing barcode:', cleanVal);
+    
+    const scanResult = document.getElementById('scanResult');
+    scanResult.innerHTML = `🔍 Scanning: <strong>${cleanVal}</strong>`;
+    
+    // Ensure products are loaded
+    if (!products || !products.length) {
+        console.log('No products loaded, refreshing...');
+        try {
+            await refreshProducts();
+            if (!products.length) {
+                throw new Error('No products available after refresh');
+            }
+        } catch (err) {
+            const errorMsg = 'Failed to load products. Please try again.';
+            console.error(errorMsg, err);
+            scanResult.innerHTML = `❌ ${errorMsg}`;
+            notify(errorMsg, 'error');
+            return;
+        }
+    }
+    
+    // Try different matching strategies
+    let product = null;
+    
+    // 1. Exact match (case sensitive, no trim needed as we already trimmed cleanVal)
+    product = products.find(p => p.barcode === cleanVal);
+    
+    // 2. Case-insensitive match
+    if (!product) {
+        product = products.find(p => 
+            p.barcode && p.barcode.toString().toLowerCase() === cleanVal.toLowerCase()
+        );
+    }
+    
+    // 3. Try with trimmed barcodes
+    if (!product) {
+        product = products.find(p => 
+            p.barcode && p.barcode.toString().trim() === cleanVal
+        );
+    }
+    
+    // 4. Try partial match (in case of leading/trailing characters)
+    if (!product) {
+        product = products.find(p => 
+            p.barcode && p.barcode.toString().includes(cleanVal) ||
+            cleanVal.includes(p.barcode)
+        );
+    }
+    
+    // 5. Try name match as last resort
+    if (!product) {
+        product = products.find(p => 
+            p.name && p.name.toLowerCase() === cleanVal.toLowerCase()
+        );
+    }
+    
+    if (!product) {
+        const errorMsg = `❌ Product not found for barcode: ${cleanVal}`;
+        scanResult.innerHTML = errorMsg;
+        notify(errorMsg, 'error');
+        return;
+    }
+    
+    // Add to cart
+    addToCart(product);
+    
+    // Show success message
+    scanResult.innerHTML = '';
+}
+
+function manualScan() {
+    const input = document.getElementById('barcodeInput');
+    processScan(input.value.trim());
+    input.value = '';
+    input.focus();
+}
+
+function setupSearchSuggestions() {
+    const input = document.getElementById('barcodeInput');
+    const box = document.getElementById('searchSuggestions');
+    let activeIndex = -1;
+
+    input.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        activeIndex = -1;
+        
+        if (query.length < 2) {
+            box.style.display = 'none';
+            return;
+        }
+
+        // Filter products
+        const matches = products.filter(p => {
+            const name = (p.name || '').toLowerCase();
+            const barcode = (p.barcode || '').toLowerCase();
+            return name.includes(query) || barcode.includes(query);
+        }).slice(0, 10); // Limit to 10
+
+        if (matches.length > 0) {
+            box.innerHTML = matches.map((p, i) => `
+                <div class="suggestion-item" data-index="${i}" onclick="selectSuggestion('${p.barcode}')">
+                    <div>
+                        <strong>${p.name}</strong>
+                        <div style="font-size:12px; color:#666;">${p.barcode}</div>
+                    </div>
+                    <div style="font-weight:bold; color:var(--primary);">₵${parseFloat(p.price).toFixed(2)}</div>
+                </div>
+            `).join('');
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+        }
+    });
+
+    input.addEventListener('keydown', function(e) {
+        const items = box.querySelectorAll('.suggestion-item');
+        if (box.style.display === 'none' || items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIndex = Math.min(activeIndex + 1, items.length - 1);
+            updateActiveItem(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIndex = Math.max(activeIndex - 1, -1);
+            updateActiveItem(items);
+        } else if (e.key === 'Enter') {
+            if (activeIndex >= 0) {
+                e.preventDefault();
+                e.stopImmediatePropagation(); // Prevent manualScan from firing
+                const barcode = items[activeIndex].getAttribute('onclick').match(/'([^']+)'/)[1];
+                selectSuggestion(barcode);
+            }
+        } else if (e.key === 'Escape') {
+            box.style.display = 'none';
+        }
+    });
+
+    function updateActiveItem(items) {
+        items.forEach(item => item.classList.remove('active'));
+        if (activeIndex >= 0) {
+            items[activeIndex].classList.add('active');
+            items[activeIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    // Close on click outside
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !box.contains(e.target)) {
+            box.style.display = 'none';
+        }
+    });
+}
+
+function selectSuggestion(barcode) {
+    const product = products.find(p => p.barcode === barcode);
+    if (product) {
+        addToCart(product);
+        document.getElementById('barcodeInput').value = '';
+        document.getElementById('searchSuggestions').style.display = 'none';
+        document.getElementById('barcodeInput').focus();
+    }
+}
+
+/* ======================
+   CART FUNCTIONS
+   ====================== */
+
+function playBeep() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.1);
+    } catch(e) { console.error("Audio error", e); }
+}
+
+function addToCart(product) {
+    // Ensure price is a number before adding to cart
+    const price = parseFloat(product.price) || 0;
+    const safeProduct = { ...product, price: price };
+
+    if (safeProduct.stock <= 0) {
+        notify(`Out of Stock: ${safeProduct.name}`, "error");
+        return;
+    }
+
+    const existingItem = cart.find(item => item.barcode === safeProduct.barcode);
+    if (existingItem) {
+        existingItem.qty++;
+        notify(`Increased quantity: ${safeProduct.name}`, "success");
+    } else {
+        cart.push({...safeProduct, qty: 1});
+        notify(`Added to cart: ${safeProduct.name}`, "success");
+    }
+    renderCart();
+    playBeep();
+}
+
+function updateQty(index, delta) {
+    cart[index].qty += delta;
+    if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+    }
+    renderCart();
+}
+
+function setQty(index, val) {
+    const qty = parseInt(val);
+    if (!isNaN(qty)) {
+        if (qty > 0) {
+            cart[index].qty = qty;
+        } else {
+            cart.splice(index, 1);
+        }
+    }
+    renderCart();
+}
+
+function clearCart() { 
+    cart = []; 
+    discountRate = 0;
+    currentPromoCode = null;
+    document.getElementById('promoCode').value = '';
+    if (document.getElementById('customerSelect')) document.getElementById('customerSelect').value = "";
+    renderCart();
+    notify("Cart cleared", "success");
+    customerChannel.postMessage({ type: 'RESET' });
+}
+
+function checkout() {
+    if (!cart.length) {
+        notify("Cart is empty", "error");
+        return;
+    }
+    
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const discountVal = subtotal * discountRate;
+    const totalAfterDiscount = subtotal - discountVal;
+    
+    // Calculate Taxes
+    let totalTax = 0;
+    const taxBreakdown = activeTaxes.map(tax => {
+        const amount = totalAfterDiscount * (parseFloat(tax.rate) / 100);
+        totalTax += amount;
+        return { name: tax.name, rate: tax.rate, amount: amount };
+    });
+
+    const grandTotal = totalAfterDiscount + totalTax;
+    const customerSelect = document.getElementById('customerSelect');
+    const customerId = customerSelect ? customerSelect.value : null;
+    
+    const user = currentUser;
+    const token = sessionStorage.getItem('authToken');
+
+    // Create Pending Transaction in DB
+    notify("Creating transaction...", "success");
+    console.log('🛒 CHECKOUT: Total: ₵' + grandTotal.toFixed(2), '| Items:', cart.length, '| Customer Selected:', customerId || 'None');
+    
+    fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            userId: user ? user.id : null,
+            storeLocation: user ? user.store_location : 'Main',
+            total: grandTotal,
+            subtotal: subtotal,
+            discount: discountVal,
+            tax: totalTax,
+            taxBreakdown: taxBreakdown,
+            paymentMethod: 'pending',
+            items: cart,
+            status: 'pending',
+            promoCode: currentPromoCode,
+            customerId: customerId || null
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.transactionId) {
+            console.log('✅ TRANSACTION CREATED:', data.transactionId, '| Receipt:', data.receiptNumber);
+            customerChannel.postMessage({ type: 'TRANSACTION_COMPLETE' });
+            window.location.href = `payment?id=${data.transactionId}`;
+        } else {
+            notify("Error creating transaction", "error");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        notify("Connection error", "error");
+    });
+}
+
+function renderCart() {
+    const cartItems = document.getElementById('cartItems');
+    const subTotalEl = document.getElementById('subTotal');
+    const discountRow = document.getElementById('discountRow');
+    const discountAmtEl = document.getElementById('discountAmt');
+    const taxRowsEl = document.getElementById('taxRows');
+    const grandTotalEl = document.getElementById('grandTotal');
+    const cartCount = document.getElementById('cartCount');
+    
+    if (!cart.length) {
+        cartItems.innerHTML = '<p style="text-align:center;color:#aaa;margin-top:50px;">Cart is empty</p>';
+        cartCount.textContent = '0 items';
+        subTotalEl.textContent = '₵0.00';
+        discountRow.style.display = 'none';
+        taxRowsEl.innerHTML = '<div class="summary-row"><span>Tax</span><span>₵0.00</span></div>';
+        grandTotalEl.textContent = '₵0.00';
+        return;
+    }
+    
+    let subtotal = 0;
+    let itemsHtml = '';
+    
+    cart.forEach((item, index) => {
+        const price = parseFloat(item.price) || 0;
+        subtotal += price * item.qty;
+        
+        itemsHtml += `
+            <div class="cart-item">
+                <div>
+                    <strong>${item.name}</strong><br>
+                    <small>Barcode: ${item.barcode}</small><br>
+                    ₵${price.toFixed(2)}
+                </div>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                    <input type="number" value="${item.qty}" min="1" style="width:50px; text-align:center; padding:4px; border:1px solid #ccc; border-radius:4px;" 
+                        onchange="setQty(${index}, this.value)" onclick="this.select()">
+                    <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+                </div>
+            </div>
+        `;
+    });
+    cartItems.innerHTML = itemsHtml;
+    
+    const discount = subtotal * discountRate;
+    const taxable = subtotal - discount;
+    
+    // Calculate Taxes dynamically
+    let totalTax = 0;
+    let taxHtml = '';
+    
+    activeTaxes.forEach(tax => {
+        const amount = taxable * (parseFloat(tax.rate) / 100);
+        totalTax += amount;
+        taxHtml += `<div class="summary-row"><span>${tax.name} (${tax.rate}%)</span><span>₵${amount.toFixed(2)}</span></div>`;
+    });
+    
+    const grandTotal = taxable + totalTax;
+    
+    cartCount.textContent = `${cart.length} item${cart.length !== 1 ? 's' : ''}`;
+    subTotalEl.textContent = `₵${subtotal.toFixed(2)}`;
+    
+    if (discount > 0) {
+        discountRow.style.display = 'flex';
+        discountAmtEl.textContent = `-₵${discount.toFixed(2)}`;
+    } else {
+        discountRow.style.display = 'none';
+    }
+    
+    taxRowsEl.innerHTML = taxHtml || '<div class="summary-row"><span>Tax</span><span>₵0.00</span></div>';
+    grandTotalEl.textContent = `₵${grandTotal.toFixed(2)}`;
+
+    // Broadcast to Customer Display
+    customerChannel.postMessage({
+        type: 'CART_UPDATE',
+        cart: cart,
+        subtotal: subtotal,
+        discount: discount,
+        vat: totalTax, // Legacy field for display
+        total: grandTotal
+    });
+}
+
+async function applyPromo() {
+    const code = document.getElementById('promoCode').value.trim().toUpperCase();
+    
+    try {
+        const res = await fetch(`/api/promotions/validate/${code}`);
+        if (res.ok) {
+            const data = await res.json();
+            discountRate = parseFloat(data.discount_percentage) / 100;
+            currentPromoCode = code;
+            notify(`Promo applied: ${data.discount_percentage}% Off`, "success");
+        } else {
+            discountRate = 0;
+            currentPromoCode = null;
+            notify("Invalid promo code", "error");
+        }
+    } catch (e) {
+        console.error(e);
+        notify("Connection error", "error");
+    }
+    renderCart();
+}
+
+/* ======================
+   UI FUNCTIONS
+   ====================== */
+
+function toggleUserMenu() {
+    document.getElementById('userDropdown').classList.toggle('show');
+}
+
+window.onclick = function(e) {
+    if (!e.target.closest('.user-menu')) {
+        document.getElementById('userDropdown').classList.remove('show');
+    }
+};
+
+function updateTime() {
+    document.getElementById('dateTime').textContent = new Date().toLocaleString();
+}
+
+setInterval(updateTime, 1000);
+updateTime();
+
+async function logout() { 
+    notify("Logged out. Redirecting...", "success"); 
+    const token = sessionStorage.getItem('authToken');
+    try {
+        await fetch('/api/logout', { 
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch(e) { console.error(e); }
+    sessionStorage.clear();
+    localStorage.removeItem('token'); // Cleanup old local storage if any
+    setTimeout(() => {
+        window.location.href = 'login';
+    }, 1500);
+}
+
+function notify(message, type) {
+    const notification = document.getElementById('notification');
+    notification.className = `notification show ${type}`;
+    notification.textContent = message;
+    setTimeout(() => notification.className = 'notification', 2500);
+}
+
+function openCustomerDisplay() {
+    window.open('customer-display', 'CustomerDisplay', 'width=800,height=600,menubar=no,toolbar=no');
+}
+
+function openCreditPortal() {
+    document.getElementById('managerTokenModal').classList.add('active');
+    const input = document.getElementById('managerTokenInput');
+    input.value = '';
+    setTimeout(() => input.focus(), 100);
+    document.getElementById('tokenError').style.display = 'none';
+}
+
+function closeManagerTokenModal() {
+    document.getElementById('managerTokenModal').classList.remove('active');
+}
+
+async function verifyManagerToken() {
+    const token = document.getElementById('managerTokenInput').value;
+    const errorEl = document.getElementById('tokenError');
+    
+    try {
+        const authToken = sessionStorage.getItem('authToken');
+        const res = await fetch('/api/verify-auth-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            body: JSON.stringify({ code: token })
+        });
+
+        if (res.ok) {
+            closeManagerTokenModal();
+            openCreditSaleModal(); // Open the sale modal instead of redirecting
+        } else {
+            throw new Error('Invalid Token');
+        }
+    } catch (e) {
+        errorEl.textContent = "Invalid Authorization Code.";
+        errorEl.style.display = 'block';
+        document.getElementById('managerTokenInput').value = '';
+        document.getElementById('managerTokenInput').focus();
+    }
+}
+
+/* CREDIT SALE LOGIC */
+let allCreditCustomers = [];
+let selectedCreditCustomer = null;
+
+async function openCreditSaleModal() {
+    if (cart.length === 0) {
+        notify("Cart is empty", "error");
+        return;
+    }
+    
+    // Calculate Total
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const discountVal = subtotal * discountRate;
+    const totalAfterDiscount = subtotal - discountVal;
+    
+    let totalTax = 0;
+    activeTaxes.forEach(tax => { totalTax += totalAfterDiscount * (parseFloat(tax.rate) / 100); });
+    const grandTotal = totalAfterDiscount + totalTax;
+    
+    document.getElementById('creditSaleTotal').textContent = `₵${grandTotal.toFixed(2)}`;
+    document.getElementById('creditSaleModal').classList.add('active');
+    document.getElementById('creditCustomerSearch').focus();
+    
+    // Load Customers
+    try {
+        const token = sessionStorage.getItem('authToken');
+        const res = await fetch('/api/customers', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            allCreditCustomers = await res.json();
+        }
+    } catch (e) { console.error(e); }
+}
+
+function closeCreditSaleModal() {
+    document.getElementById('creditSaleModal').classList.remove('active');
+    resetCreditModal();
+}
+
+function resetCreditModal() {
+    selectedCreditCustomer = null;
+    document.getElementById('creditCustomerSearch').value = '';
+    document.getElementById('creditCustomerList').style.display = 'none';
+    document.getElementById('selectedCustomerCard').style.display = 'none';
+    document.getElementById('btnConfirmCredit').disabled = true;
+    document.getElementById('btnConfirmCredit').textContent = "Select Client to Proceed";
+    document.getElementById('btnConfirmCredit').style.background = "var(--primary)";
+}
+
+function searchCreditCustomers() {
+    const query = document.getElementById('creditCustomerSearch').value.toLowerCase();
+    const list = document.getElementById('creditCustomerList');
+    
+    if (query.length < 1) {
+        list.style.display = 'none';
+        return;
+    }
+    
+    const matches = allCreditCustomers.filter(c => 
+        c.name.toLowerCase().includes(query) || 
+        (c.phone && c.phone.includes(query))
+    );
+    
+    list.innerHTML = matches.map(c => `
+        <div class="customer-item" onclick="selectCreditCustomer(${c.id})">
+            <strong>${c.name}</strong>
+            <span>${c.phone || ''}</span>
+        </div>
+    `).join('');
+    
+    list.style.display = matches.length ? 'block' : 'none';
+}
+
+function selectCreditCustomer(id) {
+    selectedCreditCustomer = allCreditCustomers.find(c => c.id === id);
+    if (!selectedCreditCustomer) return;
+    
+    // Update UI
+    document.getElementById('creditCustomerList').style.display = 'none';
+    document.getElementById('creditCustomerSearch').value = selectedCreditCustomer.name;
+    
+    document.getElementById('ccName').textContent = selectedCreditCustomer.name;
+    document.getElementById('ccPhone').textContent = selectedCreditCustomer.phone || 'N/A';
+    
+    const limit = parseFloat(selectedCreditCustomer.credit_limit);
+    const debt = parseFloat(selectedCreditCustomer.current_balance);
+    const available = limit - debt;
+    
+    document.getElementById('ccLimit').textContent = `₵${limit.toFixed(2)}`;
+    document.getElementById('ccDebt').textContent = `₵${debt.toFixed(2)}`;
+    document.getElementById('ccAvailable').textContent = `₵${available.toFixed(2)}`;
+    
+    document.getElementById('selectedCustomerCard').style.display = 'block';
+    
+    // Check if sale is possible
+    const saleTotal = parseFloat(document.getElementById('creditSaleTotal').textContent.replace('₵', ''));
+    const btn = document.getElementById('btnConfirmCredit');
+    
+    if (available >= saleTotal) {
+        btn.disabled = false;
+        btn.textContent = "Confirm Credit Sale";
+        btn.style.background = "#2e7d32"; // Green
+    } else {
+        // Since manager authorized, maybe allow override? 
+        // For now, let's allow it but warn, or strictly block. 
+        // Based on "apply the credit", let's assume manager auth allows override.
+        btn.disabled = false;
+        btn.textContent = "⚠️ Limit Exceeded - Confirm Anyway";
+        btn.style.background = "#ef6c00"; // Orange
+    }
+}
+
+async function processCreditSale() {
+    if (!selectedCreditCustomer) return;
+    
+    const btn = document.getElementById('btnConfirmCredit');
+    btn.disabled = true;
+    btn.textContent = "Processing...";
+    
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const discountVal = subtotal * discountRate;
+    const totalAfterDiscount = subtotal - discountVal;
+    
+    let totalTax = 0;
+    const taxBreakdown = activeTaxes.map(tax => {
+        const amount = totalAfterDiscount * (parseFloat(tax.rate) / 100);
+        totalTax += amount;
+        return { name: tax.name, rate: tax.rate, amount: amount };
+    });
+    const grandTotal = totalAfterDiscount + totalTax;
+    
+    const user = currentUser || window.currentUser;
+    if (!user) {
+        notify("User session invalid. Please login again.", "error");
+        btn.disabled = false;
+        btn.textContent = "Select Client to Proceed";
+        return;
+    }
+    const token = sessionStorage.getItem('authToken');
+    
+    try {
+        // 1. Create Transaction (Pending)
+        const txnRes = await fetch('/api/transactions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                userId: user.id,
+                storeLocation: user.store_location || 'Main',
+                total: grandTotal,
+                subtotal: subtotal,
+                discount: discountVal,
+                tax: totalTax,
+                taxBreakdown: taxBreakdown,
+                paymentMethod: 'credit',
+                items: cart,
+                status: 'pending',
+                promoCode: currentPromoCode,
+                customerId: selectedCreditCustomer.id
+            })
+        });
+        
+        const txnData = await txnRes.json();
+        
+        if (txnData.transactionId) {
+            // 2. Finalize Transaction (Updates Customer Balance)
+            await fetch(`/transactions/${txnData.transactionId}/finalize`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({
+                    paymentMethod: 'credit',
+                    receiptNumber: txnData.receiptNumber,
+                    customerId: selectedCreditCustomer.id
+                })
+            });
+            
+            // 3. Redirect to Receipt
+            customerChannel.postMessage({ type: 'TRANSACTION_COMPLETE' });
+            window.location.href = `receipt?id=${txnData.transactionId}`;
+        } else {
+            throw new Error("Failed to create transaction");
+        }
+    } catch (e) {
+        console.error(e);
+        notify("Error processing credit sale", "error");
+        btn.disabled = false;
+        btn.textContent = "Try Again";
+    }
+}
+
+window.onload = function() {
+    checkSessionAndShift();
+}
+
+/* ======================
+   PRODUCT MANAGEMENT
+   ====================== */
+
+// Refresh products from the server
+async function refreshProducts() {
+    console.log("Refreshing products...");
+    const scanResult = document.getElementById('scanResult');
+    scanResult.innerHTML = '🔄 Loading products...';
+    
+    // Also refresh taxes
+    try {
+        const token = sessionStorage.getItem('authToken');
+        const res = await fetch('/api/taxes/active', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            activeTaxes = await res.json();
+            console.log("Refreshed active taxes:", activeTaxes);
+            renderCart(); // Re-calculate totals with new taxes
+        }
+    } catch (e) { console.error("Error refreshing taxes", e); }
+
+    try {
+        const token = sessionStorage.getItem('authToken');
+        const response = await fetch('/products', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        // Ensure numeric values are actually numbers (Postgres returns decimals as strings)
+        products = data.map(p => ({
+            ...p,
+            price: parseFloat(p.price),
+            stock: parseInt(p.stock)
+        }));
+        console.log(`Successfully loaded ${products.length} products:`, products);
+        
+        // Show success message
+        scanResult.innerHTML = `✅ Loaded ${products.length} products`;
+        setTimeout(() => scanResult.innerHTML = '', 2000);
+        
+        return products;
+    } catch (error) {
+        console.error("Failed to load products:", error);
+        const errorMsg = "Failed to load products.";
+        scanResult.innerHTML = `❌ ${errorMsg}`;
+        notify(errorMsg, "error");
+        return [];
+    }
+}
+
+/* ======================
+   INITIALIZATION
+   ====================== */
+
+// Check session and shift status
+async function checkSessionAndShift() {
+    try {
+        const token = sessionStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = '/login';
+            return false;
+        }
+
+        const sessionRes = await fetch('/api/session', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!sessionRes.ok) {
+            window.location.href = '/';
+            return false;
+        }
+        
+        const { user } = await sessionRes.json();
+        
+        // Store user in global scope for other functions
+        window.currentUser = user;
+        currentUser = user;
+        
+        // Check for active shift
+        const shiftRes = await fetch('/api/shifts/active', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!shiftRes.ok) {
+            window.location.href = '/open-shift';
+            return false;
+        }
+        
+        const shiftData = await shiftRes.json();
+        if (!shiftData.active) {
+            window.location.href = '/open-shift';
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Session check error:', error);
+        window.location.href = '/';
+        return false;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', async function() {
+    // Check session and shift status first
+    const isAuthenticated = await checkSessionAndShift();
+    if (!isAuthenticated) return;
+    
+    // Load Active Taxes
+    try {
+        const token = sessionStorage.getItem('authToken');
+        const res = await fetch('/api/taxes/active', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            activeTaxes = await res.json();
+            console.log("Loaded active taxes:", activeTaxes);
+        } else {
+            // Fallback if no taxes defined or error
+            console.warn("Could not load taxes, defaulting to 0");
+            activeTaxes = [];
+        }
+    } catch (e) { console.error("Error loading taxes", e); }
+    
+    // Update User Info
+    const user = window.currentUser;
+    if (user) {
+        document.getElementById('userName').textContent = user.name || 'User';
+        const dropdownHeader = document.querySelector('.user-dropdown .header');
+        if (dropdownHeader) {
+            dropdownHeader.querySelector('strong').textContent = user.name;
+            dropdownHeader.querySelector('span').textContent = user.role;
+        }
+    }
+
+    // Initial load of products
+    refreshProducts().then(() => {
+        console.log('Initial product load complete');
+    }).catch(err => {
+        console.error('Error during initial product load:', err);
+    });
+    
+    // Setup hardware scanner detection
+    setupHardwareScanner();
+    
+
+
+    // Setup search suggestions
+    setupSearchSuggestions();
+    
+    // Add refresh button handler
+    document.getElementById('refreshProducts').addEventListener('click', refreshProducts);
+    
+    // Setup barcode input handling
+    const barcodeInput = document.getElementById('barcodeInput');
+    barcodeInput.focus();
+    barcodeInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            manualScan();
+        }
+    });
+
+    // Manager Token Input Enter Key
+    const tokenInput = document.getElementById('managerTokenInput');
+    if(tokenInput) {
+        tokenInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verifyManagerToken();
+            }
+        });
+    }
+
+    // Auto-refresh data when window regains focus (e.g. switching back from CEO Portal)
+    window.addEventListener('focus', () => {
+        refreshProducts();
+    });
+    updateParkedCount();
+
+    // Park Name Input Enter Key
+    const parkInput = document.getElementById('parkRefInput');
+    if(parkInput) {
+        parkInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                confirmParkOrder();
+            }
+        });
+    }
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', closeCameraScanner);
+window.addEventListener('unload', () => customerChannel.close());
+</script>
+
+<script>
+// Park/Unpark Logic
+function updateParkedCount() {
+    const count = parkedOrders.length;
+    const badge = document.getElementById('parkedCount');
+    if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'block' : 'none';
+    }
+}
+
+function parkOrder() {
+    if (cart.length === 0) return notify("Cart is empty", "error");
+    document.getElementById('parkRefInput').value = "Customer " + (parkedOrders.length + 1);
+    document.getElementById('parkNameModal').classList.add('active');
+    setTimeout(() => {
+        const input = document.getElementById('parkRefInput');
+        input.focus();
+        input.select();
+    }, 100);
+}
+
+function confirmParkOrder() {
+    const refInput = document.getElementById('parkRefInput').value.trim();
+    const ref = refInput || "Customer " + (parkedOrders.length + 1);
+
+    const order = {
+        id: Date.now(),
+        ref: ref,
+        cart: [...cart],
+        discountRate: discountRate,
+        promoCode: currentPromoCode,
+        timestamp: new Date().toISOString()
+    };
+    
+    parkedOrders.push(order);
+    localStorage.setItem('parkedOrders', JSON.stringify(parkedOrders));
+    
+    clearCart(); // This clears current cart
+    updateParkedCount();
+    logClientActivity('PARK_ORDER', { reference: ref, itemCount: order.cart.length });
+    document.getElementById('parkNameModal').classList.remove('active');
+    notify("Order parked successfully", "success");
+}
+
+function openParkedModal() {
+    renderParkedOrders();
+    document.getElementById('parkedModal').classList.add('active');
+}
+
+function renderParkedOrders() {
+    const list = document.getElementById('parkedOrdersList');
+    if (parkedOrders.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">No parked orders.</p>';
+        return;
+    }
+    
+    list.innerHTML = parkedOrders.map((order, index) => {
+        const total = order.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const date = new Date(order.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        return `
+            <div class="parked-item">
+                <div>
+                    <div style="font-weight:bold; color:#333;">${order.ref}</div>
+                    <div style="font-size:12px; color:#666;">${date} • ${order.cart.length} items • <strong>₵${total.toFixed(2)}</strong></div>
+                </div>
+                <div>
+                    <button onclick="retrieveOrder(${index})" class="parked-btn" style="background:#2e7d32;">Retrieve</button>
+                    <button onclick="discardOrder(${index})" class="parked-btn" style="background:#c62828;"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function retrieveOrder(index) {
+    if (cart.length > 0) {
+        if (!confirm("Current cart is not empty. Overwrite with parked order?")) return;
+    }
+    
+    const order = parkedOrders[index];
+    cart = order.cart;
+    discountRate = order.discountRate || 0;
+    currentPromoCode = order.promoCode || null;
+    
+    // Remove from parked
+    parkedOrders.splice(index, 1);
+    localStorage.setItem('parkedOrders', JSON.stringify(parkedOrders));
+    
+    renderCart();
+    updateParkedCount();
+    logClientActivity('RETRIEVE_PARKED_ORDER', { reference: order.ref });
+    document.getElementById('parkedModal').classList.remove('active');
+    notify("Order retrieved", "success");
+}
+
+function discardOrder(index) {
+    if(!confirm("Discard this parked order permanently?")) return;
+    const orderRef = parkedOrders[index].ref;
+    parkedOrders.splice(index, 1);
+    localStorage.setItem('parkedOrders', JSON.stringify(parkedOrders));
+    renderParkedOrders();
+    updateParkedCount();
+    logClientActivity('DISCARD_PARKED_ORDER', { reference: orderRef });
+}
+
+async function logClientActivity(action, details = {}) {
+    try {
+        const token = sessionStorage.getItem('authToken');
+        await fetch('/api/audit/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ action, details })
+        });
+    } catch (e) { console.error("Logging error", e); }
+}
+</script>
+
+</body>
+</html>

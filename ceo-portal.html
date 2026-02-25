@@ -1,0 +1,3551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint | CEO Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
+    <style>
+        /* Matching dashboard.html colors */
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+            --text-color: #333;
+            --light-text: #fff;
+            --gray-light: #f5f7fa;
+            --sidebar-width: 260px;
+            --success-color: #2e7d32;
+            --warning-color: #ef6c00;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--gray-light); display: flex; min-height: 100vh; }
+        body { background: var(--gray-light); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; transition: 0.3s; }
+        .brand { padding: 25px; font-size: 24px; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+        .nav-links { flex: 1; padding-top: 20px; }
+        .nav-item { display: flex; align-items: center; padding: 15px 25px; color: rgba(255,255,255,0.7); text-decoration: none; transition: 0.3s; font-size: 14px; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left: 4px solid var(--accent-color); }
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+        .nav-section { padding: 15px 25px 5px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; }
+        
+        /* Main Content */
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 30px 40px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
+        .header h1 { font-size: 24px; color: var(--primary-color); font-weight: 700; }
+        
+        .header-controls { display: flex; gap: 10px; align-items: center; }
+        .control-select { padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; color: #475569; font-size: 13px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.02); font-weight: 500; cursor: pointer; }
+        .btn-control { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .btn-white { background: white; border: 1px solid #e2e8f0; color: #475569; }
+        .btn-white:hover { background: #f8fafc; transform: translateY(-1px); }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26, 42, 108, 0.2); }
+
+        /* Tabs */
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* KPI Cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+        .kpi-card[onclick]:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+        }
+        .kpi-title { font-size: 13px; color: #888; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
+        .kpi-value { font-size: 28px; font-weight: 800; color: var(--primary-color); margin-bottom: 5px; }
+        .kpi-sub { font-size: 12px; color: var(--success-color); display: flex; align-items: center; gap: 5px; font-weight: 500; }
+        .kpi-sub.negative { color: #c62828; }
+        .kpi-icon { position: absolute; top: 20px; right: 20px; font-size: 24px; opacity: 0.1; color: var(--primary-color); }
+
+        /* Charts */
+        .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
+        .charts-grid.tri-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .chart-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-title { font-size: 16px; font-weight: 700; color: var(--primary-color); }
+        canvas { max-width: 100%; }
+
+        /* Risk Section */
+        .risk-section { background: #ffebee; border: 1px solid #ffcdd2; border-radius: 12px; padding: 15px 20px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px; }
+        .risk-icon { width: 40px; height: 40px; background: #c62828; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .risk-content { flex: 1; overflow: hidden; }
+        .risk-title { font-weight: 700; color: #b71c1c; font-size: 14px; }
+        .risk-text { font-size: 13px; color: #c62828; }
+
+        /* Tables */
+        .table-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; color: #888; font-weight: 600; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #eee; }
+        td { padding: 15px; border-bottom: 1px solid #eee; color: var(--text-color); font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .status-good { background: #e8f5e9; color: var(--success-color); }
+        .status-warn { background: #fff3e0; color: #ef6c00; }
+
+        /* AI & Goals Section */
+        .intelligence-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
+        
+        .ai-panel { background: linear-gradient(135deg, #fff, #f8fbff); border: 1px solid #e2e8f0; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .ai-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--primary-color); font-weight: 700; font-size: 16px; }
+        .ai-insight { display: flex; gap: 15px; margin-bottom: 15px; padding: 15px; background: white; border-radius: 10px; border-left: 4px solid var(--accent-color); box-shadow: 0 2px 5px rgba(0,0,0,0.02); align-items: flex-start; transition: transform 0.2s; }
+        .ai-insight:hover { transform: translateX(5px); }
+        .ai-insight i { color: var(--accent-color); margin-top: 3px; }
+        .ai-insight h4 { font-size: 14px; margin-bottom: 3px; color: #333; }
+        .ai-insight p { margin: 0; font-size: 13px; color: #666; line-height: 1.4; }
+
+        .goal-card { background: var(--primary-color); color: white; padding: 25px; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+        .goal-card::after { content: ''; position: absolute; top: 0; right: 0; width: 100px; height: 100%; background: rgba(255,255,255,0.05); transform: skewX(-20deg); pointer-events: none; }
+        .progress-bg { background: rgba(255,255,255,0.2); height: 8px; border-radius: 5px; margin: 20px 0 10px; overflow: hidden; }
+        .progress-fill { background: var(--accent-color); height: 100%; width: 0%; transition: width 1.5s ease; border-radius: 5px; }
+        .goal-stats { display: flex; justify-content: space-between; font-size: 13px; opacity: 0.9; }
+
+        /* Floating Action Button */
+        .fab-wrapper { position: fixed; bottom: 30px; right: 30px; z-index: 999; display: flex; flex-direction: column; gap: 15px; align-items: flex-end; }
+        .fab-main { width: 60px; height: 60px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); cursor: pointer; transition: 0.3s; border: none; }
+        .fab-main:hover { transform: scale(1.05); background: #15225a; }
+        .fab-item { display: flex; align-items: center; gap: 10px; opacity: 0; transform: translateY(20px); transition: 0.3s; pointer-events: none; }
+        .fab-wrapper:hover .fab-item { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .fab-btn { width: 45px; height: 45px; border-radius: 50%; background: white; color: var(--text-color); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; border: none; transition: 0.2s; }
+        .fab-btn:hover { background: #f8fafc; color: var(--primary-color); }
+        .fab-label { background: #333; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+        .modal-overlay.active { display: flex; }
+        .modal-container { background: white; width: 600px; max-width: 90%; border-radius: 16px; padding: 0; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; }
+        .modal-header { padding: 20px 30px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 18px; font-weight: 700; color: var(--primary-color); }
+        .close-modal { background: none; border: none; font-size: 20px; cursor: pointer; color: #94a3b8; transition: 0.2s; }
+        .close-modal:hover { color: #ef4444; }
+        .modal-body { padding: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
+        .form-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1); }
+        .modal-footer { padding: 20px 30px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 10px; }
+        .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; transition: 0.3s; }
+        .dot.active { background: var(--primary-color); width: 20px; border-radius: 10px; }
+
+        /* AI Modal Customization */
+        #aiModal {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            pointer-events: none;
+            justify-content: flex-end;
+            align-items: flex-end;
+            padding-bottom: 100px; /* Space for FAB */
+            padding-right: 30px;
+        }
+        #aiModal .modal-container {
+            pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        #aiModal.ai-minimized .modal-container { display: none !important; }
+
+        @media (max-width: 1200px) { .charts-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 1000px) { .intelligence-grid { grid-template-columns: 1fr; } }
+
+        /* Menu Grid for Approvals */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .menu-card {
+            background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center; cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: rgba(26, 42, 108, 0.1); }
+        .menu-card i { font-size: 40px; color: var(--primary-color); margin-bottom: 20px; transition: 0.3s; }
+        .menu-card:hover i { transform: scale(1.1); color: var(--secondary-color); }
+        .menu-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: #333; }
+        .menu-card p { font-size: 13px; color: #777; line-height: 1.5; }
+
+        .back-link { display: inline-flex; align-items: center; gap: 8px; color: #64748b; background: white; padding: 10px 20px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 600; margin-bottom: 25px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .back-link:hover { color: var(--primary-color); transform: translateX(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        /* Enhanced Search Box */
+        .search-container {
+            background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0;
+        }
+        .search-input {
+            flex: 1; border: none; font-size: 16px; padding: 10px; outline: none; color: #334155; background: transparent;
+        }
+        .search-icon {
+            font-size: 20px; color: #94a3b8;
+        }
+        .search-container:focus-within { border-color: var(--primary-color); box-shadow: 0 4px 20px rgba(26, 42, 108, 0.1); }
+
+        /* Footer */
+        footer {
+            margin-left: var(--sidebar-width);
+            padding: 0;
+            color: white;
+            font-size: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            margin-top: auto;
+            overflow: hidden;
+            white-space: nowrap;
+            line-height: 30px;
+        }
+        .footer-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: footer-scroll 30s linear infinite;
+        }
+        @keyframes footer-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Mobile Responsiveness */
+        .mobile-menu-btn { display: none; font-size: 20px; background: none; border: none; cursor: pointer; color: var(--text-color); margin-right: 15px; padding: 5px; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; backdrop-filter: blur(2px); }
+        
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 20px; width: 100%; }
+            .mobile-menu-btn { display: block; }
+            .sidebar-overlay.active { display: block; }
+            
+            footer { margin-left: 0; }
+            .header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .header-controls { width: 100%; flex-wrap: wrap; }
+            .control-select { flex: 1; }
+            
+            .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        }
+
+        @media (max-width: 600px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .charts-grid, .charts-grid.tri-grid { grid-template-columns: 1fr; }
+            .intelligence-grid { grid-template-columns: 1fr; }
+            .main-content { padding: 10px; }
+            .header h1 { font-size: 20px; }
+            .modal-container { width: 95%; margin: 10px; max-height: 90vh; }
+            
+            /* Adjust table for mobile */
+            .table-card { overflow-x: auto; }
+            table { min-width: 600px; } /* Force scroll on small screens */
+            
+            .fab-wrapper { bottom: 20px; right: 20px; }
+            
+            /* AI Modal on mobile */
+            #aiModal .modal-container { width: 100%; height: 100%; max-width: 100%; border-radius: 0; }
+            #aiModal { padding: 0; }
+        }
+
+        /* Tax Management Styles */
+        .tax-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; }
+        .tax-item:last-child { border-bottom: none; }
+        .tax-badge { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; align-items: flex-end; }
+        .filter-group { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar">
+        <div class="brand">
+            <img src="logo.png" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
+            <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                <span style="font-size: 20px; line-height: 1;">FOOTPRINT</span>
+                <span style="font-size: 10px; letter-spacing: 2px; color: var(--accent-color);">CEO PORTAL</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="javascript:void(0)" onclick="switchTab('overview')" class="nav-item active" id="nav-overview"><i class="fas fa-globe"></i> Overview</a>
+            <a href="javascript:void(0)" onclick="switchTab('operations-hub')" class="nav-item" id="nav-operations-hub"><i class="fas fa-cogs"></i> Operations</a>
+            <a href="javascript:void(0)" onclick="switchTab('admin-hub')" class="nav-item" id="nav-admin-hub"><i class="fas fa-user-shield"></i> Administration</a>
+        </div>
+        <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center;">
+            <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div>
+                <div style="font-weight: bold;">CEO</div>
+                <div style="font-size: 12px; opacity: 0.7;">Owner</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="margin-left: auto; cursor: pointer;" onclick="logout()" title="Logout"></i>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <div>
+                <h1 id="pageTitle">Executive Overview</h1>
+                <p style="color: #64748b; font-size: 14px; margin-top: 5px;">Real-time strategic insights and performance metrics.</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div style="display:flex; gap:5px; background:white; padding:5px; border-radius:8px; border:1px solid #e2e8f0;">
+                    <input type="date" id="analyticsStart" class="control-select" style="border:none; padding:5px; font-size:12px;">
+                    <input type="date" id="analyticsEnd" class="control-select" style="border:none; padding:5px; font-size:12px;">
+                </div>
+                <select id="globalBranchFilter" class="control-select" onchange="refreshActiveTab()">
+                    <option value="All Branches">All Branches</option>
+                </select>
+                <button class="btn-control btn-white" onclick="refreshActiveTab()"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+        </div>
+
+        <!-- Tab 1: Overview -->
+        <div id="tab-overview" class="tab-content active">
+            
+            <!-- AI & Goals -->
+            <div class="intelligence-grid">
+                <!-- AI Insights -->
+                <div class="ai-panel">
+                    <div class="ai-header"><i class="fas fa-robot"></i> AI Intelligence & Recommendations</div>
+                    <div id="aiInsightsList">
+                        <div class="ai-insight">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <div><h4>Analyzing Data...</h4><p>Please wait while we generate insights.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Goal -->
+                <div class="goal-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">Monthly Revenue Target</div>
+                        <button onclick="openTargetModal()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; transition:0.2s; position:relative; z-index:2;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'"><i class="fas fa-edit"></i> Edit</button>
+                    </div>
+                    <div style="font-size: 32px; font-weight: 700; margin-top: 5px;" id="currentRevenueDisplay">₵0.00</div>
+                    <div class="progress-bg"><div class="progress-fill" id="goalProgress" style="width: 0%"></div></div>
+                    <div class="goal-stats">
+                        <span>Progress: <span id="goalPercent">0%</span></span>
+                        <span style="cursor: pointer;" onclick="openTargetModal()" title="Edit Target">Target: <span id="goalTargetDisplay">₵50,000.00</span> <i class="fas fa-pencil-alt" style="font-size: 10px; margin-left: 5px;"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card" onclick="switchTab('overview')">
+                    <div class="kpi-title">Monthly Revenue</div>
+                    <div class="kpi-value" id="kpiRevenue">₵0.00</div>
+                    <div class="kpi-sub"><i class="fas fa-arrow-up"></i> Gross Sales</div>
+                    <i class="fas fa-wallet kpi-icon"></i>
+                </div>
+                <div class="kpi-card" onclick="switchTab('overview')">
+                    <div class="kpi-title">Monthly Net Profit</div>
+                    <div class="kpi-value" id="kpiProfit">₵0.00</div>
+                    <div class="kpi-sub"><i class="fas fa-check-circle"></i> After COGS & OpEx</div>
+                    <i class="fas fa-chart-pie kpi-icon"></i>
+                </div>
+                <div class="kpi-card" onclick="switchTab('branches')">
+                    <div class="kpi-title">Active Branches</div>
+                    <div class="kpi-value" id="kpiBranches">0</div>
+                    <div class="kpi-sub" style="color:#666;">Operational Locations</div>
+                    <i class="fas fa-store kpi-icon"></i>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Avg. Transaction</div>
+                    <div class="kpi-value" id="kpiAvgTxn">₵0.00</div>
+                    <div class="kpi-sub">Per Customer</div>
+                    <i class="fas fa-receipt kpi-icon"></i>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Total Headcount</div>
+                    <div class="kpi-value" id="kpiHeadcount">0</div>
+                    <div class="kpi-sub" id="kpiHeadcountSub">Across 0 Branches</div>
+                    <i class="fas fa-users kpi-icon"></i>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid" style="grid-template-columns: 1fr;">
+                <div class="chart-card">
+                    <div class="card-header">
+                        <div class="card-title">Revenue vs. Cost Trend</div>
+                    </div>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="card-header">
+                        <div class="card-title">Branch Contribution</div>
+                    </div>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="branchChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secondary Metrics: Top Products & Payment Mix -->
+            <div class="charts-grid tri-grid">
+                <div class="chart-card">
+                    <div class="card-header"><div class="card-title">Financial Breakdown</div></div>
+                    <div style="height: 150px; position: relative;">
+                        <canvas id="financialBreakdownChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="card-header"><div class="card-title">Top Selling Products (This Month)</div></div>
+                    <div style="height: 150px; position: relative;">
+                        <canvas id="topProductsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="card-header"><div class="card-title">Sales Channel Mix</div></div>
+                    <div style="height: 150px; position: relative;">
+                        <canvas id="paymentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Peak Hours & High Value -->
+            <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-top: 20px;">
+                <div class="chart-card">
+                    <div class="card-header"><div class="card-title">Peak Trading Hours (This Month)</div></div>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="peakHoursChart"></canvas>
+                    </div>
+                </div>
+                <div class="table-card" style="padding:0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header" style="padding: 20px 25px;"><div class="card-title">High-Value Sales (This Month)</div></div>
+                    <table style="margin:0;">
+                        <thead><tr><th>ID</th><th>Amount</th><th>Branch</th><th>Cashier</th><th>Time</th></tr></thead>
+                        <tbody id="highValueTxnBody"><tr><td colspan="5" style="text-align:center;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="charts-grid" style="grid-template-columns: repeat(2, 1fr); margin-top:20px;">
+                <div class="table-card">
+                    <div class="card-header"><div class="card-title">Top Selling Stocks</div></div>
+                    <table>
+                        <thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+                        <tbody id="dashboardTopSellingBody"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+                <div class="table-card">
+                    <div class="card-header"><div class="card-title">Slow Moving Stocks</div></div>
+                    <table>
+                        <thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+                        <tbody id="dashboardSlowMovingBody"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="table-card" style="margin-top: 20px;">
+                <div class="card-header"><div class="card-title">Staff Performance Summary</div></div>
+                <table>
+                    <thead><tr><th>Employee</th><th>Transactions</th><th>Sales Volume</th><th>Performance</th></tr></thead>
+                    <tbody id="dashboardStaffBody">
+                        <tr><td colspan="4" style="text-align:center;">Loading staff data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: Operations Hub (Menu) -->
+        <div id="tab-operations-hub" class="tab-content">
+            <div class="menu-grid">
+                <div class="menu-card" onclick="switchTab('approvals')">
+                    <i class="fas fa-credit-card"></i>
+                    <h3>Store Credit</h3>
+                    <p>Manage credit approvals and history.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('branches')">
+                    <i class="fas fa-building"></i>
+                    <h3>Branches</h3>
+                    <p>Branch performance and management.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('ops-bottlenecks')">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>Supply Chain Bottlenecks</h3>
+                    <p>View low stock items and reorder alerts.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('ops-suppliers')">
+                    <i class="fas fa-truck"></i>
+                    <h3>Suppliers</h3>
+                    <p>Manage supplier directory and contact info.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('ops-pos')">
+                    <i class="fas fa-file-invoice"></i>
+                    <h3>Purchase Orders</h3>
+                    <p>Track recent orders and receiving status.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('ops-performance')">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>Branch Performance</h3>
+                    <p>Compare top and lowest performing branches.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('ops-users')">
+                    <i class="fas fa-users-cog"></i>
+                    <h3>User Management</h3>
+                    <p>Manage system access and user roles.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('tax-management')">
+                    <i class="fas fa-percentage"></i>
+                    <h3>Tax Management</h3>
+                    <p>Configure VAT, NHIS, and levies.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Administration Hub (Menu) -->
+        <div id="tab-admin-hub" class="tab-content">
+            <div class="menu-grid">
+                <div class="menu-card" onclick="switchTab('settings')">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Security Settings</h3>
+                    <p>Manage MFA, session timeouts, and other security preferences.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('audit')">
+                    <i class="fas fa-history"></i>
+                    <h3>Audit Trail</h3>
+                    <p>View detailed system logs.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Approvals (Menu) -->
+        <div id="tab-approvals" class="tab-content">
+            <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+            <div class="menu-grid">
+                <div class="menu-card" onclick="switchTab('approvals-pending')">
+                    <i class="fas fa-hourglass-half"></i>
+                    <h3>Pending Approvals</h3>
+                    <p>Review and act on new credit customer requests.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('approvals-history')">
+                    <i class="fas fa-history"></i>
+                    <h3>Approval History</h3>
+                    <p>View past approval decisions and rejected applications.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Pending Approvals -->
+        <div id="tab-approvals-pending" class="tab-content">
+            <div onclick="switchTab('approvals')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Approvals</div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="pendingSearch" class="search-input" placeholder="Search pending approvals by name, branch, or manager..." onkeyup="filterPendingApprovals()">
+            </div>
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="card-title">Pending Credit Approvals</div>
+                    <button class="btn-control btn-white" onclick="loadPendingCreditApprovals()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <table>
+            <thead><tr><th>Client Name</th><th>Credit Limit</th><th>Requested By</th><th>Branch</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody id="pendingCreditTableBody">
+                        <tr><td colspan="6" style="text-align:center;">Loading approvals...</td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center;">
+                    <button class="btn-control btn-white" onclick="changePendingPage(-1)" id="btnPendingPrev" disabled style="padding: 5px 10px;">Previous</button>
+                    <span id="pendingPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                    <button class="btn-control btn-white" onclick="changePendingPage(1)" id="btnPendingNext" disabled style="padding: 5px 10px;">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Approval History -->
+        <div id="tab-approvals-history" class="tab-content">
+            <div onclick="switchTab('approvals')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Approvals</div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="historySearch" class="search-input" placeholder="Search approval history..." onkeyup="filterApprovalHistory()">
+            </div>
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="card-title">Approval History</div>
+                    <button class="btn-control btn-white" onclick="loadApprovalHistory()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <table>
+                    <thead><tr><th>Client Name</th><th>Credit Limit</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody id="historyCreditTableBody">
+                        <tr><td colspan="4" style="text-align:center;">Loading history...</td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center;">
+                    <button class="btn-control btn-white" onclick="changeHistoryPage(-1)" id="btnHistoryPrev" disabled style="padding: 5px 10px;">Previous</button>
+                    <span id="historyPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                    <button class="btn-control btn-white" onclick="changeHistoryPage(1)" id="btnHistoryNext" disabled style="padding: 5px 10px;">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Branches -->
+        <div id="tab-branches" class="tab-content">
+            <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="branchSearch" class="search-input" placeholder="Search branches..." onkeyup="filterBranches()">
+            </div>
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="card-title">Branch Management & Performance</div>
+                    <button class="btn-control btn-primary" onclick="openBranchModal()"><i class="fas fa-plus"></i> Add Branch</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Branch Name</th>
+                            <th>Location</th>
+                            <th>VAT Rate</th>
+                            <th>Transactions</th>
+                            <th>Revenue</th>
+                            <th>Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="branchTable">
+                        <tr><td colspan="5" style="text-align:center;">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 4: Operations & Supply Chain -->
+        <div id="tab-operations" class="tab-content">
+            <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-title">Inventory Health</div>
+                    <div class="kpi-value" id="opsKpiHealth">94%</div>
+                    <div class="kpi-sub">In-Stock Rate</div>
+                    <i class="fas fa-boxes kpi-icon"></i>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Fulfillment Time</div>
+                    <div class="kpi-value" id="opsKpiFulfillment">...</div>
+                    <div class="kpi-sub">Avg. Processing</div>
+                    <i class="fas fa-shipping-fast kpi-icon"></i>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Vendor SLAs</div>
+                    <div class="kpi-value" id="opsKpiSla">...</div>
+                    <div class="kpi-sub">Compliance Rate</div>
+                    <i class="fas fa-handshake kpi-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Supply Chain Bottlenecks -->
+        <div id="tab-ops-bottlenecks" class="tab-content">
+            <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="bottlenecksSearch" class="search-input" placeholder="Search bottlenecks..." onkeyup="filterOpsBottlenecks()">
+            </div>
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="card-title">Supply Chain Bottlenecks</div>
+                    <button class="btn-control btn-white" onclick="loadOpsBottlenecks()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <table>
+                    <thead><tr><th>Item Name</th><th>Stock Level</th><th>Reorder Level</th><th>Status</th></tr></thead>
+                    <tbody id="opsTableBody">
+                        <tr><td colspan="4" style="text-align:center;">Loading inventory data...</td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center;">
+                    <button class="btn-control btn-white" onclick="changeOpsPage('bottlenecks', -1)" id="btnBottlenecksPrev" disabled style="padding: 5px 10px;">Previous</button>
+                    <span id="bottlenecksPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                    <button class="btn-control btn-white" onclick="changeOpsPage('bottlenecks', 1)" id="btnBottlenecksNext" disabled style="padding: 5px 10px;">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Suppliers -->
+        <div id="tab-ops-suppliers" class="tab-content">
+            <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="suppliersSearch" class="search-input" placeholder="Search suppliers..." onkeyup="filterOpsSuppliers()">
+            </div>
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="card-title">Suppliers (by Branch)</div>
+                    <button class="btn-control btn-white" onclick="loadOpsSuppliers()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <table>
+                    <thead><tr><th>Supplier</th><th>Contact</th><th>Branch</th><th>Phone</th><th>Email</th></tr></thead>
+                    <tbody id="opsSuppliersBody"><tr><td colspan="5" style="text-align:center;">Loading suppliers...</td></tr></tbody>
+                </table>
+                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center;">
+                    <button class="btn-control btn-white" onclick="changeOpsPage('suppliers', -1)" id="btnSuppliersPrev" disabled style="padding: 5px 10px;">Previous</button>
+                    <span id="suppliersPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                    <button class="btn-control btn-white" onclick="changeOpsPage('suppliers', 1)" id="btnSuppliersNext" disabled style="padding: 5px 10px;">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Purchase Orders -->
+        <div id="tab-ops-pos" class="tab-content">
+            <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="posSearch" class="search-input" placeholder="Search purchase orders..." onkeyup="filterOpsPOs()">
+            </div>
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="card-title">Recent Purchase Orders</div>
+                    <button class="btn-control btn-white" onclick="loadOpsPOs()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <table>
+                    <thead><tr><th>PO #</th><th>Supplier</th><th>Branch</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="opsPOsBody"><tr><td colspan="6" style="text-align:center;">Loading purchase orders...</td></tr></tbody>
+                </table>
+                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center; border-top: 1px solid #eee; margin-top: 15px;">
+                    <span style="font-size: 13px; color: #666;">Rows per page:</span>
+                    <select id="opsPOsRowsPerPage" class="control-select" onchange="changeOpsPOsRowsPerPage()" style="padding: 5px 10px;">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span id="posPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                    <button class="btn-control btn-white" onclick="changeOpsPage('pos', -1)" id="btnPOsPrev" disabled="" style="padding: 5px 10px;"><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn-control btn-white" onclick="changeOpsPage('pos', 1)" id="btnPOsNext" disabled="" style="padding: 5px 10px;"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Branch Performance -->
+        <div id="tab-ops-performance" class="tab-content">
+            <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+            
+            <!-- Branch KPIs -->
+            <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+                <div class="kpi-card">
+                    <div class="kpi-title">Total Network Revenue</div>
+                    <div class="kpi-value" id="perfTotalRevenue">₵0.00</div>
+                    <i class="fas fa-globe kpi-icon"></i>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Total Transactions</div>
+                    <div class="kpi-value" id="perfTotalTxns">0</div>
+                    <i class="fas fa-receipt kpi-icon"></i>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Top Performer</div>
+                    <div class="kpi-value" id="perfTopBranch" style="font-size: 20px;">-</div>
+                    <div class="kpi-sub" id="perfTopBranchRev">₵0.00</div>
+                    <i class="fas fa-trophy kpi-icon"></i>
+                </div>
+            </div>
+
+            <div class="charts-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="chart-card">
+                    <div class="card-header"><div class="card-title">Revenue Share by Branch</div></div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="opsRevenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="card-header"><div class="card-title">Performance Matrix (Rev vs. Txns)</div></div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="opsTxnChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card" style="margin-top: 20px;">
+                <div class="card-header"><div class="card-title">Detailed Branch Rankings</div></div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Branch Name</th>
+                            <th>Revenue</th>
+                            <th>Transactions</th>
+                            <th>Avg. Ticket</th>
+                            <th>Contribution</th>
+                        </tr>
+                    </thead>
+                    <tbody id="branchPerformanceTableBody">
+                        <tr><td colspan="6" style="text-align:center;">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: User Management -->
+        <div id="tab-ops-users" class="tab-content">
+            <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="usersSearch" class="search-input" placeholder="Search users..." onkeyup="filterUsers()">
+            </div>
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="card-title">User Management & Access Control</div>
+                    <button style="background:var(--primary-color); color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer;" onclick="openManagerModal()">+ Invite Executive</button>
+                </div>
+                <table>
+                    <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Store</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="usersTableBody">
+                        <!-- Live Data -->
+                        <tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center; border-top: 1px solid #eee; margin-top: 15px;">
+                    <span style="font-size: 13px; color: #666;">Rows per page:</span>
+                    <select id="usersRowsPerPage" class="control-select" onchange="changeUsersRowsPerPage()" style="padding: 5px 10px;">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span id="usersPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                    <button class="btn-control btn-white" onclick="changeUsersPage(-1)" id="btnUsersPrev" disabled="" style="padding: 5px 10px;"><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn-control btn-white" onclick="changeUsersPage(1)" id="btnUsersNext" disabled="" style="padding: 5px 10px;"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Tax Management -->
+        <div id="tab-tax-management" class="tab-content">
+            <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
+            
+            <div class="grid-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <!-- Left Column: Configuration -->
+                <div class="card" style="margin-bottom: 0; padding: 25px; background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header">
+                        <div class="card-title">Add New Tax Rule</div>
+                    </div>
+                    <form onsubmit="handleAddTax(event)">
+                        <div class="form-group">
+                            <label class="form-label">Tax Name</label>
+                            <input type="text" id="newTaxName" class="form-input" placeholder="e.g. NHIS Levy" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rate (%)</label>
+                            <input type="number" id="newTaxRate" class="form-input" placeholder="2.5" step="0.01" required>
+                        </div>
+                        <button type="submit" class="btn-control btn-primary" style="width:100%; justify-content: center;">Add Rule</button>
+                    </form>
+                </div>
+
+                <div class="card" style="margin-bottom: 0; padding: 25px; background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header">
+                        <div class="card-title">Active Tax Rules</div>
+                    </div>
+                    <div id="taxList">
+                        <p style="text-align:center; color:#666; padding:20px;">Loading taxes...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Width Reporting Card -->
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="card-title">Tax Liability Report</div>
+                </div>
+                
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" id="reportStart" class="form-input">
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">End Date</label>
+                        <input type="date" id="reportEnd" class="form-input">
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">Branch</label>
+                        <select id="reportBranch" class="form-input">
+                            <option value="All Branches">All Branches</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 2px;">
+                        <button onclick="generateReport()" class="btn-control btn-primary" style="width: auto; padding: 10px 25px;"><i class="fas fa-search"></i> Generate</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table id="reportTable">
+                        <thead>
+                            <tr>
+                                <th>Branch</th>
+                                <th>Gross Sales</th>
+                                <th>Net Sales</th>
+                                <th>Total Tax</th>
+                                <!-- Dynamic Tax Headers will go here -->
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody">
+                            <tr><td colspan="4" style="text-align:center; padding:30px; color:#666;">Select filters and click Generate to view report.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 10: Settings & Access Control -->
+        <div id="tab-settings" class="tab-content">
+            <div onclick="switchTab('admin-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Administration</div>
+
+            <div class="card-header"><div class="card-title">Change Password</div></div>
+            <div style="background:white; padding:30px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.05); max-width: 600px;">
+                <form onsubmit="updateCeoPassword(event)">
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" id="ceoCurrentPass" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" id="ceoNewPass" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" id="ceoConfirmPass" class="form-input" required>
+                    </div>
+                    <button type="submit" class="btn-control btn-primary" style="width:100%; justify-content: center;">Update Password</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab 11: Audit Trail -->
+        <div id="tab-audit" class="tab-content">
+            <div onclick="switchTab('admin-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Administration</div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="auditSearch" class="search-input" placeholder="Search system logs..." onkeyup="filterAuditLogs()">
+            </div>
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="card-title">System Audit Logs</div>
+                    <button class="btn-control btn-white" onclick="loadAuditLogs()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Details</th><th>IP</th></tr>
+                    </thead>
+                    <tbody id="auditTableBody">
+                        <tr><td colspan="6" style="text-align:center;">Loading logs...</td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center; border-top: 1px solid #eee; margin-top: 15px;">
+                    <span style="font-size: 13px; color: #666;">Rows per page:</span>
+                    <select id="auditRowsPerPage" class="control-select" onchange="changeAuditRowsPerPage()" style="padding: 5px 10px;">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span id="auditPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                    <button class="btn-control btn-white" onclick="changeAuditPage(-1)" id="btnAuditPrev" disabled="" style="padding: 5px 10px;"><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn-control btn-white" onclick="changeAuditPage(1)" id="btnAuditNext" disabled="" style="padding: 5px 10px;"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="fab-wrapper">
+            <button class="fab-main" onclick="handleAiFabClick()" title="Business AI Assistant"><i class="fas fa-robot"></i></button>
+        </div>
+
+        <!-- Customer Details Modal -->
+        <div id="customerDetailsModal" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">Customer Details</div>
+                    <button class="close-modal" onclick="closeCustomerDetailsModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body" id="customerDetailsBody">
+                    <!-- Content populated by JS -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-control btn-white" onclick="closeCustomerDetailsModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Branch Modal -->
+        <div id="branchModal" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">Manage Branch</div>
+                    <button class="close-modal" onclick="closeBranchModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="branchId">
+                    <div class="form-group"><label class="form-label">Branch Name</label><input type="text" id="branchName" class="form-input" placeholder="e.g. Kumasi Branch"></div>
+                    <div class="form-group"><label class="form-label">Location</label><input type="text" id="branchLocation" class="form-input" placeholder="e.g. Adum, Kumasi"></div>
+                    <div class="form-group"><label class="form-label">VAT Rate (%)</label><input type="number" id="branchVat" class="form-input" placeholder="15.0" step="0.1"></div>
+                    <div class="form-group" style="background:#fff3e0; padding:10px; border-radius:8px; font-size:12px; color:#ef6c00;">
+                        <i class="fas fa-info-circle"></i> Setting VAT here updates the system settings for this branch immediately.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-control btn-white" onclick="closeBranchModal()">Cancel</button>
+                    <button class="btn-control btn-primary" onclick="saveBranch()">Save Branch</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manager Creation Modal -->
+        <div id="managerModal" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">Create New Manager</div>
+                    <button class="close-modal" onclick="closeManagerModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="mgrName" class="form-input" placeholder="e.g. Sarah Osei">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" id="mgrEmail" class="form-input" placeholder="sarah@footprint.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assigned Branch</label>
+                        <select id="mgrBranch" class="form-input">
+                            <option value="">Loading branches...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Initial Password</label>
+                        <input type="text" id="mgrPassword" class="form-input" value="Footprint123!" readonly style="background-color: #f9f9f9; cursor: not-allowed;">
+                        <small style="color: #666; font-size: 12px; margin-top: 5px;">Default password for new managers.</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Permissions</label>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <label><input type="checkbox" checked> Hiring</label>
+                            <label><input type="checkbox" checked> Discounts</label>
+                            <label><input type="checkbox"> Inventory Audit</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-control btn-white" onclick="closeManagerModal()">Cancel</button>
+                    <button class="btn-control btn-primary" onclick="createManager()">Create Manager</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit User Modal -->
+        <div id="editUserModal" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">Edit User</div>
+                    <button class="close-modal" onclick="closeEditUserModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editUserId">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="editName" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" id="editUsername" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="editEmail" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="text" id="editPhone" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <select id="editRole" class="form-input">
+                            <option value="cashier">Cashier</option>
+                            <option value="manager">Manager</option>
+                            <option value="admin">Admin</option>
+                            <option value="ceo">CEO</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assigned Branch</label>
+                        <select id="editStore" class="form-input">
+                            <option value="">Select Branch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-control btn-white" onclick="closeEditUserModal()">Cancel</button>
+                    <button class="btn-control btn-primary" onclick="saveUserChanges()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View PO Modal -->
+        <div id="opsViewPOModal" class="modal-overlay">
+            <div class="modal-container" style="width: 700px;">
+                <div class="modal-header">
+                    <div class="modal-title">Purchase Order Details</div>
+                    <button class="close-modal" onclick="closeOpsPOModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+                        <div>
+                            <div style="font-size: 12px; color: #64748b;">PO Number</div>
+                            <div style="font-weight: 600; font-size: 16px;" id="opsViewPOId">#</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #64748b;">Status</div>
+                            <div id="opsViewPOStatus"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #64748b;">Supplier</div>
+                            <div style="font-weight: 600;" id="opsViewPOSupplier"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #64748b;">Date</div>
+                            <div style="font-weight: 600;" id="opsViewPODate"></div>
+                        </div>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                        <thead>
+                            <tr style="background:#f1f5f9; border-bottom:1px solid #e2e8f0;">
+                                <th style="padding:10px; text-align:left;">Product</th>
+                                <th style="padding:10px; text-align:center;">Qty</th>
+                                <th style="padding:10px; text-align:right;">Unit Cost</th>
+                                <th style="padding:10px; text-align:right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="opsViewPOItems"></tbody>
+                        <tfoot>
+                            <tr style="border-top:2px solid #e2e8f0;">
+                                <td colspan="3" style="text-align:right; padding:15px; font-weight:bold;">Total Amount:</td>
+                                <td style="text-align:right; padding:15px; font-weight:bold; color:var(--primary-color); font-size:16px;" id="opsViewPOTotal"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-control btn-white" onclick="closeOpsPOModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Target Modal -->
+        <div id="targetModal" class="modal-overlay">
+            <div class="modal-container" style="width: 400px;">
+                <div class="modal-header">
+                    <div class="modal-title">Set Revenue Target</div>
+                    <button class="close-modal" onclick="closeTargetModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Monthly Target (₵)</label>
+                        <input type="number" id="newTargetInput" class="form-input" placeholder="50000">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-control btn-white" onclick="closeTargetModal()">Cancel</button>
+                    <button class="btn-control btn-primary" onclick="saveRevenueTarget()">Save Target</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Assistant Modal -->
+        <div id="aiModal" class="modal-overlay">
+            <div class="modal-container" style="width: 400px; height: 550px; display: flex; flex-direction: column;">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border-radius: 16px 16px 0 0;" onclick="if(document.getElementById('aiModal').classList.contains('ai-minimized')) toggleAiMinimize(event)">
+                    <div class="modal-title" style="color: white; display: flex; align-items: center; gap: 10px;"><i class="fas fa-robot"></i> Business AI</div>
+                    <div>
+                        <button class="close-modal" id="btnAiMinimize" onclick="toggleAiMinimize(event)" style="color: white; margin-right: 10px;" title="Minimize"><i class="fas fa-minus"></i></button>
+                        <button class="close-modal" onclick="closeAiModal(event)" style="color: white;" title="Close"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div class="modal-body" style="flex: 1; overflow-y: auto; background: #f8f9fa; padding: 20px;" id="aiChatBody">
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 35px; height: 35px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;"><i class="fas fa-robot"></i></div>
+                        <div style="background: white; padding: 10px 15px; border-radius: 0 15px 15px 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); max-width: 80%; font-size: 14px; line-height: 1.5;">
+                            Hello! I'm your Business AI. Ask me about sales trends, inventory status, or strategic recommendations.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding: 15px; background: white; border-top: 1px solid #eee;">
+                    <div style="display: flex; gap: 10px; width: 100%;">
+                        <input type="text" id="aiInput" class="form-input" placeholder="Ask a question..." onkeypress="handleAiInput(event)" style="border-radius: 20px;">
+                        <button class="btn-control btn-primary" onclick="sendAiMessage()" style="background: var(--primary-color); border: none; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tax Management Modal -->
+        <div id="taxModal" class="modal-overlay">
+            <div class="modal-container" style="width: 500px;">
+                <div class="modal-header">
+                    <div class="modal-title">Tax Configuration</div>
+                    <button class="close-modal" onclick="document.getElementById('taxModal').classList.remove('active')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <!-- List of Existing Taxes -->
+                    <div id="taxList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                        <p>Loading taxes...</p>
+                    </div>
+
+                    <!-- Add New Tax Form -->
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border-top: 2px solid #1a2a6c;">
+                        <h3 style="margin-top: 0; font-size: 16px; margin-bottom: 10px;">Add New Tax Rule</h3>
+                        <form onsubmit="handleAddTax(event)" style="display: flex; gap: 10px; align-items: flex-end;">
+                            <div style="flex: 2;">
+                                <label style="display: block; font-size: 12px; margin-bottom: 5px;">Name (e.g. NHIS)</label>
+                                <input type="text" id="newTaxName" class="form-input" required placeholder="Tax Name">
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="display: block; font-size: 12px; margin-bottom: 5px;">Rate (%)</label>
+                                <input type="number" id="newTaxRate" class="form-input" step="0.01" required placeholder="%">
+                            </div>
+                            <button type="submit" class="btn-control btn-primary">Add</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmationModal" class="modal-overlay">
+            <div class="modal-container" style="width: 400px;">
+                <div class="modal-header">
+                    <div class="modal-title" id="confirmTitle">Confirm Action</div>
+                    <button class="close-modal" onclick="closeConfirmationModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmMessage" style="color: #64748b; font-size: 14px; line-height: 1.5;">Are you sure?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-control btn-white" onclick="closeConfirmationModal()">Cancel</button>
+                    <button class="btn-control btn-primary" id="confirmActionBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            &copy; 2026 Footprint Retail Systems. All rights reserved. &nbsp;&nbsp;&bull;&nbsp;&nbsp; System Status: Operational &nbsp;&nbsp;&bull;&nbsp;&nbsp; Real-time Data Active &nbsp;&nbsp;&bull;&nbsp;&nbsp; Contact Support: 055-555-5555
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', initPortal);
+
+        let allPortalUsers = [];
+        let filteredPortalUsers = [];
+        let usersCurrentPage = 1;
+        let usersRowsPerPage = 10;
+
+        let branchChartInstance = null;
+        let trendChartInstance = null;
+        let paymentChartInstance = null;
+        let financialChartInstance = null;
+        let topProductsChartInstance = null;
+        let peakHoursChartInstance = null;
+        let pendingCustomersData = [];
+        let approvalHistoryData = [];
+        let allBranches = [];
+        let allBranchPerf = [];
+        let filteredBranches = [];
+        
+        // Pagination State
+        let pendingCurrentPage = 1;
+        let historyCurrentPage = 1;
+        const ITEMS_PER_PAGE = 10;
+        let pendingFilteredData = [];
+        let historyFilteredData = [];
+
+        // Ops Pagination State
+        let opsBottlenecksData = [];
+        let filteredOpsBottlenecksData = [];
+        let opsSuppliersData = [];
+        let filteredOpsSuppliersData = [];
+        let opsPOsData = [];
+        let filteredOpsPOsData = [];
+        
+        // Audit Pagination State
+        let auditLogsData = [];
+        let filteredAuditLogsData = [];
+        let auditCurrentPage = 1;
+        let auditRowsPerPage = 10;
+
+        let opsBottlenecksPage = 1;
+        let opsSuppliersPage = 1;
+        let opsPOsPage = 1;
+        let opsPOsRowsPerPage = 10;
+
+        let opsRevenueChartInstance = null;
+        let opsTxnChartInstance = null;
+
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // Show selected tab
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            // Update Nav
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            // Determine active nav item based on groups
+            let navId = 'nav-overview';
+            const opsTabs = ['operations-hub', 'approvals', 'approvals-pending', 'approvals-history', 'branches', 'operations', 'ops-bottlenecks', 'ops-suppliers', 'ops-pos', 'ops-performance', 'ops-users', 'tax-management'];
+            const adminTabs = ['admin-hub', 'settings', 'audit'];
+
+            if (opsTabs.includes(tabId)) navId = 'nav-operations-hub';
+            else if (adminTabs.includes(tabId)) navId = 'nav-admin-hub';
+
+            const navItem = document.getElementById(navId);
+            if(navItem) navItem.classList.add('active');
+
+            // Update Title
+            const titles = {
+                'overview': 'Executive Overview',
+                'operations-hub': 'Operations & Credit',
+                'admin-hub': 'Administration',
+                'approvals': 'Credit Approvals',
+                'approvals-pending': 'Pending Approvals',
+                'approvals-history': 'Approval History',
+                'branches': 'Branch Analytics',
+                'operations': 'Operations Hub',
+                'ops-bottlenecks': 'Supply Chain Bottlenecks',
+                'ops-suppliers': 'Supplier Directory',
+                'ops-pos': 'Purchase Orders',
+                'ops-performance': 'Branch Performance Rankings',
+                'ops-users': 'User Management',
+                'tax-management': 'Tax Management & Reporting',
+                'settings': 'Security Settings',
+                'users': 'User Management & Access Control',
+                'audit': 'System Audit Trail'
+            };
+            document.getElementById('pageTitle').textContent = titles[tabId] || 'CEO Portal';
+
+            // Close sidebar on mobile when a tab is selected
+            if (window.innerWidth <= 992) {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            }
+
+            // Lazy Load Data
+            if (tabId === 'approvals-pending') loadPendingCreditApprovals();
+            if (tabId === 'approvals-history') loadApprovalHistory();
+            if (tabId === 'ops-users') loadUsers();
+            if (tabId === 'operations') loadOpsKPIs();
+            if (tabId === 'ops-bottlenecks') loadOpsBottlenecks();
+            if (tabId === 'ops-suppliers') loadOpsSuppliers();
+            if (tabId === 'ops-pos') loadOpsPOs();
+            if (tabId === 'ops-performance') loadOpsPerformance();
+            if (tabId === 'audit') loadAuditLogs();
+            if (tabId === 'branches') loadBranches();
+            if (tabId === 'tax-management') {
+                loadTaxes();
+                // Populate branch dropdown for report if empty
+                const select = document.getElementById('reportBranch');
+                if (select && select.options.length <= 1) {
+                    allBranches.forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b.location || b.name;
+                        opt.textContent = b.name;
+                        select.appendChild(opt);
+                    });
+                }
+                // Set default dates if empty
+                if (!document.getElementById('reportStart').value) {
+                    const now = new Date();
+                    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                    document.getElementById('reportStart').valueAsDate = firstDay;
+                    document.getElementById('reportEnd').valueAsDate = now;
+                    generateReport();
+                }
+            }
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'r') { e.preventDefault(); initPortal(); showToast('Refreshing data...'); }
+            if (e.ctrlKey && e.key === 'm') { e.preventDefault(); openManagerModal(); }
+        });
+
+        // Auto Refresh (5 mins)
+        setInterval(() => { initPortal(); }, 300000);
+
+        function refreshActiveTab() {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                const tabId = activeTab.id.replace('tab-', '');
+                if (tabId === 'overview') initPortal();
+                else if (tabId === 'operations') loadOpsKPIs();
+                else if (tabId === 'ops-bottlenecks') loadOpsBottlenecks();
+                else if (tabId === 'ops-suppliers') loadOpsSuppliers();
+                else if (tabId === 'ops-pos') loadOpsPOs();
+                else if (tabId === 'ops-performance') loadOpsPerformance();
+                else if (tabId === 'ops-users') loadUsers();
+            }
+        }
+
+        async function initPortal() {
+            try {
+                const token = sessionStorage.getItem('authToken');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // Get selected branch filter
+                const selectedBranch = document.getElementById('globalBranchFilter').value;
+                
+                // Get date filters
+                const startDate = document.getElementById('analyticsStart').value;
+                const endDate = document.getElementById('analyticsEnd').value;
+
+                let queryParams = `branch=${encodeURIComponent(selectedBranch)}`;
+                if (startDate && endDate) queryParams += `&startDate=${startDate}&endDate=${endDate}`;
+
+                // 1. Load Financials
+                const [finRes, branchPerfRes] = await Promise.all([
+                    fetch(`/api/ceo/financials?${queryParams}`, { headers: { 'Authorization': `Bearer ${token}` }}),
+                    fetch(`/api/ceo/branches?${queryParams}`, { headers: { 'Authorization': `Bearer ${token}` }})
+                ]);
+                
+                if (finRes.ok && branchPerfRes.ok) {
+                    const fin = await finRes.json();
+                    const branchPerf = await branchPerfRes.json();
+                    const revenue = fin.revenue || 0;
+                    const netProfit = fin.netProfit || 0;
+                    const assetValue = fin.assetValue || 0;
+                    const opex = fin.opex || 0;
+                    const branches = fin.branchCount || 0;
+
+                    document.getElementById('kpiRevenue').textContent = `₵${revenue.toLocaleString()}`;
+                    document.getElementById('kpiProfit').textContent = `₵${netProfit.toLocaleString()}`;
+                    document.getElementById('kpiBranches').textContent = branches;
+
+                    // Update Headcount Subtitle
+                    const headcountSub = document.getElementById('kpiHeadcountSub');
+                    if(headcountSub) headcountSub.textContent = `Across ${branches} Branches`;
+
+                    // Calculate Avg Txn
+                    let relevantPerf = branchPerf;
+                    if (selectedBranch && selectedBranch !== 'All Branches') {
+                        relevantPerf = branchPerf.filter(b => (b.branch || b.name) === selectedBranch);
+                    }
+                    const totalTxns = relevantPerf.reduce((sum, b) => sum + (parseInt(b.txn_count) || 0), 0);
+                    const avgTxn = totalTxns > 0 ? revenue / totalTxns : 0;
+                    
+                    document.getElementById('kpiAvgTxn').textContent = `₵${avgTxn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    
+                    // Update Goal Tracker
+                    updateGoalTracker(revenue, fin.target || 50000);
+
+                    // Render New Widgets
+                    renderTopProducts(fin.topProducts || []);
+                    renderPaymentChart(fin.paymentStats || []);
+                    
+                    // Render Stock Tables
+                    renderStockTables(fin.topProducts || [], fin.slowMoving || []);
+
+                    // Render Financial Breakdown Chart
+                    const cogs = fin.cogs || (revenue * 0.7);
+                    renderFinancialChart(cogs, opex, netProfit);
+
+                    // Load New Sections
+                    loadPeakHours();
+                    loadHighValueTxns();
+
+                    // Generate AI Insights
+                    generateAIInsights(fin);
+
+                    // Load Ops KPI (Inventory Value)
+                    // document.getElementById('kpiInventoryValue').textContent = `₵${fin.assetValue.toLocaleString()}`;
+                }
+
+                // 2. Load Branch Data
+                await loadBranches();
+
+                // 4. Render Trend Chart
+                renderTrendChart();
+                loadPeople();
+                
+            } catch (e) {
+                console.error("Portal Init Error:", e);
+                if (e.message === 'Unauthorized') {
+                    alert("Session expired or unauthorized.");
+                    window.location.href = '/login';
+                }
+            }
+        }
+
+        async function loadBranches() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const startDate = document.getElementById('analyticsStart').value;
+                const endDate = document.getElementById('analyticsEnd').value;
+                let queryParams = '';
+                if (startDate && endDate) queryParams = `?startDate=${startDate}&endDate=${endDate}`;
+
+                // Fetch full branch details including VAT
+                const res = await fetch('/api/branches', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    allBranches = await res.json();
+                    // Also fetch performance data to merge
+                    
+                    // Populate Filter if empty
+                    const filter = document.getElementById('globalBranchFilter');
+                    if (filter.options.length <= 1) {
+                        allBranches.forEach(b => {
+                            const opt = document.createElement('option');
+                            opt.value = b.location || b.name;
+                            opt.textContent = b.name;
+                            filter.appendChild(opt);
+                        });
+                    }
+
+                    const perfRes = await fetch(`/api/ceo/branches${queryParams}`, { headers: { 'Authorization': `Bearer ${token}` }});
+                    allBranchPerf = perfRes.ok ? await perfRes.json() : [];
+                    filteredBranches = [...allBranches];
+                    
+                    renderBranchTable();
+                    renderBranchChart(allBranchPerf);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function filterBranches() {
+            const query = document.getElementById('branchSearch').value.toLowerCase();
+            filteredBranches = allBranches.filter(b => 
+                b.name.toLowerCase().includes(query) || 
+                (b.location && b.location.toLowerCase().includes(query))
+            );
+            renderBranchTable();
+        }
+
+        function renderBranchTable() {
+            const tbody = document.getElementById('branchTable');
+            tbody.innerHTML = filteredBranches.map(b => {
+                const perf = allBranchPerf.find(p => p.branch === b.location || p.branch === b.name) || { txn_count: 0, revenue: 0 };
+                return `
+                <tr>
+                    <td style="font-weight:600; color:var(--primary-color);">${b.name}</td>
+                    <td>${b.location || '-'}</td>
+                    <td>${b.vat_rate}%</td>
+                    <td>${perf.txn_count || 0}</td>
+                    <td style="font-weight:600;">₵${parseFloat(perf.revenue || 0).toLocaleString()}</td>
+                    <td>
+                        <button class="btn-control btn-white" style="padding:4px 10px; font-size:11px;" onclick="editBranch(${b.id})">Edit / Set VAT</button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        function updateGoalTracker(current, target) {
+            document.getElementById('currentRevenueDisplay').textContent = `₵${current.toLocaleString()}`;
+            const percent = Math.min((current / target) * 100, 100).toFixed(1);
+            document.getElementById('goalProgress').style.width = `${percent}%`;
+            document.getElementById('goalPercent').textContent = `${percent}%`;
+            document.getElementById('goalTargetDisplay').textContent = `₵${target.toLocaleString()}`;
+        }
+
+        function generateAIInsights(fin) {
+            const container = document.getElementById('aiInsightsList');
+            const insights = [];
+
+            // Logic 1: Profitability
+            if (fin.netProfit > 0) {
+                insights.push({
+                    icon: 'fa-arrow-trend-up',
+                    title: 'Profitable Month',
+                    text: `Net profit is healthy at ₵${fin.netProfit.toLocaleString()}. Consider reinvesting 10% into marketing for the upcoming holiday season.`
+                });
+            } else {
+                insights.push({
+                    icon: 'fa-exclamation-circle',
+                    title: 'Profit Warning',
+                    text: 'Operational expenses are eating into revenue. Review utility and staffing costs immediately.'
+                });
+            }
+
+            // Logic 2: Expense Ratio
+            const expenseRatio = fin.revenue > 0 ? (fin.opex / fin.revenue) : 0;
+            if (expenseRatio > 0.3) {
+                insights.push({
+                    icon: 'fa-wallet',
+                    title: 'High OpEx Detected',
+                    text: `Expenses are ${expenseRatio.toFixed(2) * 100}% of revenue. Industry standard is ~20%. Audit recurring payments.`
+                });
+            }
+
+            // Logic 3: Mock Forecast
+            insights.push({
+                icon: 'fa-chart-line',
+                title: 'Sales Forecast',
+                text: 'Based on current velocity, you are projected to hit ₵62,000 by month-end, exceeding the target by 24%.'
+            });
+
+            container.innerHTML = insights.map(i => `
+                <div class="ai-insight">
+                    <i class="fas ${i.icon}"></i>
+                    <div><h4>${i.title}</h4><p>${i.text}</p></div>
+                </div>
+            `).join('');
+        }
+
+        function renderBranchChart(branches) {
+            if (branchChartInstance) {
+                branchChartInstance.destroy();
+            }
+            
+            branchChartInstance = new Chart(document.getElementById('branchChart'), {
+                type: 'line',
+                data: {
+                    labels: branches.map(b => b.branch),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: branches.map(b => b.revenue),
+                        borderColor: '#1a2a6c',
+                        backgroundColor: 'rgba(26, 42, 108, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) label += '₵' + parseFloat(context.parsed.y).toLocaleString();
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { borderDash: [2, 2] },
+                            ticks: { callback: function(value) { return '₵' + value.toLocaleString(); } }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTopProducts(products) {
+            if (topProductsChartInstance) topProductsChartInstance.destroy();
+
+            const labels = products.map(p => p.name);
+            const data = products.map(p => parseFloat(p.revenue));
+            const colors = ['#1a2a6c', '#b21f1f', '#fdbb2d', '#2e7d32', '#ef6c00'];
+
+            topProductsChartInstance = new Chart(document.getElementById('topProductsChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        async function loadPeakHours() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/ceo/analytics/peak-hours', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    const data = await res.json();
+                    
+                    // Process data for 24h format
+                    const hours = Array.from({length: 24}, (_, i) => i);
+                    const counts = hours.map(h => {
+                        const found = data.find(d => parseInt(d.hour) === h);
+                        return found ? parseInt(found.count) : 0;
+                    });
+
+                    if (peakHoursChartInstance) peakHoursChartInstance.destroy();
+                    
+                    peakHoursChartInstance = new Chart(document.getElementById('peakHoursChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: hours.map(h => `${h}:00`),
+                            datasets: [{
+                                label: 'Transactions',
+                                data: counts,
+                                backgroundColor: '#1a2a6c',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { y: { beginAtZero: true } }
+                        }
+                    });
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadHighValueTxns() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/ceo/transactions/high-value', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    const txns = await res.json();
+                    const tbody = document.getElementById('highValueTxnBody');
+                    if(txns.length > 0) {
+                        tbody.innerHTML = txns.map(t => `
+                            <tr>
+                                <td style="padding:12px 25px;">#${(t.receipt_number || t.id).toString().slice(-6)}</td>
+                                <td style="padding:12px 25px; font-weight:bold; color:#2e7d32;">₵${parseFloat(t.total_amount).toLocaleString()}</td>
+                                <td style="padding:12px 25px;">${t.store_location || 'Main'}</td>
+                                <td style="padding:12px 25px;">${t.cashier_name || 'Unknown'}</td>
+                                <td style="padding:12px 25px; color:#666; font-size:12px;">${new Date(t.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                            </tr>
+                        `).join('');
+                    } else tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No data available</td></tr>';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function renderStockTables(topProducts, slowMoving) {
+            const topBody = document.getElementById('dashboardTopSellingBody');
+            const slowBody = document.getElementById('dashboardSlowMovingBody');
+
+            if (topProducts && topProducts.length > 0) {
+                topBody.innerHTML = topProducts.slice(0, 5).map(p => `
+                    <tr>
+                        <td style="font-weight:500;">${p.name}</td>
+                        <td>${p.units_sold || p.count || 0}</td>
+                        <td>₵${parseFloat(p.revenue || 0).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            } else {
+                topBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#666;">No data available</td></tr>';
+            }
+
+            if (slowMoving && slowMoving.length > 0) {
+                slowBody.innerHTML = slowMoving.slice(0, 5).map(p => `
+                    <tr>
+                        <td style="font-weight:500;">${p.name}</td>
+                        <td>${p.units_sold || p.count || 0}</td>
+                        <td>₵${parseFloat(p.revenue || 0).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            } else {
+                slowBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#666;">No data available</td></tr>';
+            }
+        }
+
+        function renderPaymentChart(stats) {
+            if (paymentChartInstance) paymentChartInstance.destroy();
+            
+            const labels = stats.map(s => s.payment_method.toUpperCase());
+            const data = stats.map(s => parseFloat(s.total));
+            const colors = ['#1a2a6c', '#fdbb2d', '#2e7d32', '#b21f1f', '#666'];
+
+            paymentChartInstance = new Chart(document.getElementById('paymentChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        function renderFinancialChart(cogs, opex, netProfit) {
+            const ctx = document.getElementById('financialBreakdownChart').getContext('2d');
+            
+            if (financialChartInstance) {
+                financialChartInstance.destroy();
+            }
+
+            financialChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cost of Goods Sold', 'Operational Expenses', 'Net Profit'],
+                    datasets: [{
+                        data: [cogs, opex, netProfit],
+                        backgroundColor: [
+                            '#fdbb2d', // COGS (Accent - Yellow/Orange)
+                            '#b21f1f', // OpEx (Red)
+                            '#2e7d32'  // Profit (Green)
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { boxWidth: 12, font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed !== null) label += '₵' + context.parsed.toLocaleString();
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        async function renderTrendChart() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/ceo/analytics/trend', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    const data = await res.json();
+                    
+                    if (trendChartInstance) {
+                        trendChartInstance.destroy();
+                    }
+                    trendChartInstance = new Chart(document.getElementById('trendChart'), {
+                        type: 'line',
+                        data: {
+                            labels: data.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                            datasets: [
+                                {
+                                    label: 'Revenue',
+                                    data: data.revenue || [],
+                                    backgroundColor: '#1a2a6c',
+                                    borderColor: '#1a2a6c',
+                                    tension: 0.4,
+                                    fill: false,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: 'Costs',
+                                    data: data.costs || [],
+                                    backgroundColor: '#b21f1f',
+                                    borderColor: '#b21f1f',
+                                    tension: 0.4,
+                                    fill: false,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: 'AI Forecast',
+                                    data: data.forecast || [],
+                                    borderColor: '#fdbb2d',
+                                    borderDash: [5, 5],
+                                    tension: 0.4,
+                                    fill: false,
+                                    yAxisID: 'y'
+                                }
+                            ]
+                        },
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { type: 'linear', display: true, position: 'left' }
+                            }
+                        }
+                    });
+                }
+            } catch(e) { console.error("Error loading trend chart", e); }
+        }
+
+        // --- NEW REAL-TIME DATA FUNCTIONS ---
+
+        async function loadUsers() {
+            const token = sessionStorage.getItem('authToken');
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>';
+            try {
+                const res = await fetch('/api/users', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    allPortalUsers = await res.json();
+                    filteredPortalUsers = [...allPortalUsers];
+                    usersCurrentPage = 1; // Reset to first page on load
+                    renderUsersTable();
+                }
+            } catch(e) { 
+                console.error(e); 
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Failed to load users.</td></tr>';
+            }
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('usersSearch').value.toLowerCase();
+            filteredPortalUsers = allPortalUsers.filter(u => 
+                (u.fullName || u.name || '').toLowerCase().includes(query) ||
+                (u.username || '').toLowerCase().includes(query) ||
+                (u.role || '').toLowerCase().includes(query) ||
+                (u.store || '').toLowerCase().includes(query)
+            );
+            usersCurrentPage = 1;
+            renderUsersTable();
+        }
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            
+            const start = (usersCurrentPage - 1) * usersRowsPerPage;
+            const end = start + usersRowsPerPage;
+            const paginatedUsers = filteredPortalUsers.slice(start, end);
+
+            if (filteredPortalUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No users found.</td></tr>';
+            } else {
+                tbody.innerHTML = paginatedUsers.map(u => {
+                    const actionBtn = u.status === 'Active' 
+                        ? `<button class="btn-control btn-white" style="padding:4px 10px; font-size:11px; color:#c62828; border-color:#ffcdd2;" onclick="toggleUserStatus(${u.id}, 'Inactive')">Deactivate</button>`
+                        : `<button class="btn-control btn-white" style="padding:4px 10px; font-size:11px; color:#2e7d32; border-color:#c8e6c9;" onclick="toggleUserStatus(${u.id}, 'Active')">Activate</button>`;
+                    
+                    const editBtn = `<button class="btn-control btn-white" style="padding:4px 10px; font-size:11px; margin-right:5px;" onclick="openEditUserModal(${u.id})">Edit</button>`;
+
+                    return `
+                    <tr>
+                        <td style="font-weight:500;">${u.fullName || u.name}</td>
+                        <td>${u.username}</td>
+                        <td style="text-transform:capitalize;">${u.role}</td>
+                        <td>${u.store || 'Headquarters'}</td>
+                        <td><span class="status-badge ${u.status === 'Active' ? 'status-good' : 'status-warn'}">${u.status}</span></td>
+                        <td>
+                            <div style="display:flex; gap:5px;">${editBtn}${actionBtn}</div>
+                        </td>
+                    </tr>
+                `}).join('');
+            }
+            updateUsersPagination();
+        }
+
+        function updateUsersPagination() {
+            const totalItems = filteredPortalUsers.length;
+            const totalPages = Math.ceil(totalItems / usersRowsPerPage) || 1;
+            
+            document.getElementById('usersPageInfo').textContent = `Page ${usersCurrentPage} of ${totalPages}`;
+            document.getElementById('btnUsersPrev').disabled = usersCurrentPage === 1;
+            document.getElementById('btnUsersNext').disabled = usersCurrentPage === totalPages;
+        }
+
+        function changeUsersPage(delta) {
+            usersCurrentPage += delta;
+            renderUsersTable();
+        }
+
+        function changeUsersRowsPerPage() {
+            usersRowsPerPage = parseInt(document.getElementById('usersRowsPerPage').value);
+            usersCurrentPage = 1;
+            renderUsersTable();
+        }
+
+        function showConfirmationModal(title, message, onConfirm) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            
+            const confirmBtn = document.getElementById('confirmActionBtn');
+            // Clone to remove event listeners
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.onclick = () => {
+                closeConfirmationModal();
+                onConfirm();
+            };
+            
+            document.getElementById('confirmationModal').classList.add('active');
+        }
+
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').classList.remove('active');
+        }
+
+        function toggleUserStatus(id, newStatus) {
+            const user = allPortalUsers.find(u => u.id === id);
+            if (!user) return;
+
+            showConfirmationModal(
+                `${newStatus === 'Active' ? 'Activate' : 'Deactivate'} User`,
+                `Are you sure you want to set ${user.fullName || user.name} to ${newStatus}?`,
+                async () => {
+                    const token = sessionStorage.getItem('authToken');
+                    try {
+                        const res = await fetch(`/api/users/${id}`, {
+                            method: 'PUT',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                fullName: user.fullName || user.name,
+                                username: user.username,
+                                email: user.email,
+                                phone: user.phone,
+                                role: user.role,
+                                store: user.store,
+                                status: newStatus
+                            })
+                        });
+
+                        if (res.ok) {
+                            showToast(`User ${newStatus === 'Active' ? 'activated' : 'deactivated'} successfully`);
+                            loadUsers();
+                        } else {
+                            const err = await res.json();
+                            alert("Error: " + (err.message || "Failed to update status"));
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        alert("Server error");
+                    }
+                }
+            );
+        }
+
+        function openEditUserModal(id) {
+            const user = allPortalUsers.find(u => u.id === id);
+            if (!user) return;
+
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editName').value = user.fullName || user.name;
+            document.getElementById('editUsername').value = user.username || '';
+            document.getElementById('editEmail').value = user.email || '';
+            document.getElementById('editPhone').value = user.phone || '';
+            document.getElementById('editRole').value = user.role.toLowerCase();
+            
+            // Populate branches
+            const storeSelect = document.getElementById('editStore');
+            storeSelect.innerHTML = '<option value="">Select Branch</option>';
+            allBranches.forEach(b => {
+                const selected = (user.store === b.location || user.store === b.name) ? 'selected' : '';
+                storeSelect.innerHTML += `<option value="${b.location}" ${selected}>${b.name} (${b.location})</option>`;
+            });
+
+            document.getElementById('editUserModal').classList.add('active');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('active');
+        }
+
+        async function saveUserChanges() {
+            const id = document.getElementById('editUserId').value;
+            const fullName = document.getElementById('editName').value;
+            const username = document.getElementById('editUsername').value;
+            const email = document.getElementById('editEmail').value;
+            const phone = document.getElementById('editPhone').value;
+            const role = document.getElementById('editRole').value;
+            const store = document.getElementById('editStore').value;
+
+            // Get current user to preserve status
+            const user = allPortalUsers.find(u => u.id == id);
+            const status = user ? user.status : 'Active';
+
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch(`/api/users/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ fullName, username, email, phone, role, store, status })
+                });
+
+                if (res.ok) {
+                    showToast("User updated successfully");
+                    closeEditUserModal();
+                    loadUsers();
+                } else {
+                    const err = await res.json();
+                    alert("Error: " + (err.message || "Failed to update user"));
+                }
+            } catch (e) { console.error(e); alert("Server error"); }
+        }
+
+        async function loadAuditLogs() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/audit-logs', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    auditLogsData = await res.json();
+                    filteredAuditLogsData = [...auditLogsData];
+                    auditCurrentPage = 1;
+                    renderAuditTable();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function filterAuditLogs() {
+            const query = document.getElementById('auditSearch').value.toLowerCase();
+            filteredAuditLogsData = auditLogsData.filter(log => {
+                const searchStr = `${log.user_name} ${log.user_role} ${log.action} ${JSON.stringify(log.details)} ${log.ip_address} ${new Date(log.created_at).toLocaleString()}`.toLowerCase();
+                return searchStr.includes(query);
+            });
+            auditCurrentPage = 1;
+            renderAuditTable();
+        }
+
+        function renderAuditTable() {
+            const tbody = document.getElementById('auditTableBody');
+            const start = (auditCurrentPage - 1) * auditRowsPerPage;
+            const end = start + auditRowsPerPage;
+            const pageData = filteredAuditLogsData.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No logs found</td></tr>';
+            } else {
+                tbody.innerHTML = pageData.map(log => {
+                    const details = log.details ? JSON.stringify(log.details) : '-';
+                    return `
+                        <tr>
+                            <td style="font-size:13px;">${new Date(log.created_at).toLocaleString()}</td>
+                            <td>${log.user_name || 'System'}</td>
+                            <td><span class="status-badge" style="background:#f1f5f9; color:#475569; text-transform:capitalize;">${log.user_role || '-'}</span></td>
+                            <td style="font-weight:600; color:var(--primary-color);">${log.action}</td>
+                            <td style="font-size:12px; color:#555; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title='${details}'>${details}</td>
+                            <td style="font-size:12px; color:#888;">${log.ip_address || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            updateAuditPagination();
+        }
+
+        function updateAuditPagination() {
+            const totalItems = filteredAuditLogsData.length;
+            const totalPages = Math.ceil(totalItems / auditRowsPerPage) || 1;
+            
+            document.getElementById('auditPageInfo').textContent = `Page ${auditCurrentPage} of ${totalPages}`;
+            document.getElementById('btnAuditPrev').disabled = auditCurrentPage === 1;
+            document.getElementById('btnAuditNext').disabled = auditCurrentPage === totalPages;
+        }
+
+        function changeAuditPage(delta) {
+            auditCurrentPage += delta;
+            renderAuditTable();
+        }
+
+        function changeAuditRowsPerPage() {
+            auditRowsPerPage = parseInt(document.getElementById('auditRowsPerPage').value);
+            auditCurrentPage = 1;
+            renderAuditTable();
+        }
+
+        async function loadRisks() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/ceo/risks', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    const risks = await res.json();
+                    const tbody = document.getElementById('riskTableBody');
+                    
+                    if(risks.length > 0) {
+                        document.getElementById('riskSummaryText').textContent = `${risks.length} active risks detected requiring attention.`;
+                        tbody.innerHTML = risks.map(r => `
+                            <tr>
+                                <td>${r.type}</td>
+                                <td>${r.message}</td>
+                                <td><span class="status-badge ${r.severity === 'high' ? 'status-warn' : 'status-good'}" style="${r.severity === 'high' ? 'background:#ffebee;color:#c62828;' : ''}">${r.severity.toUpperCase()}</span></td>
+                                <td><button class="btn-control btn-white" style="padding:4px 10px; font-size:11px;">Investigate</button></td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#2e7d32;"><i class="fas fa-check-circle"></i> No active risks detected.</td></tr>';
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadPendingCreditApprovals() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/ceo/approvals/credit-customers', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    pendingCustomersData = await res.json();
+                    filterPendingApprovals();
+                } else {
+                    document.getElementById('pendingCreditTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:#666;">No pending approvals found.</td></tr>';
+                }
+            } catch(e) { 
+                console.error(e);
+                document.getElementById('pendingCreditTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:#c62828;">Error loading approvals.</td></tr>';
+            }
+        }
+
+        async function loadApprovalHistory() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/ceo/approvals/history', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    approvalHistoryData = await res.json();
+                    filterApprovalHistory();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function filterPendingApprovals() {
+            const query = document.getElementById('pendingSearch').value.toLowerCase();
+            pendingFilteredData = pendingCustomersData.filter(c => 
+                c.name.toLowerCase().includes(query) || 
+                (c.branch && c.branch.toLowerCase().includes(query)) ||
+                (c.created_by_name && c.created_by_name.toLowerCase().includes(query))
+            );
+            pendingCurrentPage = 1;
+            renderPendingTable();
+        }
+
+        function renderPendingTable() {
+            const tbody = document.getElementById('pendingCreditTableBody');
+            const start = (pendingCurrentPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageData = pendingFilteredData.slice(start, end);
+
+            if(pageData.length > 0) {
+                tbody.innerHTML = pageData.map(c => {
+                    const isLimitRequest = c.pending_credit_limit !== null;
+                    const displayLimit = isLimitRequest ? c.pending_credit_limit : c.credit_limit;
+                    const typeLabel = isLimitRequest ? '<span class="status-badge status-warn" style="font-size:10px; margin-left:5px;">Limit Increase</span>' : '<span class="status-badge status-info" style="font-size:10px; margin-left:5px;">New</span>';
+                    
+                    return `
+                    <tr>
+                        <td style="font-weight:500;">${c.name} ${typeLabel}</td>
+                        <td>₵${parseFloat(displayLimit).toLocaleString()}</td>
+                        <td>${c.created_by_name || '<span style="color:#999;font-style:italic;">Unknown</span>'}</td>
+                        <td>${c.branch || '<span style="color:#999;font-style:italic;">Unknown</span>'}</td>
+                        <td>${new Date(c.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn-control btn-white" style="padding:4px 10px; font-size:11px; display:inline-flex; margin-right:5px;" onclick="viewCustomerDetails(${c.id})"><i class="fas fa-eye"></i> View</button>
+                            <button class="btn-control btn-primary" style="padding:4px 10px; font-size:11px; display:inline-flex; margin-right:5px;" onclick="approveCreditCustomer(${c.id})">Approve</button>
+                            <button class="btn-control btn-white" style="padding:4px 10px; font-size:11px; display:inline-flex; color:#c62828; border-color:#ffcdd2;" onclick="rejectCreditCustomer(${c.id})">Reject</button>
+                        </td>
+                    </tr>
+                `}).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#666;">No pending approvals.</td></tr>';
+            }
+            
+            updatePaginationControls('pending', pendingFilteredData.length, pendingCurrentPage);
+        }
+
+        function filterApprovalHistory() {
+            const query = document.getElementById('historySearch').value.toLowerCase();
+            historyFilteredData = approvalHistoryData.filter(c => 
+                c.name.toLowerCase().includes(query) || 
+                c.status.toLowerCase().includes(query)
+            );
+            historyCurrentPage = 1;
+            renderApprovalHistory();
+        }
+
+        function renderApprovalHistory() {
+            const tbody = document.getElementById('historyCreditTableBody');
+            const start = (historyCurrentPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageData = historyFilteredData.slice(start, end);
+
+            if(pageData.length > 0) {
+                tbody.innerHTML = pageData.map(c => {
+                    let statusColor = c.status === 'Active' ? 'status-good' : 'status-warn';
+                    return `
+                    <tr>
+                        <td style="font-weight:500;">${c.name}</td>
+                        <td>₵${parseFloat(c.credit_limit).toLocaleString()}</td>
+                        <td><span class="status-badge ${statusColor}">${c.status}</span></td>
+                        <td>${new Date(c.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `}).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#666;">No history found.</td></tr>';
+            }
+            
+            updatePaginationControls('history', historyFilteredData.length, historyCurrentPage);
+        }
+
+        function updatePaginationControls(type, totalItems, currentPage) {
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+            const prefix = type === 'pending' ? 'pending' : 'history';
+            
+            document.getElementById(`${prefix}PageInfo`).textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById(`btn${prefix.charAt(0).toUpperCase() + prefix.slice(1)}Prev`).disabled = currentPage === 1;
+            document.getElementById(`btn${prefix.charAt(0).toUpperCase() + prefix.slice(1)}Next`).disabled = currentPage === totalPages;
+        }
+
+        function changePendingPage(delta) {
+            pendingCurrentPage += delta;
+            renderPendingTable();
+        }
+
+        function changeHistoryPage(delta) {
+            historyCurrentPage += delta;
+            renderApprovalHistory();
+        }
+
+        function viewCustomerDetails(id) {
+            const customer = pendingCustomersData.find(c => c.id === id);
+            if (!customer) return;
+            
+            const isLimitRequest = customer.pending_credit_limit !== null;
+            const displayLimit = isLimitRequest ? customer.pending_credit_limit : customer.credit_limit;
+            const limitLabel = isLimitRequest ? 'Requested New Limit' : 'Requested Credit Limit';
+
+            const detailsHtml = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group"><label class="form-label">Full Name</label><div class="form-input" style="background:#f8fafc;">${customer.name}</div></div>
+                    <div class="form-group"><label class="form-label">Account Number</label><div class="form-input" style="background:#f8fafc;">${customer.account_number || 'Pending'}</div></div>
+                    <div class="form-group"><label class="form-label">Phone</label><div class="form-input" style="background:#f8fafc;">${customer.phone || 'N/A'}</div></div>
+                    <div class="form-group"><label class="form-label">Email</label><div class="form-input" style="background:#f8fafc;">${customer.email || 'N/A'}</div></div>
+                    <div class="form-group"><label class="form-label">${limitLabel}</label><div class="form-input" style="background:#f8fafc; font-weight:bold; color:#1a2a6c;">₵${parseFloat(displayLimit).toLocaleString()}</div></div>
+                    <div class="form-group"><label class="form-label">Date Requested</label><div class="form-input" style="background:#f8fafc;">${new Date(customer.created_at).toLocaleString()}</div></div>
+                    <div class="form-group"><label class="form-label">Requested By</label><div class="form-input" style="background:#f8fafc;">${customer.created_by_name || 'Unknown'}</div></div>
+                    <div class="form-group"><label class="form-label">Branch</label><div class="form-input" style="background:#f8fafc;">${customer.branch || 'N/A'}</div></div>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn-control btn-primary" onclick="approveCreditCustomer(${customer.id}); closeCustomerDetailsModal();">Approve Request</button>
+                    <button class="btn-control btn-white" style="color:#c62828; border-color:#ffcdd2;" onclick="rejectCreditCustomer(${customer.id}); closeCustomerDetailsModal();">Reject Request</button>
+                </div>
+            `;
+            
+            document.getElementById('customerDetailsBody').innerHTML = detailsHtml;
+            document.getElementById('customerDetailsModal').classList.add('active');
+        }
+
+        function closeCustomerDetailsModal() { document.getElementById('customerDetailsModal').classList.remove('active'); }
+
+        function approveCreditCustomer(id) {
+            showConfirmationModal(
+                "Approve Customer",
+                "Are you sure you want to approve this credit customer?",
+                async () => {
+                    const token = sessionStorage.getItem('authToken');
+                    try {
+                        const res = await fetch(`/api/ceo/approvals/credit-customers/${id}/approve`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }});
+                        if (res.ok) {
+                            showToast("Credit customer approved successfully");
+                            loadPendingCreditApprovals();
+                        } else showToast("Failed to approve customer");
+                    } catch(e) { console.error(e); showToast("Error connecting to server"); }
+                }
+            );
+        }
+
+        function rejectCreditCustomer(id) {
+            showConfirmationModal(
+                "Reject Customer",
+                "Are you sure you want to reject this credit customer?",
+                async () => {
+                    const token = sessionStorage.getItem('authToken');
+                    try {
+                        const res = await fetch(`/api/ceo/approvals/credit-customers/${id}/reject`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }});
+                        if (res.ok) {
+                            showToast("Credit customer rejected");
+                            loadPendingCreditApprovals();
+                        } else showToast("Failed to reject customer");
+                    } catch(e) { console.error(e); showToast("Error connecting to server"); }
+                }
+            );
+        }
+
+        async function loadPeople() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/ceo/staff-performance', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    const data = await res.json();
+                    const stats = data.staff || [];
+                    
+                    // Update Headcount
+                    document.getElementById('kpiHeadcount').textContent = data.headcount || stats.length;
+
+                    const rows = stats.map(s => `
+                        <tr>
+                            <td style="font-weight:500;">${s.name}</td>
+                            <td>${s.transactions}</td>
+                            <td>₵${parseFloat(s.sales).toLocaleString()}</td>
+                            <td><span class="status-badge ${s.performance === 'High' ? 'status-good' : 'status-warn'}">${s.performance || 'Active'}</span></td>
+                        </tr>
+                    `).join('');
+
+                    const tbody = document.getElementById('peopleTableBody');
+                    if (tbody) tbody.innerHTML = rows;
+
+                    const dashboardBody = document.getElementById('dashboardStaffBody');
+                    if (dashboardBody) dashboardBody.innerHTML = rows;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadOpsKPIs() {
+            const token = sessionStorage.getItem('authToken');
+            const selectedBranch = document.getElementById('globalBranchFilter').value;
+
+            if (allBranches.length === 0) {
+                try {
+                    const res = await fetch('/api/branches', { headers: { 'Authorization': `Bearer ${token}` }});
+                    if(res.ok) allBranches = await res.json();
+                } catch(e) {}
+            }
+
+            // --- DYNAMIC KPIs ---
+            // Set loading/static state
+            document.getElementById('opsKpiHealth').textContent = '...';
+            document.getElementById('opsKpiFulfillment').textContent = '...'; 
+            document.getElementById('opsKpiSla').textContent = '...'; 
+
+            try {
+                // Fetch all products to calculate inventory health
+                const productsRes = await fetch('/products', { headers: { 'Authorization': `Bearer ${token}` }});
+                if (productsRes.ok) {
+                    const products = await productsRes.json();
+                    const totalProducts = products.length;
+                    if (totalProducts > 0) {
+                        const inStockCount = products.filter(p => {
+                            const stock = (selectedBranch === 'All Branches') 
+                                ? (p.stock || 0) 
+                                : (p.stock_levels ? (p.stock_levels[selectedBranch] || 0) : 0);
+                            return stock > 0;
+                        }).length;
+                        const healthPercentage = (inStockCount / totalProducts) * 100;
+                        document.getElementById('opsKpiHealth').textContent = `${healthPercentage.toFixed(0)}%`;
+                    } else {
+                        document.getElementById('opsKpiHealth').textContent = '100%';
+                    }
+                }
+            } catch (e) {
+                console.error('Error calculating Inventory Health:', e);
+                document.getElementById('opsKpiHealth').textContent = 'N/A';
+            }
+
+            try {
+                // Fetch Purchase Orders to calculate Vendor SLAs (Completion Rate)
+                const poRes = await fetch('/api/ceo/purchase-orders', { headers: { 'Authorization': `Bearer ${token}` }});
+                if (poRes.ok) {
+                    const pos = await poRes.json();
+                    
+                    let filteredPos = pos;
+                    if (selectedBranch && selectedBranch !== 'All Branches') {
+                        filteredPos = pos.filter(p => {
+                            const branchObj = allBranches.find(b => b.id == p.branch_id);
+                            const branchName = branchObj ? (branchObj.location || branchObj.name) : null;
+                            return branchName === selectedBranch;
+                        });
+                    }
+                    const totalPOs = filteredPos.length;
+                    if (totalPOs > 0) {
+                        const receivedPOs = filteredPos.filter(p => (p.Status || p.status) === 'Received').length;
+                        const sla = (receivedPOs / totalPOs) * 100;
+                        document.getElementById('opsKpiSla').textContent = `${sla.toFixed(0)}%`;
+                    } else {
+                        document.getElementById('opsKpiSla').textContent = 'N/A';
+                    }
+                }
+                // Fulfillment Time requires delivery timestamps which are not currently tracked
+                document.getElementById('opsKpiFulfillment').textContent = 'N/A'; 
+            } catch (e) {
+                console.error('Error calculating Ops KPIs:', e);
+                document.getElementById('opsKpiSla').textContent = 'N/A';
+                document.getElementById('opsKpiFulfillment').textContent = 'N/A';
+            }
+        }
+
+        async function loadOpsBottlenecks() {
+            const token = sessionStorage.getItem('authToken');
+            const selectedBranch = document.getElementById('globalBranchFilter').value;
+            
+            try {
+                // Fetch all products and filter for low stock client-side
+                const res = await fetch('/products', { headers: { 'Authorization': `Bearer ${token}` }});
+                if(res.ok) {
+                    let products = await res.json();
+                    let bottlenecks = [];
+
+                    products.forEach(p => {
+                        const reorder = p.reorder_level || 10;
+
+                        if (selectedBranch === 'All Branches') {
+                            if (p.stock_levels && typeof p.stock_levels === 'object') {
+                                Object.entries(p.stock_levels).forEach(([branch, qty]) => {
+                                    if (qty <= reorder) {
+                                        bottlenecks.push({ name: p.name, branch: branch, stock: qty, reorder: reorder });
+                                    }
+                                });
+                            } else if ((p.stock || 0) <= reorder) {
+                                bottlenecks.push({ name: p.name, branch: 'Global', stock: p.stock || 0, reorder: reorder });
+                            }
+                        } else {
+                            let stock = 0;
+                            if (p.stock_levels && p.stock_levels[selectedBranch] !== undefined) {
+                                stock = p.stock_levels[selectedBranch];
+                            } else if (selectedBranch === 'Headquarters' || selectedBranch === 'Main Warehouse') {
+                                stock = p.stock || 0;
+                            }
+                            
+                            if (stock <= reorder) {
+                                bottlenecks.push({ name: p.name, branch: selectedBranch, stock: stock, reorder: reorder });
+                            }
+                        }
+                    });
+                    
+                    opsBottlenecksData = bottlenecks;
+                    filteredOpsBottlenecksData = [...opsBottlenecksData];
+                    opsBottlenecksPage = 1;
+                    renderOpsBottlenecksTable();
+                }
+            } catch(e) { 
+                console.error('Error loading Ops data:', e); 
+                document.getElementById('opsTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color: red;">Failed to load data.</td></tr>';
+            }
+        }
+
+        function filterOpsBottlenecks() {
+            const query = document.getElementById('bottlenecksSearch').value.toLowerCase();
+            filteredOpsBottlenecksData = opsBottlenecksData.filter(i => 
+                i.name.toLowerCase().includes(query) || 
+                (i.branch && i.branch.toLowerCase().includes(query))
+            );
+            opsBottlenecksPage = 1;
+            renderOpsBottlenecksTable();
+        }
+
+        function renderOpsBottlenecksTable() {
+            const tbody = document.getElementById('opsTableBody');
+            const start = (opsBottlenecksPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageData = filteredOpsBottlenecksData.slice(start, end);
+
+            if (pageData.length > 0) {
+                tbody.innerHTML = pageData.map(i => {
+                    const branchLabel = i.branch && i.branch !== 'Global' ? ` <span style="font-size:11px; color:#666;">(${i.branch})</span>` : '';
+                    return `
+                    <tr>
+                        <td style="font-weight:500;">${i.name}${branchLabel}</td>
+                        <td style="color:#c62828; font-weight:bold;">${i.stock}</td>
+                        <td>${i.reorder}</td>
+                        <td><span class="status-badge status-warn">Low Stock</span></td>
+                    </tr>
+                `}).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color: #2e7d32;"><i class="fas fa-check-circle"></i> No low stock items for this selection.</td></tr>';
+            }
+            updatePaginationControls('bottlenecks', filteredOpsBottlenecksData.length, opsBottlenecksPage);
+        }
+
+        async function loadOpsSuppliers() {
+            const token = sessionStorage.getItem('authToken');
+            const selectedBranch = document.getElementById('globalBranchFilter').value;
+            
+            if (allBranches.length === 0) {
+                try {
+                    const res = await fetch('/api/branches', { headers: { 'Authorization': `Bearer ${token}` }});
+                    if(res.ok) allBranches = await res.json();
+                } catch(e) {}
+            }
+
+            try {
+                const suppliersRes = await fetch('/api/suppliers', { headers: { 'Authorization': `Bearer ${token}` }});
+                let suppliers = [];
+                if (suppliersRes.ok) suppliers = await suppliersRes.json();
+                
+                opsSuppliersData = suppliers.filter(s => {
+                    if (selectedBranch && selectedBranch !== 'All Branches') {
+                        let branchName = s.branch_location || s.branch_name;
+                        if (!branchName && s.branch_id) {
+                            const branchObj = allBranches.find(b => b.id == s.branch_id);
+                            branchName = branchObj ? (branchObj.location || branchObj.name) : null;
+                        }
+                        return branchName === selectedBranch;
+                    }
+                    return true;
+                });
+                
+                filteredOpsSuppliersData = [...opsSuppliersData];
+                opsSuppliersPage = 1;
+                renderOpsSuppliersTable();
+            } catch(e) {
+                console.error(e);
+                document.getElementById('opsSuppliersBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color: #c62828;">Failed to load suppliers.</td></tr>';
+            }
+        }
+
+        function filterOpsSuppliers() {
+            const query = document.getElementById('suppliersSearch').value.toLowerCase();
+            filteredOpsSuppliersData = opsSuppliersData.filter(s => 
+                s.name.toLowerCase().includes(query) || 
+                (s.contact_person && s.contact_person.toLowerCase().includes(query))
+            );
+            opsSuppliersPage = 1;
+            renderOpsSuppliersTable();
+        }
+
+        function renderOpsSuppliersTable() {
+            const tbody = document.getElementById('opsSuppliersBody');
+            const start = (opsSuppliersPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageData = filteredOpsSuppliersData.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px;">No suppliers found.</td></tr>';
+            } else {
+                tbody.innerHTML = pageData.map(s => {
+                    let branchName = s.branch_name;
+                    if (s.branch_location) branchName += ` (${s.branch_location})`;
+                    if (!branchName) {
+                        const branchObj = allBranches.find(b => b.id == s.branch_id);
+                        branchName = branchObj ? (branchObj.name + (branchObj.location ? ' (' + branchObj.location + ')' : '')) : 'Global';
+                    }
+                    const contact = s.contact_person || s.contact || '-';
+                    const phone = s.phone || '-';
+                    const email = s.email || '-';
+                    return `<tr><td style="font-weight:600;">${s.name}</td><td>${contact}</td><td>${branchName}</td><td>${phone}</td><td>${email}</td></tr>`;
+                }).join('');
+            }
+            updatePaginationControls('suppliers', filteredOpsSuppliersData.length, opsSuppliersPage);
+        }
+
+        async function loadOpsPOs() {
+            const token = sessionStorage.getItem('authToken');
+            const selectedBranch = document.getElementById('globalBranchFilter').value;
+            
+            if (allBranches.length === 0) {
+                try {
+                    const res = await fetch('/api/branches', { headers: { 'Authorization': `Bearer ${token}` }});
+                    if(res.ok) allBranches = await res.json();
+                } catch(e) {}
+            }
+
+            try {
+                // Purchase Orders
+                const poResAll = await fetch('/api/purchase-orders', { headers: { 'Authorization': `Bearer ${token}` }});
+                let pos = [];
+                if (poResAll.ok) {
+                    const responseData = await poResAll.json();
+                    if (Array.isArray(responseData)) {
+                        pos = responseData;
+                    } else if (responseData && Array.isArray(responseData.data)) {
+                        pos = responseData.data;
+                    } else {
+                        console.warn("Unexpected format for POs response:", responseData);
+                    }
+                }
+
+                opsPOsData = pos.filter(p => {
+                    if (selectedBranch && selectedBranch !== 'All Branches') {
+                        const bId = p.branch_id || p.branchId;
+                        if (bId) {
+                            const branchObj = allBranches.find(b => b.id == bId);
+                            const branchName = branchObj ? (branchObj.location || branchObj.name) : null;
+                            if (branchName === selectedBranch) return true;
+                        }
+                        const pBranch = p.branch_name || p.branch;
+                        return pBranch === selectedBranch;
+                    }
+                    return true;
+                });
+                
+                filteredOpsPOsData = [...opsPOsData];
+                opsPOsPage = 1;
+                renderOpsPOsTable();
+            } catch(e) {
+                console.error(e);
+                document.getElementById('opsPOsBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color: #c62828;">Failed to load purchase orders.</td></tr>';
+            }
+        }
+
+        function filterOpsPOs() {
+            const query = document.getElementById('posSearch').value.toLowerCase();
+            filteredOpsPOsData = opsPOsData.filter(p => {
+                const supplierName = p.supplier_name || 'Unknown';
+                const id = (p.id || p.PO_ID || '').toString();
+                return supplierName.toLowerCase().includes(query) || id.includes(query);
+            });
+            opsPOsPage = 1;
+            renderOpsPOsTable();
+        }
+
+        function renderOpsPOsTable() {
+            const tbody = document.getElementById('opsPOsBody');
+            const start = (opsPOsPage - 1) * opsPOsRowsPerPage;
+            const end = start + opsPOsRowsPerPage;
+            const pageData = filteredOpsPOsData.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px;">No purchase orders found.</td></tr>';
+            } else {
+                tbody.innerHTML = pageData.map(p => {
+                    const poId = p.id || p.PO_ID;
+                    let branchName = p.branch_name || p.branch;
+                    if (!branchName && (p.branch_id || p.branchId)) {
+                        const branchObj = allBranches.find(b => b.id == (p.branch_id || p.branchId));
+                        if (branchObj) branchName = branchObj.name + (branchObj.location ? ' (' + branchObj.location + ')' : '');
+                    }
+                    branchName = branchName || 'Global';
+                    const supplierName = p.supplier_name || 'Unknown';
+                    const total = p.total_amount || p.total || 0;
+                    const status = p.status || p.Status || 'Pending';
+                    return `<tr><td>#${poId}</td><td style="font-weight:600;">${supplierName}</td><td>${branchName}</td><td>₵${parseFloat(total).toLocaleString()}</td><td><span class="status-badge ${status.toLowerCase() === 'received' ? 'status-good' : 'status-warn'}">${status}</span></td><td><button class="btn-control btn-white" style="padding:4px 10px; font-size:11px;" onclick="viewOpsPO(${poId})">View</button></td></tr>`;
+                }).join('');
+            }
+            updateOpsPOsPagination();
+        }
+
+        function changeOpsPOsRowsPerPage() {
+            opsPOsRowsPerPage = parseInt(document.getElementById('opsPOsRowsPerPage').value);
+            opsPOsPage = 1;
+            renderOpsPOsTable();
+        }
+
+        function updateOpsPOsPagination() {
+            const totalItems = filteredOpsPOsData.length;
+            const totalPages = Math.ceil(totalItems / opsPOsRowsPerPage) || 1;
+            
+            document.getElementById('posPageInfo').textContent = `Page ${opsPOsPage} of ${totalPages}`;
+            document.getElementById('btnPOsPrev').disabled = opsPOsPage === 1;
+            document.getElementById('btnPOsNext').disabled = opsPOsPage === totalPages;
+        }
+
+        async function viewOpsPO(id) {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch(`/api/purchase-orders/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.ok) {
+                    const po = await res.json();
+                    const supplierName = po.supplier_name || 'Unknown';
+                    
+                    document.getElementById('opsViewPOId').textContent = '#' + (po.id || po.PO_ID);
+                    document.getElementById('opsViewPOSupplier').textContent = supplierName;
+                    document.getElementById('opsViewPODate').textContent = new Date(po.created_at).toLocaleString();
+                    
+                    const statusEl = document.getElementById('opsViewPOStatus');
+                    const status = po.status || 'Pending';
+                    statusEl.innerHTML = `<span class="status-badge ${status.toLowerCase() === 'received' ? 'status-good' : 'status-warn'}">${status}</span>`;
+                    
+                    const tbody = document.getElementById('opsViewPOItems');
+                    tbody.innerHTML = (po.items || []).map(item => `
+                        <tr>
+                            <td style="padding:10px; border-bottom:1px solid #eee;">${item.name || item.product_barcode}</td>
+                            <td style="padding:10px; text-align:center; border-bottom:1px solid #eee;">${item.quantity}</td>
+                            <td style="padding:10px; text-align:right; border-bottom:1px solid #eee;">₵${parseFloat(item.unit_cost).toFixed(2)}</td>
+                            <td style="padding:10px; text-align:right; border-bottom:1px solid #eee;">₵${(item.quantity * item.unit_cost).toFixed(2)}</td>
+                        </tr>
+                    `).join('');
+
+                    document.getElementById('opsViewPOTotal').textContent = '₵' + parseFloat(po.total_amount).toFixed(2);
+                    document.getElementById('opsViewPOModal').classList.add('active');
+                } else {
+                    alert("Failed to load PO details");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error loading details");
+            }
+        }
+
+        function closeOpsPOModal() {
+            document.getElementById('opsViewPOModal').classList.remove('active');
+        }
+
+        function changeOpsPage(type, delta) {
+            if (type === 'bottlenecks') {
+                opsBottlenecksPage += delta;
+                renderOpsBottlenecksTable();
+            } else if (type === 'suppliers') {
+                opsSuppliersPage += delta;
+                renderOpsSuppliersTable();
+            } else if (type === 'pos') {
+                opsPOsPage += delta;
+                renderOpsPOsTable();
+            }
+        }
+
+        async function loadOpsPerformance() {
+            const token = sessionStorage.getItem('authToken');
+            
+            // Ensure branches are loaded so the filter dropdown is populated
+            if (allBranches.length === 0) {
+                await loadBranches();
+            }
+
+            const selectedBranch = document.getElementById('globalBranchFilter').value;
+            const startDate = document.getElementById('analyticsStart').value;
+            const endDate = document.getElementById('analyticsEnd').value;
+
+            let queryParams = '';
+            if (startDate && endDate) queryParams = `?startDate=${startDate}&endDate=${endDate}`;
+
+            try {
+                const branchPerfRes = await fetch(`/api/ceo/branches${queryParams}`, { headers: { 'Authorization': `Bearer ${token}` }});
+                let branchPerf = branchPerfRes.ok ? await branchPerfRes.json() : [];
+
+                if (selectedBranch && selectedBranch !== 'All Branches') {
+                    branchPerf = branchPerf.filter(b => (b.branch || b.name) === selectedBranch);
+                }
+
+                renderBranchPerformanceCharts(branchPerf);
+                renderBranchPerformanceTable(branchPerf);
+
+            } catch (e) {
+                console.error('Error loading branch perf:', e);
+            }
+        }
+
+        function renderBranchPerformanceTable(data) {
+            // Sort by revenue descending
+            const sortedData = [...data].sort((a, b) => parseFloat(b.revenue) - parseFloat(a.revenue));
+            
+            const totalRevenue = sortedData.reduce((sum, b) => sum + parseFloat(b.revenue), 0);
+            const totalTxns = sortedData.reduce((sum, b) => sum + parseInt(b.txn_count), 0);
+            
+            // Update KPIs
+            document.getElementById('perfTotalRevenue').textContent = `₵${totalRevenue.toLocaleString()}`;
+            document.getElementById('perfTotalTxns').textContent = totalTxns.toLocaleString();
+            
+            if (sortedData.length > 0) {
+                document.getElementById('perfTopBranch').textContent = sortedData[0].branch || sortedData[0].name;
+                document.getElementById('perfTopBranchRev').textContent = `₵${parseFloat(sortedData[0].revenue).toLocaleString()}`;
+            }
+
+            const tbody = document.getElementById('branchPerformanceTableBody');
+            if (sortedData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No data available</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = sortedData.map((b, index) => {
+                const revenue = parseFloat(b.revenue);
+                const txns = parseInt(b.txn_count);
+                const avgTicket = txns > 0 ? revenue / txns : 0;
+                const contribution = totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0;
+                
+                let rankIcon = '';
+                if (index === 0) rankIcon = '🥇 ';
+                if (index === 1) rankIcon = '🥈 ';
+                if (index === 2) rankIcon = '🥉 ';
+
+                return `
+                    <tr>
+                        <td>${rankIcon}${index + 1}</td>
+                        <td style="font-weight:600; color:var(--primary-color);">${b.branch || b.name}</td>
+                        <td>₵${revenue.toLocaleString()}</td>
+                        <td>${txns.toLocaleString()}</td>
+                        <td>₵${avgTicket.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="flex:1; height:6px; background:#eee; border-radius:3px; overflow:hidden;">
+                                    <div style="width:${contribution}%; height:100%; background:var(--primary-color);"></div>
+                                </div>
+                                <span style="font-size:11px; width:35px;">${contribution.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderBranchPerformanceCharts(data) {
+            // Prepare data
+            const labels = data.map(d => d.branch || d.name);
+            const revenueData = data.map(d => parseFloat(d.revenue));
+            const txnData = data.map(d => parseInt(d.txn_count));
+            const colors = ['#1a2a6c', '#b21f1f', '#fdbb2d', '#2e7d32', '#ef6c00', '#666'];
+
+            // Revenue Donut (Shows Share)
+            if (opsRevenueChartInstance) opsRevenueChartInstance.destroy();
+            opsRevenueChartInstance = new Chart(document.getElementById('opsRevenueChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: revenueData,
+                        backgroundColor: colors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed !== null) label += '₵' + context.parsed.toLocaleString();
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Performance Matrix (Scatter) - Better for many branches
+            if (opsTxnChartInstance) opsTxnChartInstance.destroy();
+            
+            const scatterData = data.map(d => ({
+                x: parseInt(d.txn_count) || 0,
+                y: parseFloat(d.revenue) || 0,
+                branch: d.branch || d.name
+            }));
+
+            opsTxnChartInstance = new Chart(document.getElementById('opsTxnChart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Branches',
+                        data: scatterData,
+                        backgroundColor: 'rgba(26, 42, 108, 0.6)',
+                        borderColor: '#1a2a6c',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return `${point.branch}: ${point.x} txns, ₵${point.y.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            type: 'linear', 
+                            position: 'bottom',
+                            title: { display: true, text: 'Transaction Volume' }
+                        },
+                        y: { 
+                            beginAtZero: true, 
+                            title: { display: true, text: 'Revenue (₵)' } 
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadStrategy() {
+            const token = sessionStorage.getItem('authToken');
+            const selectedBranch = document.getElementById('globalBranchFilter').value;
+
+            // Set loading states
+            document.getElementById('kr-revenue-current').textContent = '...';
+            document.getElementById('kr-avgtxn-current').textContent = '...';
+            document.getElementById('kr-lowstock-current').textContent = '...';
+            
+            try {
+                // 1. Fetch Financials for Revenue and Avg Txn
+                const finRes = await fetch(`/api/ceo/financials?branch=${encodeURIComponent(selectedBranch)}`, { headers: { 'Authorization': `Bearer ${token}` }});
+                if (finRes.ok) {
+                    const fin = await finRes.json();
+                    const revenue = fin.revenue || 0;
+                    const targetRevenue = 50000;
+                    const revenueProgress = Math.min((revenue / targetRevenue) * 100, 100);
+                    
+                    document.getElementById('kr-revenue-current').textContent = `₵${revenue.toLocaleString()}`;
+                    document.getElementById('kr-revenue-progress').style.width = `${revenueProgress}%`;
+                    document.getElementById('kr-revenue-percent').textContent = `${revenueProgress.toFixed(1)}%`;
+
+                    const branchPerfRes = await fetch('/api/ceo/branches', { headers: { 'Authorization': `Bearer ${token}` }});
+                    if (branchPerfRes.ok) {
+                        const branchPerf = await branchPerfRes.json();
+                        let relevantPerf = branchPerf;
+                        if (selectedBranch && selectedBranch !== 'All Branches') {
+                            relevantPerf = branchPerf.filter(b => (b.branch || b.name) === selectedBranch);
+                        }
+                        const totalTxns = relevantPerf.reduce((sum, b) => sum + (parseInt(b.txn_count) || 0), 0);
+                        const avgTxn = totalTxns > 0 ? revenue / totalTxns : 0;
+                        const targetAvgTxn = 150;
+                        const avgTxnProgress = Math.min((avgTxn / targetAvgTxn) * 100, 100);
+
+                        document.getElementById('kr-avgtxn-current').textContent = `₵${avgTxn.toFixed(2)}`;
+                        document.getElementById('kr-avgtxn-progress').style.width = `${avgTxnProgress}%`;
+                        document.getElementById('kr-avgtxn-percent').textContent = `${avgTxnProgress.toFixed(1)}%`;
+                    }
+                }
+
+                // 2. Fetch Low Stock Items
+                const lowStockRes = await fetch(`/api/ceo/inventory/low-stock?branch=${encodeURIComponent(selectedBranch)}`, { headers: { 'Authorization': `Bearer ${token}` }});
+                if (lowStockRes.ok) {
+                    const lowStockItems = await lowStockRes.json();
+                    const lowStockCount = lowStockItems.length;
+                    const targetLowStock = 10;
+                    const lowStockProgress = Math.max(0, (1 - (lowStockCount / (targetLowStock * 2)))) * 100;
+
+                    document.getElementById('kr-lowstock-current').textContent = lowStockCount;
+                    document.getElementById('kr-lowstock-progress').style.width = `${lowStockProgress}%`;
+                }
+
+            } catch(e) { console.error('Error loading strategy data:', e); }
+        }
+
+        async function loadCustomerInsights() {
+            // Placeholder for future customer insights logic
+        }
+
+        // Manager Modal Logic
+        function openManagerModal() { 
+            document.getElementById('managerModal').classList.add('active'); 
+            document.getElementById('mgrPassword').value = 'Footprint123!';
+            
+            // Populate branches
+            const select = document.getElementById('mgrBranch');
+            select.innerHTML = '<option value="">Select Branch</option>';
+            allBranches.forEach(b => {
+                select.innerHTML += `<option value="${b.location}" data-id="${b.id}">${b.name} (${b.location})</option>`;
+            });
+            
+            if(allBranches.length === 0) {
+                loadBranches().then(() => {
+                    const select = document.getElementById('mgrBranch');
+                    select.innerHTML = '<option value="">Select Branch</option>';
+                    allBranches.forEach(b => {
+                        select.innerHTML += `<option value="${b.location}" data-id="${b.id}">${b.name} (${b.location})</option>`;
+                    });
+                });
+            }
+        }
+        function closeManagerModal() { document.getElementById('managerModal').classList.remove('active'); }
+        
+        async function createManager() {
+            // Create Manager
+            const name = document.getElementById('mgrName').value;
+            const email = document.getElementById('mgrEmail').value;
+            const branchSelect = document.getElementById('mgrBranch');
+            const branchLocation = branchSelect.value;
+            const branchId = branchSelect.options[branchSelect.selectedIndex]?.dataset.id;
+            const password = document.getElementById('mgrPassword').value;
+
+            if(!name || !email || !branchLocation || !password) {
+                alert("Please fill all fields");
+                return;
+            }
+
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        fullName: name,
+                        username: email.split('@')[0],
+                        email: email,
+                        role: 'manager',
+                        store: branchLocation,
+                        password: password,
+                        phone: '0000000000', // Default
+                        employeeId: 'MGR-' + Date.now()
+                    })
+                });
+                
+                if(res.ok) {
+                    showToast("Manager Created Successfully!"); 
+                    closeManagerModal();
+                    // Reset form
+                    document.getElementById('mgrName').value = '';
+                    document.getElementById('mgrEmail').value = '';
+                    document.getElementById('mgrBranch').value = '';
+                } else {
+                    const err = await res.json();
+                    alert("Error: " + err.message);
+                }
+            } catch(e) { console.error(e); alert("Server error"); }
+        }
+
+        // Branch Modal Logic
+        function openBranchModal() {
+            document.getElementById('branchId').value = '';
+            document.getElementById('branchName').value = '';
+            document.getElementById('branchLocation').value = '';
+            document.getElementById('branchVat').value = '15.0';
+            document.getElementById('branchModal').classList.add('active');
+        }
+        
+        function editBranch(id) {
+            const branch = allBranches.find(b => b.id === id);
+            if(!branch) return;
+            document.getElementById('branchId').value = branch.id;
+            document.getElementById('branchName').value = branch.name;
+            document.getElementById('branchLocation').value = branch.location;
+            document.getElementById('branchVat').value = branch.vat_rate;
+            document.getElementById('branchModal').classList.add('active');
+        }
+        
+        function closeBranchModal() { document.getElementById('branchModal').classList.remove('active'); }
+        
+        async function saveBranch() {
+            const id = document.getElementById('branchId').value;
+            const name = document.getElementById('branchName').value;
+            const location = document.getElementById('branchLocation').value;
+            const vat = document.getElementById('branchVat').value;
+            
+            const token = sessionStorage.getItem('authToken');
+            const url = id ? `/api/branches/${id}` : '/api/branches';
+            const method = id ? 'PUT' : 'POST';
+            
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ name, location, vat_rate: vat })
+                });
+                
+                if(res.ok) {
+                    showToast("Branch saved successfully");
+                    closeBranchModal();
+                    loadBranches();
+                } else {
+                    alert("Error saving branch");
+                }
+            } catch(e) { console.error(e); alert("Server error"); }
+        }
+
+        function openTargetModal() {
+            const displayEl = document.getElementById('goalTargetDisplay');
+            const currentTarget = displayEl ? displayEl.textContent.replace(/[^0-9.]/g, '') : '50000';
+            document.getElementById('newTargetInput').value = currentTarget;
+            document.getElementById('targetModal').classList.add('active');
+        }
+
+        function closeTargetModal() {
+            document.getElementById('targetModal').classList.remove('active');
+        }
+
+        async function saveRevenueTarget() {
+            const target = document.getElementById('newTargetInput').value;
+            if (!target) return alert("Please enter a target amount");
+
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/ceo/target', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ target: parseFloat(target) })
+                });
+                if (res.ok) {
+                    showToast("Target updated successfully");
+                    closeTargetModal();
+                    initPortal(); // Refresh data
+                } else alert("Error updating target");
+            } catch (e) { console.error(e); alert("Server error"); }
+        }
+
+        function exportReport() {
+            alert("Generating Executive Report (PDF)...");
+        }
+        
+        function updateTimePeriod() {
+            initPortal(); // Reload data based on selection
+        }
+
+        function showToast(msg) {
+            // Simple toast implementation
+            const div = document.createElement('div');
+            div.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:10px 20px; border-radius:30px; z-index:3000; animation:fadeIn 0.3s;';
+            div.textContent = msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 2000);
+        }
+
+        async function updateCeoPassword(e) {
+            e.preventDefault();
+            const currentPass = document.getElementById('ceoCurrentPass').value;
+            const newPass = document.getElementById('ceoNewPass').value;
+            const confirmPass = document.getElementById('ceoConfirmPass').value;
+
+            if (newPass !== confirmPass) {
+                showToast("New passwords do not match!");
+                return;
+            }
+
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/update-password', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(data.message || "Password updated successfully");
+                    e.target.reset();
+                } else {
+                    showToast(data.message || "Failed to update password");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Connection error");
+            }
+        }
+
+        async function logout() {
+            const token = sessionStorage.getItem('authToken');
+            await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }});
+            window.location.href = '/login';
+        }
+
+        // AI Assistant Functions
+        function openAiAssistant() {
+            const modal = document.getElementById('aiModal');
+            modal.classList.remove('ai-minimized');
+            modal.classList.add('active');
+            
+            const minBtn = document.getElementById('btnAiMinimize');
+            if(minBtn) minBtn.innerHTML = '<i class="fas fa-minus"></i>';
+            
+            setTimeout(() => document.getElementById('aiInput').focus(), 100);
+        }
+
+        function handleAiFabClick() {
+            const modal = document.getElementById('aiModal');
+            if (modal.classList.contains('ai-minimized')) {
+                toggleAiMinimize(); // Restore it
+            } else {
+                openAiAssistant(); // Open or bring to front
+            }
+        }
+
+        function closeAiModal(e) {
+            if(e) e.stopPropagation();
+            document.getElementById('aiModal').classList.remove('active');
+
+            // Clear chat history and reset to initial message
+            const chatBody = document.getElementById('aiChatBody');
+            chatBody.innerHTML = `
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div style="width: 35px; height: 35px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;"><i class="fas fa-robot"></i></div>
+                    <div style="background: white; padding: 10px 15px; border-radius: 0 15px 15px 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); max-width: 80%; font-size: 14px; line-height: 1.5;">
+                        Hello! I'm your Business AI. Ask me about sales trends, inventory status, or strategic recommendations.
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleAiMinimize(e) {
+            if(e) e.stopPropagation();
+            const modal = document.getElementById('aiModal');
+            modal.classList.toggle('ai-minimized');
+            
+            const minBtn = document.getElementById('btnAiMinimize');
+            if (modal.classList.contains('ai-minimized')) {
+                minBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            } else {
+                minBtn.innerHTML = '<i class="fas fa-minus"></i>';
+                setTimeout(() => document.getElementById('aiInput').focus(), 100);
+            }
+        }
+
+        function handleAiInput(e) {
+            if (e.key === 'Enter') sendAiMessage();
+        }
+
+        function sendAiMessage() {
+            const input = document.getElementById('aiInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const body = document.getElementById('aiChatBody');
+            
+            // User Message
+            body.innerHTML += `
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
+                    <div style="background: #1a2a6c; color: white; padding: 10px 15px; border-radius: 15px 0 15px 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 80%; font-size: 14px; line-height: 1.5;">
+                        ${text}
+                    </div>
+                    <div style="width: 35px; height: 35px; background: #1a2a6c; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;"><i class="fas fa-user"></i></div>
+                </div>
+            `;
+            
+            input.value = '';
+            body.scrollTop = body.scrollHeight;
+
+            // Simulate AI Response
+            setTimeout(() => {
+                const lowerText = text.toLowerCase();
+                let response = "I'm sorry, I can't answer that. Try asking about 'sales trends', 'how to increase revenue', or 'inventory status'.";
+
+                if (lowerText.includes('increase') && (lowerText.includes('revenue') || lowerText.includes('sales'))) {
+                    response = "To boost revenue, consider these strategies: 1) Run a 'Buy One, Get One 50% Off' promotion on slow-moving items. 2) Implement a customer loyalty program to increase repeat business. 3) Increase marketing for the top-performing branch, Accra Main.";
+                } else if (lowerText.includes('sales') || lowerText.includes('revenue')) {
+                    response = "Based on current trends, monthly revenue is projected to exceed targets by 15%. The top performing branch is Accra Main.";
+                } else if (lowerText.includes('stock') || lowerText.includes('inventory')) {
+                    response = "Inventory levels are healthy overall (94%), but we have a bottleneck with 'Beverages' in the Kumasi branch. Reorder suggested.";
+                } else if (lowerText.includes('profit')) {
+                    response = "Net profit margin is currently at 22%, which is 2% higher than last month due to reduced operational costs.";
+                } else if (lowerText.includes('recommend') || lowerText.includes('strategy') || lowerText.includes('improve')) {
+                    response = "My top recommendation is to focus on customer retention. A 5% increase in retention can increase profitability by 25-95%. I suggest starting a points-based loyalty program. Would you like to see a projection?";
+                } else if (lowerText.includes('what are the results') || lowerText.includes('results')) {
+                    response = "Analysis complete. Key opportunities identified: 1) The 'Beverages' category has a 35% higher margin. 2) The Kumasi branch shows a 20% week-over-week growth in new customers. I suggest focusing marketing efforts there.";
+                } else if (lowerText.includes('how long') || lowerText.includes('take?')) {
+                    response = "My analysis is instant, based on the latest real-time data. What would you like to know?";
+                } else if (lowerText.includes('hello') || lowerText.includes('hi')) {
+                    response = "Hello! How can I assist you with your business operations today?";
+                }
+
+                body.innerHTML += `
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 35px; height: 35px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;"><i class="fas fa-robot"></i></div>
+                        <div style="background: white; padding: 10px 15px; border-radius: 0 15px 15px 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); max-width: 80%; font-size: 14px; line-height: 1.5;">
+                            ${response}
+                        </div>
+                    </div>
+                `;
+                body.scrollTop = body.scrollHeight;
+            }, 1000);
+        }
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+
+        // Tax Management Functions
+        async function openTaxModal() {
+            document.getElementById('taxModal').classList.add('active');
+            await loadTaxes();
+        }
+
+        async function loadTaxes() {
+            const list = document.getElementById('taxList');
+            try {
+                const token = sessionStorage.getItem('authToken');
+                
+                // Fetch both taxes and settings (for System VAT)
+                const [taxesRes, settingsRes] = await Promise.all([
+                    fetch('/api/taxes', { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch('/api/settings', { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
+
+                const taxes = await taxesRes.json();
+                const settings = await settingsRes.json();
+                const vatRate = settings.vat_rate !== undefined && settings.vat_rate !== null ? parseFloat(settings.vat_rate) : 15.00;
+
+                let html = '';
+
+                // Only show System VAT if it's greater than 0
+                if (vatRate > 0) {
+                    html += `
+                    <div class="tax-item">
+                        <div>
+                            <strong style="font-size: 14px; color: #333;">VAT</strong>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span class="tax-badge">${vatRate}%</span>
+                            <button onclick="deleteSystemVat()" class="btn-delete" title="Remove Tax" style="background:none; border:none; color:#ef4444; cursor:pointer;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>`;
+                }
+
+                if (taxes.length === 0 && vatRate <= 0) {
+                    html += '<p style="color: #666; font-style: italic; text-align: center; padding: 20px;">No active tax rules.</p>';
+                }
+
+                html += taxes.map(tax => `
+                    <div class="tax-item">
+                        <div>
+                            <strong style="font-size: 14px; color: #333;">${tax.name}</strong>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span class="tax-badge">${tax.rate}%</span>
+                            <button onclick="deleteTax(${tax.id})" class="btn-delete" title="Remove Tax" style="background:none; border:none; color:#ef4444; cursor:pointer;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                list.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+                list.innerHTML = '<p style="color: red; text-align: center;">Error loading taxes.</p>';
+            }
+        }
+
+        async function handleAddTax(e) {
+            e.preventDefault();
+            const name = document.getElementById('newTaxName').value;
+            const rate = document.getElementById('newTaxRate').value;
+            const token = sessionStorage.getItem('authToken');
+
+            try {
+                const res = await fetch('/api/taxes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ name, rate })
+                });
+                if (res.ok) {
+                    document.getElementById('newTaxName').value = '';
+                    document.getElementById('newTaxRate').value = '';
+                    showToast('Tax rule added');
+                    loadTaxes();
+                    generateReport();
+                } else showToast('Failed to add tax rule');
+            } catch (err) { console.error(err); showToast('Error connecting to server'); }
+        }
+
+        async function deleteSystemVat() {
+            if (!confirm('Are you sure you want to remove the System VAT?')) return;
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/settings/vat', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) { 
+                    showToast('System VAT removed');
+                    loadTaxes(); 
+                    generateReport(); 
+                } else showToast('Failed to delete VAT');
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteTax(id) {
+            if (!confirm('Remove this tax rule?')) return;
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch(`/api/taxes/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    showToast('Tax rule removed');
+                    loadTaxes();
+                    generateReport();
+                }
+                else showToast('Failed to delete tax rule');
+            } catch (err) { console.error(err); }
+        }
+
+        async function generateReport() {
+            const start = document.getElementById('reportStart').value;
+            const end = document.getElementById('reportEnd').value;
+            const branch = document.getElementById('reportBranch').value;
+            const token = sessionStorage.getItem('authToken');
+            
+            const tbody = document.getElementById('reportTableBody');
+            const theadRow = document.querySelector('#reportTable thead tr');
+            
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:30px;">Generating report...</td></tr>';
+
+            try {
+                const res = await fetch(`/api/ceo/tax-report?startDate=${start}&endDate=${end}&branch=${encodeURIComponent(branch)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if(res.ok) {
+                    const data = await res.json();
+                    const rules = data.rules || [];
+                    const report = data.report || [];
+
+                    // 1. Rebuild Header dynamically based on active rules
+                    let headerHTML = `
+                        <th>Branch</th>
+                        <th style="text-align:right;">Gross Sales</th>
+                        <th style="text-align:right;">Net Sales</th>
+                        <th style="text-align:right; color:var(--primary-color);">Total Tax</th>
+                    `;
+                    
+                    rules.forEach(r => {
+                        headerHTML += `<th style="text-align:right; font-size:11px;">${r.name} (${r.rate}%)</th>`;
+                    });
+                    theadRow.innerHTML = headerHTML;
+
+                    // 2. Build Body
+                    if(report.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="${4 + rules.length}" style="text-align:center; padding:30px;">No sales data found for this period.</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = report.map(row => {
+                        let rowHTML = `
+                            <tr>
+                                <td style="font-weight:600;">${row.branch}</td>
+                                <td style="text-align:right;">₵${row.grossRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td style="text-align:right;">₵${row.netRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td style="text-align:right; font-weight:bold; color:var(--primary-color);">₵${row.totalTax.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        `;
+                        
+                        // Add columns for each rule
+                        rules.forEach(rule => {
+                            // Find matching breakdown item
+                            const breakdownItem = row.breakdown.find(b => b.name === rule.name);
+                            const amount = breakdownItem ? breakdownItem.amount : 0;
+                            rowHTML += `<td style="text-align:right; color:#666;">₵${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>`;
+                        });
+                        
+                        rowHTML += `</tr>`;
+                        return rowHTML;
+                    }).join('');
+                    
+                    // Add Total Row
+                    if(report.length > 0) {
+                        const totalGross = report.reduce((sum, r) => sum + r.grossRevenue, 0);
+                        const totalNet = report.reduce((sum, r) => sum + r.netRevenue, 0);
+                        const totalTax = report.reduce((sum, r) => sum + r.totalTax, 0);
+                        
+                        let totalRowHTML = `
+                            <tr style="background:#f8fafc; font-weight:bold; border-top:2px solid #e2e8f0;">
+                                <td>TOTAL</td>
+                                <td style="text-align:right;">₵${totalGross.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td style="text-align:right;">₵${totalNet.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td style="text-align:right; color:var(--primary-color);">₵${totalTax.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        `;
+                        
+                        rules.forEach(rule => {
+                            const ruleTotal = report.reduce((sum, row) => {
+                                const item = row.breakdown.find(b => b.name === rule.name);
+                                return sum + (item ? item.amount : 0);
+                            }, 0);
+                            totalRowHTML += `<td style="text-align:right;">₵${ruleTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>`;
+                        });
+                        
+                        totalRowHTML += `</tr>`;
+                        tbody.innerHTML += totalRowHTML;
+                    }
+
+                }
+            } catch(e) { console.error(e); }
+        }
+    </script>
+</body>
+</html>

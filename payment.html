@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint | Payment</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --gray-light: #f5f7fa;
+            --success-color: #2e7d32;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background: var(--gray-light); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 0 25px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .brand { font-size: 24px; font-weight: 700; letter-spacing: 1px; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+        .back-btn { color: white; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 14px; opacity: 0.9; }
+        .back-btn:hover { opacity: 1; }
+
+        /* Main Layout */
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            width: 90%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+        /* Left: Summary */
+        .total-display { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+        .total-label { font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .total-amount { font-size: 48px; font-weight: 700; color: var(--primary-color); margin-top: 5px; }
+        
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; color: #555; }
+        .summary-row.highlight { font-weight: 600; color: #333; border-top: 1px dashed #ddd; padding-top: 12px; margin-top: 12px; }
+
+        /* Right: Payment Methods */
+        .methods-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        .method-btn {
+            padding: 15px; border: 2px solid #eee; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.2s;
+        }
+        .method-btn:hover { border-color: #ccc; }
+        .method-btn.active { border-color: var(--primary-color); background: #f0f7ff; color: var(--primary-color); }
+        .method-icon { font-size: 24px; margin-bottom: 5px; display: block; }
+        .method-name { font-size: 12px; font-weight: 600; }
+
+        /* Input Sections */
+        .payment-input-group { display: none; animation: fadeIn 0.3s; }
+        .payment-input-group.active { display: block; }
+        
+        .input-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; color: #555; }
+        .input-field {
+            width: 100%; padding: 15px; font-size: 18px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s;
+        }
+        .input-field:focus { border-color: var(--primary-color); }
+
+        .change-display {
+            margin-top: 20px; background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center; color: var(--success-color);
+        }
+        .change-label { font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .change-amount { font-size: 24px; font-weight: 700; }
+
+        .provider-select {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; outline: none;
+        }
+
+        .btn-confirm {
+            width: 100%; padding: 16px; background: var(--success-color); color: white; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 30px; transition: 0.2s;
+        }
+        .btn-confirm:hover { opacity: 0.9; }
+        .btn-confirm:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 8px 25px;
+            display: flex;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            margin-top: auto;
+        }
+
+        /* Success Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none; justify-content: center; align-items: center;
+            z-index: 3000; backdrop-filter: blur(4px);
+        }
+        .modal-box {
+            background: white; padding: 40px; border-radius: 16px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90%; width: 350px;
+        }
+        .modal-icon { font-size: 64px; color: var(--success-color); margin-bottom: 20px; }
+        .modal-title { font-size: 20px; font-weight: 700; color: #333; margin-bottom: 10px; }
+        .modal-text { color: #666; font-size: 14px; }
+        
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* MANAGER TOKEN MODAL */
+        .token-modal {
+            display:none;
+            position:fixed;
+            top:0;left:0;
+            width:100%;height:100%;
+            background:rgba(0,0,0,0.6);
+            z-index:10002;
+            align-items:center;
+            justify-content:center;
+            backdrop-filter: blur(2px);
+        }
+        .token-modal.active {
+            display:flex;
+        }
+        .token-content {
+            background:white;
+            border-radius:12px;
+            width:90%;
+            max-width:350px;
+            padding:30px;
+            text-align:center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .token-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 24px;
+            letter-spacing: 8px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 20px 0;
+            outline: none;
+            transition: 0.3s;
+            font-family: monospace;
+        }
+        .token-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(26, 42, 108, 0.1);
+        }
+
+        /* Credit Customer Search Styles */
+        .customer-search-box {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+            font-size: 16px; margin-bottom: 10px; outline: none;
+        }
+        .customer-list {
+            max-height: 150px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; margin-bottom: 15px;
+            display: none; background: white;
+        }
+        .customer-item {
+            padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between;
+        }
+        .customer-item:hover { background: #f9f9f9; }
+        .selected-customer-card {
+            background: #f0f7ff; border: 1px solid #cce5ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: left;
+        }
+        .customer-detail-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <a href="pos" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Register</a>
+    </header>
+
+    <div class="container">
+        <!-- Left: Order Summary -->
+        <div class="card">
+            <div class="total-display">
+                <div class="total-label">Total Amount Due</div>
+                <div class="total-amount" id="displayTotal">₵0.00</div>
+            </div>
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span id="displaySubtotal">₵0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Discount</span>
+                <span id="displayDiscount" style="color: var(--success-color);">₵0.00</span>
+            </div>
+            <div id="taxContainer"></div>
+            <div class="summary-row highlight">
+                <span>Grand Total</span>
+                <span id="displayGrandTotal">₵0.00</span>
+            </div>
+        </div>
+
+        <!-- Right: Payment Input -->
+        <div class="card">
+            <div class="methods-grid">
+                <div class="method-btn active" onclick="selectMethod('cash')">
+                    <i class="fas fa-money-bill-wave method-icon"></i>
+                    <span class="method-name">Cash</span>
+                </div>
+                <div class="method-btn" onclick="selectMethod('momo')">
+                    <i class="fas fa-mobile-alt method-icon"></i>
+                    <span class="method-name">Mobile Money</span>
+                </div>
+                <div class="method-btn" onclick="selectMethod('card')">
+                    <i class="fas fa-credit-card method-icon"></i>
+                    <span class="method-name">Card</span>
+                </div>
+                <div class="method-btn" onclick="selectMethod('credit')">
+                    <i class="fas fa-address-book method-icon"></i>
+                    <span class="method-name">Store Credit</span>
+                </div>
+            </div>
+
+            <!-- CASH SECTION -->
+            <div id="cash-section" class="payment-input-group active">
+                <label class="input-label">Amount Received (₵)</label>
+                <input type="number" id="amountTendered" class="input-field" placeholder="0.00" oninput="calculateChange()">
+                
+                <div class="change-display">
+                    <div class="change-label">Change Due</div>
+                    <div class="change-amount" id="changeAmount">₵0.00</div>
+                </div>
+            </div>
+
+            <!-- MOMO SECTION -->
+            <div id="momo-section" class="payment-input-group">
+                <label class="input-label">Select Provider</label>
+                <select class="provider-select">
+                    <option value="mtn">MTN Mobile Money</option>
+                    <option value="voda">Vodafone Cash</option>
+                    <option value="tigo">AirtelTigo Money</option>
+                </select>
+                <label class="input-label">Customer Phone Number</label>
+                <input type="tel" id="momoPhone" class="input-field" placeholder="024XXXXXXX" oninput="validatePayment()">
+            </div>
+
+            <!-- CARD SECTION -->
+            <div id="card-section" class="payment-input-group">
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    <i class="fas fa-credit-card" style="font-size: 40px; margin-bottom: 10px;"></i>
+                    <p>Process payment on POS terminal.</p>
+                </div>
+                <label class="input-label">Transaction Reference (from Receipt)</label>
+                <input type="text" id="cardRef" class="input-field" placeholder="Enter Ref / Auth Code" oninput="validatePayment()">
+            </div>
+
+            <!-- CREDIT SECTION -->
+            <div id="credit-section" class="payment-input-group">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <i class="fas fa-address-book" style="font-size: 30px; color: var(--primary-color);"></i>
+                    <p style="font-size:13px; color:#666;">Search and select a credit customer</p>
+                </div>
+
+                <input type="text" id="creditSearchInput" class="customer-search-box" placeholder="Search Name or Phone..." onkeyup="searchCreditCustomers()" autocomplete="off">
+                <div id="creditSearchResults" class="customer-list"></div>
+
+                <div id="creditCustomerDetails" class="selected-customer-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h4 id="ccName" style="margin:0; color:var(--primary-color);">Customer Name</h4>
+                        <button onclick="clearCreditCustomer()" style="background:none; border:none; color:#c62828; cursor:pointer; font-size:12px;">Change</button>
+                    </div>
+                    <div class="customer-detail-row"><span>Phone:</span> <span id="ccPhone">-</span></div>
+                    <div class="customer-detail-row"><span>Credit Limit:</span> <span id="ccLimit">₵0.00</span></div>
+                    <div class="customer-detail-row"><span>Current Debt:</span> <span id="ccDebt" style="color:#c62828;">₵0.00</span></div>
+                    <div class="customer-detail-row" style="border-top:1px dashed #ccc; padding-top:5px; margin-top:5px;">
+                        <strong>Available:</strong> <strong id="ccAvailable" style="color:#2e7d32;">₵0.00</strong>
+                    </div>
+                </div>
+
+                <div id="creditOverrideUI" style="display:none; text-align: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd;">
+                    <p style="color: #c62828; font-size: 13px; margin-bottom: 10px;">Credit limit exceeded.</p>
+                    <button type="button" onclick="requestOverride()" style="background: #ef6c00; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-user-shield"></i> Request Manager Override
+                    </button>
+                </div>
+            </div>
+
+            <button id="confirmBtn" class="btn-confirm" onclick="processPayment()" disabled>Confirm Payment</button>
+        </div>
+    </div>
+
+    <!-- Manager Token Modal -->
+    <div id="managerTokenModal" class="token-modal">
+        <div class="token-content">
+            <div style="margin-bottom:20px;">
+                <i class="fas fa-user-shield" style="font-size:40px; color:var(--primary-color);"></i>
+            </div>
+            <h3 style="color:var(--primary-color); margin-bottom:10px;">Manager Authorization</h3>
+            <p style="color:#666; font-size:14px;">Enter authorization code to access Store Credit</p>
+            
+            <input type="password" id="managerTokenInput" class="token-input" maxlength="6" placeholder="••••••" autocomplete="off">
+            <div id="tokenError" style="color:#c62828; font-size:13px; margin-bottom:15px; display:none;">Invalid Token</div>
+            
+            <div style="display:flex; gap:10px;">
+                <button onclick="closeManagerTokenModal()" class="btn-confirm" style="background:#eee; color:#333; margin-top:0;">Cancel</button>
+                <button onclick="verifyManagerToken()" class="btn-confirm" style="margin-top:0;">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="modal-title" id="modalMessage">Payment Successful!</div>
+            <div class="modal-text">Printing Receipt...</div>
+        </div>
+    </div>
+
+    <footer>
+        <div>&copy; 2026 Footprint Retail Systems. All rights reserved.</div>
+    </footer>
+
+    <script>
+        let totalDue = 0;
+        let transactionId = null;
+        let currentCustomer = null;
+        let overrideApproved = false;
+        let isCreditAuthorized = false;
+        let allCreditCustomers = [];
+
+        // 1. Load Sale Data from DB
+        const urlParams = new URLSearchParams(window.location.search);
+        transactionId = urlParams.get('id');
+
+        if (transactionId) {
+            sessionStorage.setItem('currentPaymentId', transactionId);
+            const cleanPath = window.location.pathname.replace(/\.html$/, '');
+            window.history.replaceState({}, document.title, cleanPath);
+        } else {
+            transactionId = sessionStorage.getItem('currentPaymentId');
+        }
+
+        if (!transactionId) {
+            alert("No transaction ID found.");
+            window.location.href = 'pos';
+        } else {
+            const token = sessionStorage.getItem('authToken');
+            fetch(`/transactions/${transactionId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(async res => {
+                    if (!res.ok) {
+                        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    totalDue = parseFloat(data.total_amount);
+                    
+                    document.getElementById('displayTotal').textContent = `₵${totalDue.toFixed(2)}`;
+                    document.getElementById('displayGrandTotal').textContent = `₵${totalDue.toFixed(2)}`;
+                    document.getElementById('displaySubtotal').textContent = `₵${parseFloat(data.subtotal).toFixed(2)}`;
+                    
+                    // Render Tax Breakdown
+                    const taxContainer = document.getElementById('taxContainer');
+                    if (data.taxBreakdown && data.taxBreakdown.length > 0) {
+                        taxContainer.innerHTML = data.taxBreakdown.map(t => `
+                            <div class="summary-row">
+                                <span>${t.name} (${t.rate}%)</span>
+                                <span>₵${parseFloat(t.amount).toFixed(2)}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        taxContainer.innerHTML = `<div class="summary-row"><span>VAT</span><span>₵${parseFloat(data.tax).toFixed(2)}</span></div>`;
+                    }
+                    
+                    document.getElementById('displayDiscount').textContent = `-₵${parseFloat(data.discount || 0).toFixed(2)}`;
+                    
+                    // Load customer info if attached
+                    if (data.customer_id) {
+                        loadCustomer(data.customer_id);
+                    } else {
+                        // If no customer attached, load all for search
+                        loadAllCustomers();
+                    }
+                })
+                .catch(err => {
+                    console.error("Transaction load error:", err);
+                    alert("Error loading transaction: " + err.message);
+                    window.location.href = 'pos';
+                });
+        }
+
+        function loadCustomer(id) {
+            const token = sessionStorage.getItem('authToken');
+            fetch(`/api/customers/${id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+                .then(res => res.json())
+                .then(c => {
+                    currentCustomer = c;
+                    displaySelectedCustomer(c);
+                    validatePayment(); // Re-validate in case credit method is selected
+                });
+        }
+
+        function loadAllCustomers() {
+            const token = sessionStorage.getItem('authToken');
+            fetch('/api/customers', { headers: { 'Authorization': `Bearer ${token}` } })
+                .then(res => res.json())
+                .then(data => {
+                    allCreditCustomers = data;
+                })
+                .catch(e => console.error("Error loading customers", e));
+        }
+
+        let selectedMethod = 'cash';
+
+        function selectMethod(method) {
+            if (method === 'credit' && !isCreditAuthorized) {
+                openManagerTokenModal();
+                return;
+            }
+            
+            if (method === 'credit' && allCreditCustomers.length === 0) {
+                loadAllCustomers();
+            }
+
+            selectedMethod = method;
+            console.log(`🏪 Payment method selected: ${method.toUpperCase()}`);
+            
+            // UI Updates
+            document.querySelectorAll('.method-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            document.querySelectorAll('.payment-input-group').forEach(grp => grp.classList.remove('active'));
+            document.getElementById(`${method}-section`).classList.add('active');
+
+            overrideApproved = false; // Reset override when switching methods
+            // Reset validation
+            validatePayment();
+        }
+
+        function calculateChange() {
+            const tendered = parseFloat(document.getElementById('amountTendered').value) || 0;
+            const change = tendered - totalDue;
+            
+            const changeEl = document.getElementById('changeAmount');
+            if (change >= 0) {
+                changeEl.textContent = `₵${change.toFixed(2)}`;
+                changeEl.style.color = 'var(--success-color)';
+            } else {
+                changeEl.textContent = `Due: ₵${Math.abs(change).toFixed(2)}`;
+                changeEl.style.color = '#c62828';
+            }
+            validatePayment();
+        }
+
+        function validatePayment() {
+            const btn = document.getElementById('confirmBtn');
+            if (selectedMethod === 'cash') {
+                const tendered = parseFloat(document.getElementById('amountTendered').value) || 0;
+                // Allow payment if tendered is sufficient (floating point tolerance)
+                btn.disabled = tendered < (totalDue - 0.01);
+            } else if (selectedMethod === 'momo') {
+                // For Momo, require phone number length (e.g., 10 digits)
+                const phone = document.getElementById('momoPhone').value;
+                btn.disabled = phone.length < 10;
+            } else if (selectedMethod === 'card') {
+                // Require transaction reference
+                const ref = document.getElementById('cardRef').value.trim();
+                btn.disabled = ref.length < 4;
+            } else if (selectedMethod === 'credit') {
+                const overrideUI = document.getElementById('creditOverrideUI');
+                
+                if (!currentCustomer) {
+                    btn.disabled = true;
+                    if(overrideUI) overrideUI.style.display = 'none';
+                } else {
+                    const available = parseFloat(currentCustomer.credit_limit) - parseFloat(currentCustomer.current_balance);
+                    const hasCredit = available >= totalDue;
+                    
+                    if (hasCredit || overrideApproved) {
+                        btn.disabled = false;
+                        if(overrideUI) overrideUI.style.display = 'none';
+                    } else {
+                        btn.disabled = true;
+                        if(overrideUI) overrideUI.style.display = 'block';
+                    }
+                }
+            }
+        }
+
+        function searchCreditCustomers() {
+            const query = document.getElementById('creditSearchInput').value.toLowerCase();
+            const list = document.getElementById('creditSearchResults');
+            
+            if (query.length < 1) {
+                list.style.display = 'none';
+                return;
+            }
+            
+            const matches = allCreditCustomers.filter(c => 
+                (c.name.toLowerCase().includes(query) || 
+                (c.phone && c.phone.includes(query))) &&
+                (c.status === 'Active' || !c.status)
+            );
+            
+            list.innerHTML = matches.map(c => `
+                <div class="customer-item" onclick="selectCreditCustomer(${c.id})">
+                    <strong>${c.name}</strong>
+                    <span>${c.phone || ''}</span>
+                </div>
+            `).join('');
+            
+            list.style.display = matches.length ? 'block' : 'none';
+        }
+
+        function selectCreditCustomer(id) {
+            const customer = allCreditCustomers.find(c => c.id === id);
+            if (customer) {
+                currentCustomer = customer;
+                console.log('👤 CUSTOMER SELECTED:', customer.name, '| ID:', customer.id, '| Available Credit: ₵' + (parseFloat(customer.credit_limit) - parseFloat(customer.current_balance)).toFixed(2));
+                displaySelectedCustomer(customer);
+                validatePayment();
+            }
+        }
+
+        function displaySelectedCustomer(c) {
+            document.getElementById('creditSearchInput').style.display = 'none';
+            document.getElementById('creditSearchResults').style.display = 'none';
+            
+            document.getElementById('ccName').textContent = c.name;
+            document.getElementById('ccPhone').textContent = c.phone || 'N/A';
+            
+            const limit = parseFloat(c.credit_limit);
+            const debt = parseFloat(c.current_balance);
+            const available = limit - debt;
+            
+            document.getElementById('ccLimit').textContent = `₵${limit.toFixed(2)}`;
+            document.getElementById('ccDebt').textContent = `₵${debt.toFixed(2)}`;
+            document.getElementById('ccAvailable').textContent = `₵${available.toFixed(2)}`;
+            
+            document.getElementById('creditCustomerDetails').style.display = 'block';
+        }
+
+        function clearCreditCustomer() {
+            currentCustomer = null;
+            document.getElementById('creditCustomerDetails').style.display = 'none';
+            document.getElementById('creditSearchInput').style.display = 'block';
+            document.getElementById('creditSearchInput').value = '';
+            document.getElementById('creditSearchInput').focus();
+            validatePayment();
+        }
+
+        async function processPayment() {
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = true;
+            btn.textContent = "Processing...";
+
+            if (selectedMethod === 'momo') {
+                const phone = document.getElementById('momoPhone').value;
+                const provider = document.querySelector('.provider-select').value;
+
+                const token = sessionStorage.getItem('authToken');
+                try {
+                    const res = await fetch('/pay/momo', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            amount: totalDue,
+                            phone: phone,
+                            provider: provider
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        // Start polling for status instead of immediate success
+                        checkStatus(data.transactionId);
+                    } else {
+                        alert("Payment Failed: " + data.message);
+                        btn.disabled = false;
+                        btn.textContent = "Confirm Payment";
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Connection Error");
+                    btn.disabled = false;
+                    btn.textContent = "Confirm Payment";
+                }
+            } else if (selectedMethod === 'credit') {
+                // Store Credit
+                document.getElementById('modalMessage').textContent = `Charged to Account: ${currentCustomer.name}`;
+                document.getElementById('successModal').style.display = 'flex';
+                
+                setTimeout(() => {
+                    finalizeSale('credit', 'CREDIT-' + Date.now(), currentCustomer ? currentCustomer.id : null);
+                }, 2000);
+            } else {
+                // Cash or Card (Existing Logic)
+                let trxRef = 'TRX-' + Date.now();
+                if (selectedMethod === 'card') {
+                    trxRef = document.getElementById('cardRef').value.trim();
+                }
+                
+                // Show Custom Modal instead of Alert
+                document.getElementById('modalMessage').textContent = `Payment Successful via ${selectedMethod.toUpperCase()}!`;
+                document.getElementById('successModal').style.display = 'flex';
+                
+                setTimeout(() => {
+                    finalizeSale(selectedMethod, trxRef);
+                }, 2500);
+            }
+        }
+
+        async function requestOverride() {
+            const code = prompt("MANAGER: Enter Authorization Code to override credit limit:");
+            if (!code) return;
+
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/verify-auth-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ code })
+                });
+                
+                if (res.ok) {
+                    overrideApproved = true;
+                    alert("Override Approved. You may proceed.");
+                    validatePayment();
+                } else {
+                    alert("Invalid Code. Override denied.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Verification failed. Check connection.");
+            }
+        }
+
+        async function checkStatus(referenceId) {
+            const btn = document.getElementById('confirmBtn');
+            btn.textContent = "Waiting for approval...";
+            
+            let attempts = 0;
+            const maxAttempts = 15; // 30 seconds timeout
+
+            const poll = setInterval(async () => {
+                attempts++;
+                try {
+                    const token = sessionStorage.getItem('authToken');
+                    const res = await fetch(`/pay/momo/status/${referenceId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    
+                    console.log('Payment Status:', data.status);
+
+                    if (data.status === 'SUCCESSFUL') {
+                        clearInterval(poll);
+                        finalizeSale('momo', referenceId);
+                    } else if (data.status === 'FAILED') {
+                        clearInterval(poll);
+                        alert("Payment Failed or Declined.");
+                        btn.disabled = false;
+                        btn.textContent = "Confirm Payment";
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(poll);
+                        alert("Payment timed out. Please check phone or try again.");
+                        btn.disabled = false;
+                        btn.textContent = "Confirm Payment";
+                    }
+                } catch (err) { console.error(err); }
+            }, 2000); // Check every 2 seconds
+        }
+
+        async function finalizeSale(method, trxId, customerId = null) {
+            // Finalize in Database
+            try {
+                const token = sessionStorage.getItem('authToken');
+                console.log('💾 FINALIZE: Transaction ID:', transactionId, '| Method:', method, '| Receipt:', trxId, '| Customer ID:', customerId);
+                
+                const response = await fetch(`/transactions/${transactionId}/finalize`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        paymentMethod: method,
+                        receiptNumber: trxId,
+                        customerId: customerId
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log('✅ TRANSACTION FINALIZED SUCCESSFULLY with customer ID:', customerId);
+                }
+                
+                window.location.href = `receipt?id=${transactionId}`;
+            } catch (e) { 
+                console.error("❌ Failed to finalize transaction", e); 
+                alert("Error finalizing transaction");
+            }
+        }
+
+        function openManagerTokenModal() {
+            document.getElementById('managerTokenModal').classList.add('active');
+            const input = document.getElementById('managerTokenInput');
+            input.value = '';
+            setTimeout(() => input.focus(), 100);
+            document.getElementById('tokenError').style.display = 'none';
+            
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') verifyManagerToken();
+            };
+        }
+
+        function closeManagerTokenModal() {
+            document.getElementById('managerTokenModal').classList.remove('active');
+        }
+
+        async function verifyManagerToken() {
+            const tokenInput = document.getElementById('managerTokenInput').value;
+            const errorEl = document.getElementById('tokenError');
+            
+            try {
+                const authToken = sessionStorage.getItem('authToken');
+                const res = await fetch('/api/verify-auth-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ code: tokenInput })
+                });
+
+                if (res.ok) {
+                    isCreditAuthorized = true;
+                    overrideApproved = true; // Also approve override if needed
+                    closeManagerTokenModal();
+                    const creditBtn = document.querySelector('.method-btn[onclick*="credit"]');
+                    if (creditBtn) creditBtn.click();
+                } else {
+                    errorEl.textContent = "Invalid Token";
+                    errorEl.style.display = 'block';
+                    document.getElementById('managerTokenInput').value = '';
+                }
+            } catch (e) {
+                console.error(e);
+                errorEl.textContent = "Verification failed";
+                errorEl.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

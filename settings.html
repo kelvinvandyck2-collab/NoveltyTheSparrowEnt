@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint | Settings</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary-color: #1a2a6c; --secondary-color: #b21f1f; --accent-color: #fdbb2d; --text-color: #333; --gray-light: #f5f7fa; --sidebar-width: 260px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--gray-light); display: flex; flex-direction: column; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+        .brand { padding: 25px; font-size: 24px; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+        .nav-links { flex: 1; padding-top: 20px; }
+        .nav-item { display: flex; align-items: center; padding: 15px 25px; color: rgba(255,255,255,0.7); text-decoration: none; transition: 0.3s; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left: 4px solid var(--accent-color); }
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+        .nav-section { padding: 15px 25px 5px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; }
+        .user-profile { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; }
+        .user-avatar { width: 40px; height: 40px; background: var(--secondary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; }
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 30px 40px; }
+        
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 600px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn-save { background: var(--primary-color); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+
+        /* Notification Toast */
+        .notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+            background-color: #333; color: white; padding: 12px 24px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 2000; opacity: 0;
+            transition: all 0.3s ease; pointer-events: none; font-size: 14px; font-weight: 500;
+        }
+        .notification.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
+        .notification.success { background-color: #2e7d32; }
+        .notification.error { background-color: #c62828; }
+
+        /* Footer */
+        footer {
+            margin-left: var(--sidebar-width);
+            padding: 10px;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        /* Mobile Responsive Styles */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 20px; padding-top: 70px; }
+            .mobile-menu-btn { display: block; }
+            .overlay.active { display: block; }
+            footer { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div id="notification" class="notification"></div>
+
+    <div class="sidebar">
+        <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <div class="nav-links">
+            <a href="dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            
+            <div class="nav-section">Sales & Finance</div>
+            <a href="sales-dashboard" class="nav-item"><i class="fas fa-chart-pie"></i> Sales Dashboard</a>
+            <a href="profitability" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Profitability</a>
+            <a href="promotions" class="nav-item"><i class="fas fa-tags"></i> Promotions</a>
+
+            <div class="nav-section">Operations</div>
+            <a href="pos-register" class="nav-item"><i class="fas fa-users"></i> Staff Management</a>
+            <a href="credit-customers" class="nav-item"><i class="fas fa-address-book"></i> Credit Clients</a>
+            <a href="inventory" class="nav-item"><i class="fas fa-warehouse"></i> Inventory & Supply Chain</a>
+            <a href="reports" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
+            <a href="settings" class="nav-item active"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="user-profile">
+            <div class="user-avatar"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+                <div style="font-weight: bold;" id="userName">...</div>
+                <div style="font-size: 12px; opacity: 0.7;" id="userRole">...</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="margin-left: auto; cursor: pointer;" onclick="logout()" title="Logout"></i>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <h2 style="margin-bottom: 30px;">System Settings</h2>
+        <div class="card">
+            <form>
+                <div class="form-group">
+                    <label>Store Name</label>
+                    <input type="text" id="storeName" value="Footprint Retail Systems">
+                </div>
+                <div class="form-group">
+                    <label>Currency Symbol</label>
+                    <select id="currencySymbol">
+                        <option selected>₵ (GHS)</option>
+                        <option>$ (USD)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>VAT Rate (%)</label>
+                    <input type="number" id="vatRate" value="15">
+                </div>
+                <div class="form-group">
+                    <label>Receipt Footer Message</label>
+                    <input type="text" id="receiptFooter" value="Thank you for shopping with us!">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 Footprint Retail Systems
+    </footer>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load Settings from DB
+            const token = sessionStorage.getItem('authToken');
+            fetch('/api/settings', { headers: { 'Authorization': `Bearer ${token}` } })
+                .then(res => {
+                    if (!res.ok) {
+                        if (res.status === 401 || res.status === 403) window.location.href = '/login';
+                        return null;
+                    }
+                    return res.json();
+                })
+                .then(settings => {
+                    if (!settings) return;
+                    if(settings.store_name) document.getElementById('storeName').value = settings.store_name;
+                    if(settings.currency_symbol) document.getElementById('currencySymbol').value = settings.currency_symbol;
+                    if(settings.vat_rate) document.getElementById('vatRate').value = settings.vat_rate;
+                    if(settings.receipt_footer) document.getElementById('receiptFooter').value = settings.receipt_footer;
+                    
+                    // Cache for offline/quick access
+                    localStorage.setItem('posSettings', JSON.stringify(settings));
+                })
+                .catch(err => console.error('Error loading settings:', err));
+
+            try {
+                const userStr = sessionStorage.getItem('currentUser');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    if(document.getElementById('userName')) document.getElementById('userName').textContent = user.name || user.fullName || 'User';
+                    if(document.getElementById('userRole')) document.getElementById('userRole').textContent = user.role === 'manager' ? 'Store Manager' : (user.role === 'admin' ? 'Administrator' : (user.role || 'Staff'));
+                }
+            } catch (e) { console.error(e); }
+        });
+
+        function showNotification(message, type) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification show ${type}`;
+            setTimeout(() => { notif.className = 'notification'; }, 3000);
+        }
+
+        async function saveSettings() {
+            const settings = {
+                storeName: document.getElementById('storeName').value,
+                currencySymbol: document.getElementById('currencySymbol').value,
+                vatRate: document.getElementById('vatRate').value,
+                receiptFooter: document.getElementById('receiptFooter').value
+            };
+            
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(settings)
+                });
+                
+                if (res.ok) {
+                    localStorage.setItem('posSettings', JSON.stringify(settings)); // Update cache
+                    showNotification('Settings saved to database!', 'success');
+                } else {
+                    if (res.status === 403) {
+                        showNotification('Permission denied: You are not authorized to save settings.', 'error');
+                    } else {
+                        showNotification('Failed to save settings', 'error');
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                showNotification('Connection error', 'error');
+            }
+        }
+
+        async function logout() {
+            try {
+                const token = sessionStorage.getItem('authToken');
+                await fetch('/api/logout', { 
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                window.location.href = '/login';
+            } catch (e) {
+                console.error(e);
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</body>
+</html>

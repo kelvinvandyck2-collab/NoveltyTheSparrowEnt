@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint | Reports</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
+    <style>
+        :root { --primary-color: #1a2a6c; --secondary-color: #b21f1f; --accent-color: #fdbb2d; --text-color: #333; --gray-light: #f5f7fa; --sidebar-width: 260px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--gray-light); display: flex; flex-direction: column; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+        .brand { padding: 25px; font-size: 24px; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+        .nav-links { flex: 1; padding-top: 20px; }
+        .nav-item { display: flex; align-items: center; padding: 15px 25px; color: rgba(255,255,255,0.7); text-decoration: none; transition: 0.3s; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left: 4px solid var(--accent-color); }
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+        .nav-section { padding: 15px 25px 5px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; }
+        .user-profile { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; }
+        .user-avatar { width: 40px; height: 40px; background: var(--secondary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; }
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 30px 40px; }
+        
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; color: #888; font-weight: 500; border-bottom: 1px solid #eee; }
+        td { padding: 15px; border-bottom: 1px solid #eee; color: var(--text-color); font-size: 14px; }
+
+        /* Footer */
+        footer {
+            margin-left: var(--sidebar-width);
+            padding: 10px;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        /* Tab System */
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Menu Grid */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
+        .menu-card {
+            background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center; cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: rgba(26, 42, 108, 0.1); }
+        .menu-card i { font-size: 40px; color: var(--primary-color); margin-bottom: 20px; transition: 0.3s; }
+        .menu-card:hover i { transform: scale(1.1); color: var(--secondary-color); }
+        .menu-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: #333; }
+        .menu-card p { font-size: 13px; color: #777; line-height: 1.5; }
+
+        /* Back Link */
+        .back-link { display: inline-flex; align-items: center; gap: 8px; color: #64748b; background: white; padding: 10px 20px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 600; margin-bottom: 25px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .back-link:hover { color: var(--primary-color); transform: translateX(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        /* Pagination */
+        .pagination-controls { display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+        .btn-page { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        .btn-page:hover:not(:disabled) { background: #f5f5f5; border-color: #ccc; }
+        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+        .page-info { font-size: 14px; color: #666; }
+        .limit-select { padding: 8px; border: 1px solid #ddd; border-radius: 6px; outline: none; font-size: 14px; cursor: pointer; }
+
+        /* Mobile Responsive Styles */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 20px; padding-top: 70px; }
+            .mobile-menu-btn { display: block; }
+            .overlay.active { display: block; }
+            .menu-grid { grid-template-columns: 1fr; }
+            .card { overflow-x: auto; }
+            footer { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="sidebar">
+        <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <div class="nav-links">
+            <a href="dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            
+            <div class="nav-section">Sales & Finance</div>
+            <a href="sales-dashboard" class="nav-item"><i class="fas fa-chart-pie"></i> Sales Dashboard</a>
+            <a href="profitability" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Profitability</a>
+            <a href="promotions" class="nav-item"><i class="fas fa-tags"></i> Promotions</a>
+
+            <div class="nav-section">Operations</div>
+            <a href="pos-register" class="nav-item"><i class="fas fa-users"></i> Staff Management</a>
+            <a href="credit-customers" class="nav-item"><i class="fas fa-address-book"></i> Credit Clients</a>
+            <a href="inventory" class="nav-item"><i class="fas fa-warehouse"></i> Inventory & Supply Chain</a>
+            <a href="reports" class="nav-item active"><i class="fas fa-chart-line"></i> Reports</a>
+            <a href="settings" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="user-profile">
+            <div class="user-avatar"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+                <div style="font-weight: bold;" id="userName">...</div>
+                <div style="font-size: 12px; opacity: 0.7;" id="userRole">...</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="margin-left: auto; cursor: pointer;" onclick="logout()" title="Logout"></i>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- 1. OVERVIEW TAB -->
+        <div id="tab-overview" class="tab-content active">
+            <h2 style="margin-bottom: 30px;">Sales Reports</h2>
+            <div class="menu-grid">
+                <div class="menu-card" onclick="switchTab('shifts')">
+                    <i class="fas fa-clock"></i>
+                    <h3>Shift Reports</h3>
+                    <p>View daily shift summaries, cash handling, and staff performance.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('transactions')">
+                    <i class="fas fa-receipt"></i>
+                    <h3>Transaction History</h3>
+                    <p>Browse detailed sales history, filter by cashier, and reprint receipts.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. SHIFT REPORTS TAB -->
+        <div id="tab-shifts" class="tab-content">
+            <div onclick="switchTab('overview')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Reports</div>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Shift Reports</h3>
+                    <input type="text" id="shiftSearch" placeholder="Search cashier..." style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; outline: none;" onkeyup="filterShifts()">
+                </div>
+                <table style="margin-top: 20px;" id="shiftReportTable">
+                    <thead>
+                        <tr>
+                            <th>Staff</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Start Cash</th>
+                            <th>End Cash</th>
+                            <th>Total Sales</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shiftTable"></tbody>
+                </table>
+                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center; border-top: 1px solid #eee; margin-top: 15px;">
+                    <span style="font-size: 13px; color: #666;">Rows per page:</span>
+                    <select id="shiftRowsPerPage" onchange="changeShiftRows()" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 6px; outline: none;">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span id="shiftPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                    <button onclick="changeShiftPage(-1)" id="btnShiftPrev" disabled style="padding: 5px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                    <button onclick="changeShiftPage(1)" id="btnShiftNext" disabled style="padding: 5px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. TRANSACTION HISTORY TAB -->
+        <div id="tab-transactions" class="tab-content">
+            <div onclick="switchTab('overview')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Reports</div>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Transaction History</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="cashierFilter" onchange="filterTransactions()" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; outline: none;">
+                            <option value="">All Cashiers</option>
+                        </select>
+                    </div>
+                </div>
+                <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Transaction ID</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Cashier</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTable">
+                    <!-- JS will populate -->
+                </tbody>
+            </table>
+
+                <!-- Pagination Controls -->
+                <div class="pagination-controls">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 14px; color: #666;">Rows per page:</span>
+                        <select id="rowsPerPage" class="limit-select" onchange="changeRowsPerPage()">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <span id="pageInfo" class="page-info">Page 1 of 1</span>
+                    <button class="btn-page" id="btnPrev" onclick="changePage(-1)" disabled><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn-page" id="btnNext" onclick="changePage(1)" disabled><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 Footprint Retail Systems
+    </footer>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        let allTransactions = [];
+        let filteredTransactions = [];
+        let allShifts = [];
+        let filteredShifts = [];
+        let shiftPage = 1;
+        let shiftRows = 10;
+        let currentPage = 1;
+        let rowsPerPage = 10;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Handle URL parameters for tabs
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab) {
+                switchTab(tab);
+            }
+
+            // Update User Info from Session
+            try {
+                const userStr = sessionStorage.getItem('currentUser');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    if(document.getElementById('userName')) document.getElementById('userName').textContent = user.name || user.fullName || 'User';
+                    if(document.getElementById('userRole')) document.getElementById('userRole').textContent = user.role === 'manager' ? 'Store Manager' : (user.role === 'admin' ? 'Administrator' : (user.role || 'Staff'));
+                }
+            } catch (e) { console.error(e); }
+
+            // 1. Load Shifts
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const res = await fetch('/api/shifts/history', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    allShifts = await res.json();
+                    filteredShifts = [...allShifts];
+                    renderShiftTable();
+                }
+            } catch (e) { console.error("Error loading shifts", e); }
+
+            // 2. Load Transactions (From DB instead of localStorage)
+            try {
+                const token = sessionStorage.getItem('authToken');
+                
+                // Determine endpoint based on user role (Cashiers see only their own)
+                let endpoint = '/transactions/all';
+                const userStr = sessionStorage.getItem('currentUser');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    if (user.role !== 'admin' && user.role !== 'manager') {
+                        endpoint = '/transactions/me';
+                    }
+                }
+
+                const res = await fetch(endpoint, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    allTransactions = await res.json();
+                    
+                    // Populate Cashier Filter
+                    const cashiers = [...new Set(allTransactions.map(t => t.cashier_name || t.cashier || 'Teller'))].sort();
+                    const filterSelect = document.getElementById('cashierFilter');
+                    cashiers.forEach(c => {
+                        const option = document.createElement('option');
+                        option.value = c;
+                        option.textContent = c;
+                        filterSelect.appendChild(option);
+                    });
+
+                    filteredTransactions = [...allTransactions];
+                    renderTransactions();
+                }
+            } catch (e) { console.error("Error loading transactions", e); }
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        function renderTransactions() {
+            const tbody = document.getElementById('reportTable');
+            tbody.innerHTML = '';
+            
+            if (filteredTransactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">No transactions found</td></tr>';
+                updatePaginationInfo();
+                return;
+            }
+
+            // Pagination Logic
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedItems = filteredTransactions.slice(start, end);
+
+            paginatedItems.forEach(t => {
+                const date = new Date(t.created_at || t.date).toLocaleString();
+                const items = t.items || [];
+                const itemCount = items.reduce((sum, i) => sum + i.qty, 0);
+                const total = parseFloat(t.total_amount || t.total || 0);
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${date}</td>
+                        <td>#${(t.receipt_number || t.id).slice(-8)}</td>
+                        <td>${itemCount} items</td>
+                        <td>₵${total.toFixed(2)}</td>
+                        <td>${t.cashier_name || t.cashier || 'Teller'}</td>
+                    </tr>
+                `;
+            });
+            
+            updatePaginationInfo();
+        }
+
+        function updatePaginationInfo() {
+            const totalItems = filteredTransactions.length;
+            const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
+            
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages} (${totalItems} items)`;
+            document.getElementById('btnPrev').disabled = currentPage === 1;
+            document.getElementById('btnNext').disabled = currentPage === totalPages;
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderTransactions();
+        }
+
+        function changeRowsPerPage() {
+            rowsPerPage = parseInt(document.getElementById('rowsPerPage').value);
+            currentPage = 1;
+            renderTransactions();
+        }
+
+        function filterTransactions() {
+            const selected = document.getElementById('cashierFilter').value;
+            if (!selected) {
+                filteredTransactions = [...allTransactions];
+            } else {
+                filteredTransactions = allTransactions.filter(t => (t.cashier_name || t.cashier || 'Teller') === selected);
+            }
+            currentPage = 1;
+            renderTransactions();
+        }
+
+        function renderShiftTable() {
+            const tbody = document.getElementById('shiftTable');
+            tbody.innerHTML = '';
+
+            const start = (shiftPage - 1) * shiftRows;
+            const end = start + shiftRows;
+            const pageData = filteredShifts.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;">No shifts found</td></tr>';
+            } else {
+                pageData.forEach((s) => {
+                    // Find original index for report generation
+                    const originalIndex = allShifts.findIndex(shift => shift.id === s.id);
+                    const start = new Date(s.start_time).toLocaleString();
+                    const end = s.end_time ? new Date(s.end_time).toLocaleString() : '-';
+                    const statusStyle = s.status === 'open' ? 'color:green' : 'color:#666';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${s.user_name || 'Unknown'}</td>
+                            <td>${start}</td>
+                            <td>${end}</td>
+                            <td>₵${parseFloat(s.start_cash).toFixed(2)}</td>
+                            <td>${s.end_cash ? '₵' + parseFloat(s.end_cash).toFixed(2) : '-'}</td>
+                            <td>₵${parseFloat(s.total_sales).toFixed(2)}</td>
+                            <td style="font-weight:bold; text-transform:uppercase; ${statusStyle}">${s.status}</td>
+                            <td>
+                                <button onclick="generateShiftReport(${originalIndex})" title="Download Detailed Report" style="padding: 6px 12px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-file-download"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            updateShiftPagination();
+        }
+
+        function filterShifts() {
+            const input = document.getElementById('shiftSearch');
+            const filter = input.value.toLowerCase();
+            
+            filteredShifts = allShifts.filter(s => {
+                const staffName = (s.user_name || 'Unknown').toLowerCase();
+                const status = (s.status || '').toLowerCase();
+                return staffName.includes(filter) || status.includes(filter);
+            });
+            
+            shiftPage = 1;
+            renderShiftTable();
+        }
+
+        async function loadAuditLogs() {
+            const token = sessionStorage.getItem('authToken');
+            try {
+                const res = await fetch('/api/audit-logs', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    const logs = await res.json();
+                    const tbody = document.getElementById('auditTableBody');
+                    if (logs.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No logs found</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = logs.map(log => {
+                        const details = log.details ? JSON.stringify(log.details) : '-';
+                        return `
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="font-size:12px; padding: 12px;">${new Date(log.created_at).toLocaleString()}</td>
+                                <td style="padding: 12px;">${log.user_name || 'System'}</td>
+                                <td style="padding: 12px;"><span style="font-size:11px; padding:2px 6px; background:#eee; border-radius:4px; text-transform: capitalize;">${log.user_role || '-'}</span></td>
+                                <td style="font-weight:600; color:var(--primary-color); padding: 12px;">${log.action}</td>
+                                <td style="font-size:12px; color:#555; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding: 12px;" title='${details}'>${details}</td>
+                                <td style="font-size:12px; color:#888; padding: 12px;">${log.ip_address || '-'}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function filterAuditLogs() {
+            const input = document.getElementById('auditSearch');
+            const filter = input.value.toLowerCase();
+            const rows = document.getElementById('auditTableBody').getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const text = rows[i].textContent.toLowerCase();
+                rows[i].style.display = text.indexOf(filter) > -1 ? "" : "none";
+            }
+        }
+
+        function changeShiftPage(delta) {
+            shiftPage += delta;
+            renderShiftTable();
+        }
+
+        function changeShiftRows() {
+            shiftRows = parseInt(document.getElementById('shiftRowsPerPage').value);
+            shiftPage = 1;
+            renderShiftTable();
+        }
+
+        function updateShiftPagination() {
+            const totalItems = filteredShifts.length;
+            const totalPages = Math.ceil(totalItems / shiftRows) || 1;
+            
+            document.getElementById('shiftPageInfo').textContent = `Page ${shiftPage} of ${totalPages}`;
+            document.getElementById('btnShiftPrev').disabled = shiftPage === 1;
+            document.getElementById('btnShiftNext').disabled = shiftPage === totalPages;
+        }
+
+        function generateShiftReport(index) {
+            const shift = allShifts[index];
+            if (!shift) return;
+
+            // Filter transactions for this specific shift
+            const shiftTxns = allTransactions.filter(t => {
+                const tTime = new Date(t.created_at || t.date).getTime();
+                const sStart = new Date(shift.start_time).getTime();
+                const sEnd = shift.end_time ? new Date(shift.end_time).getTime() : Date.now();
+                
+                // Match user and time range
+                return t.user_id === shift.user_id && tTime >= sStart && tTime <= sEnd;
+            });
+
+            // Calculate Breakdown Stats
+            const paymentStats = { 'Cash': 0, 'Mobile Money': 0, 'Card': 0 };
+            const productStats = {};
+
+            shiftTxns.forEach(t => {
+                // Payment Breakdown
+                let method = t.payment_method || 'Cash';
+                if (method.toLowerCase().includes('momo') || method.toLowerCase().includes('mobile')) method = 'Mobile Money';
+                else if (method.toLowerCase().includes('card')) method = 'Card';
+                else method = 'Cash';
+                
+                paymentStats[method] = (paymentStats[method] || 0) + parseFloat(t.total_amount || 0);
+
+                // Product Breakdown
+                if (t.items && Array.isArray(t.items)) {
+                    // Calculate ratio to include tax/discount in product totals
+                    let txnSubtotal = parseFloat(t.subtotal || 0);
+                    // If subtotal missing, calculate from items
+                    if (txnSubtotal <= 0) {
+                        txnSubtotal = t.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+                    }
+                    
+                    const txnTotal = parseFloat(t.total_amount || 0);
+                    const ratio = (txnSubtotal > 0 && txnTotal > 0) ? (txnTotal / txnSubtotal) : 1;
+
+                    t.items.forEach(item => {
+                        if (!productStats[item.name]) productStats[item.name] = { qty: 0, total: 0 };
+                        productStats[item.name].qty += item.qty;
+                        productStats[item.name].total += (item.price * item.qty * ratio);
+                    });
+                }
+            });
+
+            // Generate PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header Info
+            doc.setFontSize(18);
+            doc.text("Detailed Shift Report", 14, 20);
+            
+            doc.setFontSize(11);
+            doc.text(`Staff: ${shift.user_name || 'Unknown'}`, 14, 30);
+            doc.text(`Start Time: ${new Date(shift.start_time).toLocaleString()}`, 14, 36);
+            doc.text(`End Time: ${shift.end_time ? new Date(shift.end_time).toLocaleString() : 'Ongoing'}`, 14, 42);
+            doc.text(`Start Cash: ${parseFloat(shift.start_cash).toFixed(2)}`, 14, 48);
+            doc.text(`End Cash: ${shift.end_cash ? parseFloat(shift.end_cash).toFixed(2) : '-'}`, 14, 54);
+
+            // Payment Breakdown Table
+            const paymentData = Object.entries(paymentStats).map(([key, val]) => [key, val.toFixed(2)]);
+            doc.autoTable({
+                head: [['Payment Method', 'Amount (GHS)']],
+                body: paymentData,
+                startY: 60,
+                theme: 'striped',
+                headStyles: { fillColor: [26, 42, 108] }
+            });
+
+            // Products Sold Table
+            const productData = Object.entries(productStats).map(([name, data]) => [name, data.qty, data.total.toFixed(2)]);
+            doc.autoTable({
+                head: [['Product', 'Qty Sold', 'Total (GHS)']],
+                body: productData,
+                startY: doc.lastAutoTable.finalY + 10,
+                theme: 'striped',
+                headStyles: { fillColor: [178, 31, 31] }
+            });
+            
+            doc.save(`shift_report_${shift.id}.pdf`);
+        }
+
+        async function logout() {
+            try {
+                const token = sessionStorage.getItem('authToken');
+                await fetch('/api/logout', { 
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                window.location.href = '/login';
+            } catch (e) {
+                console.error(e);
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</body>
+</html>

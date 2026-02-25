@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Footprint | Login</title>
+
+<style>
+:root {
+    --primary-color: #1a2a6c;
+    --secondary-color: #b21f1f;
+    --accent-color: #fdbb2d;
+    --text-color: #333;
+    --light-text: #fff;
+    --gray-light: #f5f7fa;
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--gray-light);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+/* LEFT BRAND AREA */
+.brand-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 40px;
+}
+
+.brand-center {
+    text-align: center;
+    max-width: 440px;
+    position: relative;
+    z-index: 2;
+}
+
+.brand-center h1 {
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--secondary-color)
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.brand-center p {
+    margin-top: 18px;
+    font-size: 16px;
+    color: #555;
+}
+
+/* Floating accents */
+.float {
+    position: absolute;
+    font-size: 48px;
+    opacity: 0.5;
+    animation: float 6s ease-in-out infinite;
+}
+
+.float.one { top: 25%; left: 20%; animation-delay: 0s; }
+.float.two { top: 55%; left: 15%; animation-delay: 1.5s; }
+.float.three { top: 40%; left: 60%; animation-delay: 3s; }
+.float.four { top: 75%; left: 75%; animation-delay: 4.5s; }
+.float.five { top: 15%; left: 80%; animation-delay: 2s; }
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0); }
+}
+
+/* RIGHT LOGIN PANEL */
+.login-panel {
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.08);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+}
+
+.login-card h2 {
+    font-size: 22px;
+    margin-bottom: 6px;
+    color: var(--primary-color);
+}
+
+.login-card span {
+    font-size: 14px;
+    color: #666;
+}
+
+.form-group {
+    margin-top: 22px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 15px;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Hide default password toggle in Edge/IE */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+button {
+    width: 100%;
+    margin-top: 26px;
+    padding: 14px;
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--secondary-color)
+    );
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+    opacity: 0.95;
+}
+
+.message {
+    margin-top: 16px;
+    font-size: 13px;
+    text-align: center;
+    display: none;
+}
+
+.message.error {
+    color: #b21f1f;
+}
+
+.message.success {
+    color: #1a7f37;
+}
+
+.security {
+    margin-top: 18px;
+    font-size: 12px;
+    text-align: center;
+    color: #777;
+}
+.brand-logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LEFT BRAND -->
+<div class="brand-section">
+    <div class="brand-center">
+        <h1>Footprint</h1>
+        <p>
+            A unified retail platform for managing sales,
+            inventory, and operations across all store locations.
+        </p>
+    </div>
+
+    <div class="float one">🏬</div>
+    <div class="float two">📦</div>
+    <div class="float three">📊</div>
+    <div class="float four">🛒</div>
+    <div class="float five">💳</div>
+</div>
+
+<!-- RIGHT LOGIN -->
+<div class="login-panel">
+    <div class="login-card">
+        <div style="text-align: center; margin-bottom: 20px; margin-top: 40px;">
+            <img src="logo.png" alt="Footprint" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
+        </div>
+        <h2>Sign in</h2>
+        <span>Access your Footprint account</span>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input id="email" type="email" required>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <div class="password-wrapper">
+                <input id="password" type="password" required style="padding-right: 40px;">
+                <span class="toggle-password" onclick="toggleVisibility('password')">👁️</span>
+            </div>
+        </div>
+
+        <div style="text-align: right; margin-top: 10px;">
+            <a href="forgot-password" style="color: var(--primary-color); text-decoration: none; font-size: 13px; font-weight: 500;">Forgot password?</a>
+        </div>
+
+        <button id="loginBtn">Continue</button>
+
+        <div id="msg" class="message"></div>
+
+        <div class="security">
+            🔒 Secure enterprise authentication
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('loginBtn').addEventListener('click', login);
+    
+    // Allow pressing Enter to login
+    document.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') login();
+    });
+});
+
+function toggleVisibility(fieldId) {
+    const field = document.getElementById(fieldId);
+    const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+    field.setAttribute('type', type);
+}
+
+async function login() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("loginBtn");
+
+    msg.style.display = "none";
+    msg.className = "message";
+
+    if (!email || !password) {
+        msg.textContent = "Please enter your email and password.";
+        msg.classList.add("error");
+        msg.style.display = "block";
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Signing in...";
+
+    try {
+        const res = await fetch("/login", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ email, password }),
+            credentials: 'include' // Important for sending/receiving cookies
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.message || "Login failed");
+        }
+
+        msg.textContent = "Login successful. Redirecting…";
+        msg.classList.add("success");
+        msg.style.display = "block";
+
+        // Store user info and token in sessionStorage (per-tab isolation)
+        if (data.user) {
+            sessionStorage.setItem('currentUser', JSON.stringify(data.user));
+            if (data.token) sessionStorage.setItem('authToken', data.token);
+        }
+
+        // Redirect based on the server's response
+        setTimeout(() => {
+            if (data.redirectTo) {
+                const redirectUrl = data.redirectTo.startsWith('/') 
+                    ? data.redirectTo.substring(1) 
+                    : data.redirectTo;
+                window.location.href = redirectUrl;
+            } else {
+                const role = data.user ? data.user.role : 'cashier';
+                window.location.href = role === 'admin' ? 'dashboard' : 'open-shift';
+            }
+        }, 500);
+
+    } catch (err) {
+        console.error('Login error:', err);
+        msg.textContent = err.message || "Cannot connect to server.";
+        msg.classList.add("error");
+        msg.style.display = "block";
+    }
+
+    btn.disabled = false;
+    btn.textContent = "Continue";
+}
+</script>
+
+</body>
+</html>

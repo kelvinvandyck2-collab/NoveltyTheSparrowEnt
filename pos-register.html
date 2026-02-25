@@ -1,0 +1,1253 @@
+<!-- c:\Users\GUYMAN-GH\OneDrive\Documents\2025 PROJECT\2025 POS\POS\2025 POS\pos-register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footprint | Staff Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Reusing Dashboard/Inventory Styles */
+        :root { 
+            --primary-color: #1a2a6c; 
+            --secondary-color: #b21f1f; 
+            --accent-color: #fdbb2d; 
+            --text-color: #333; 
+            --gray-light: #f5f7fa; 
+            --sidebar-width: 260px; 
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body { 
+            background: var(--gray-light); 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+        
+        .sidebar { 
+            width: var(--sidebar-width); 
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            position: fixed; 
+            height: 100vh; 
+        }
+        
+        .brand { 
+            padding: 25px; 
+            font-size: 24px; 
+            font-weight: 700; 
+            letter-spacing: 1px; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            font-family: 'Montserrat', sans-serif; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        
+        .nav-links { 
+            flex: 1; 
+            padding-top: 20px; 
+            overflow-y: auto; 
+        }
+        
+        .nav-item { 
+            display: flex; 
+            align-items: center; 
+            padding: 15px 25px; 
+            color: rgba(255,255,255,0.7); 
+            text-decoration: none; 
+            transition: 0.3s; 
+        }
+        
+        .nav-item:hover, .nav-item.active { 
+            background: rgba(255,255,255,0.1); 
+            color: white; 
+            border-left: 4px solid var(--accent-color); 
+        }
+        
+        .nav-item i { 
+            margin-right: 15px; 
+            width: 20px; 
+            text-align: center; 
+        }
+        
+        .nav-section { 
+            padding: 15px 25px 5px; 
+            font-size: 11px; 
+            font-weight: 600; 
+            color: rgba(255,255,255,0.5); 
+            letter-spacing: 1px; 
+            text-transform: uppercase; 
+        }
+        
+        .user-profile { 
+            padding: 20px; 
+            border-top: 1px solid rgba(255,255,255,0.1); 
+            display: flex; 
+            align-items: center; 
+        }
+        
+        .user-avatar { 
+            width: 40px; 
+            height: 40px; 
+            background: var(--secondary-color); 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-right: 10px; 
+        }
+        
+        .main-content { 
+            margin-left: var(--sidebar-width); 
+            flex: 1; 
+            padding: 30px 40px; 
+        }
+        
+        /* Tab System */
+        .tab-content { 
+            display: none; 
+            animation: fadeIn 0.3s; 
+        }
+        
+        .tab-content.active { 
+            display: block; 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(5px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* Menu Grid (Overview Page) */
+        .menu-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .menu-card {
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            border: 1px solid transparent;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-5px); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1); 
+            border-color: rgba(26, 42, 108, 0.1);
+        }
+        
+        .menu-card i { 
+            font-size: 36px; 
+            color: var(--primary-color); 
+            margin-bottom: 15px; 
+            transition: 0.3s; 
+        }
+        
+        .menu-card:hover i { 
+            transform: scale(1.1); 
+            color: var(--secondary-color); 
+        }
+        
+        .menu-card h3 { 
+            font-size: 16px; 
+            font-weight: 600; 
+            margin-bottom: 5px; 
+            color: #333; 
+        }
+        
+        .menu-card p { 
+            font-size: 13px; 
+            color: #777; 
+            line-height: 1.4; 
+        }
+        
+        /* Back Link */
+        .back-link { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            color: var(--primary-color); 
+            text-decoration: none; 
+            font-size: 14px; 
+            font-weight: 600; 
+            margin-bottom: 20px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover { 
+            color: var(--secondary-color); 
+        }
+        
+        /* Page Headers */
+        .page-header { 
+            margin-bottom: 30px; 
+        }
+        
+        .page-header h2 { 
+            color: var(--primary-color); 
+            margin-bottom: 10px;
+        }
+        
+        .page-header p { 
+            color: #666; 
+            margin-top: 5px; 
+        }
+        
+        /* Form Styles */
+        .form-card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            max-width: 800px; 
+        }
+        
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 25px; 
+        }
+        
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500; 
+            color: #555; 
+        }
+        
+        .form-group input, .form-group select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            outline: none; 
+            font-size: 14px; 
+        }
+        
+        .form-group input:focus, .form-group select:focus { 
+            border-color: var(--primary-color); 
+        }
+        
+        .btn-submit { 
+            background: var(--primary-color); 
+            color: white; 
+            border: none; 
+            padding: 14px 28px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            width: 100%; 
+            margin-top: 10px; 
+            font-weight: 600; 
+        }
+        
+        .btn-submit:hover { 
+            opacity: 0.9; 
+        }
+        
+        /* Table Styles */
+        .data-card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+        
+        th { 
+            text-align: left; 
+            padding: 15px; 
+            color: #888; 
+            font-weight: 500; 
+            border-bottom: 1px solid #eee; 
+        }
+        
+        td { 
+            padding: 15px; 
+            border-bottom: 1px solid #eee; 
+            color: var(--text-color); 
+            font-size: 14px; 
+        }
+        
+        /* Status Badges */
+        .status-badge { 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            display: inline-block;
+        }
+        
+        .status-active { 
+            background: #e8f5e9; 
+            color: #2e7d32; 
+        }
+        
+        .status-inactive { 
+            background: #ffebee; 
+            color: #c62828; 
+        }
+        
+        .status-pending { 
+            background: #fff3e0; 
+            color: #ef6c00; 
+        }
+        
+        /* Action Buttons */
+        .action-btn {
+            width: 32px; 
+            height: 32px; 
+            border-radius: 6px; 
+            border: none; 
+            cursor: pointer;
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 14px; 
+            transition: all 0.2s; 
+            margin-right: 5px;
+        }
+        
+        .action-btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
+        
+        .btn-edit { 
+            background: #e3f2fd; 
+            color: #1565c0; 
+        }
+        
+        .btn-delete { 
+            background: #ffebee; 
+            color: #c62828; 
+        }
+        
+        .btn-reset { 
+            background: #fff3e0; 
+            color: #ef6c00; 
+        }
+        
+        /* Search and Filter */
+        .search-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            align-items: center;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            outline: none;
+        }
+        
+        .search-filter {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            outline: none;
+        }
+        
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        
+        .btn-add {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-add:hover {
+            opacity: 0.9;
+        }
+        
+        /* Modal */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1000; 
+        }
+        
+        .modal.active { 
+            display: flex; 
+        }
+        
+        .modal-content { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            width: 500px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+        }
+        
+        .modal-actions { 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 10px; 
+            margin-top: 20px; 
+        }
+        
+        .btn-cancel { 
+            background: #eee; 
+            color: #333; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+        }
+        
+        .btn-save { 
+            background: var(--primary-color); 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+        }
+        
+        /* Footer */
+        footer {
+            margin-left: var(--sidebar-width);
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        @media (max-width: 900px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .menu-grid { grid-template-columns: 1fr; }
+            .search-container { grid-template-columns: 1fr; }
+        }
+
+        /* Notification Toast */
+        .notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+            background-color: #333; color: white; padding: 12px 24px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 2000; opacity: 0;
+            transition: all 0.3s ease; pointer-events: none; font-size: 14px; font-weight: 500;
+        }
+        .notification.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
+        .notification.success { background-color: #2e7d32; }
+        .notification.error { background-color: #c62828; }
+
+        /* Confirmation Dialog */
+        .confirm-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 3000; display: none;
+            align-items: center; justify-content: center;
+        }
+        .confirm-overlay.active { display: flex; }
+        .confirm-box {
+            background: white; padding: 25px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center;
+            width: 320px; animation: popIn 0.3s ease;
+        }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .confirm-icon { font-size: 48px; color: #c62828; margin-bottom: 15px; }
+        .confirm-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: #333; }
+        .confirm-text { font-size: 14px; color: #666; margin-bottom: 20px; }
+        .confirm-buttons { display: flex; justify-content: center; gap: 10px; }
+        .btn-yes { background: #c62828; color: white; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-no { background: #f5f5f5; color: #333; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-yes:hover { background: #b71c1c; }
+        .btn-no:hover { background: #e0e0e0; }
+
+        /* Mobile Responsive Styles */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 20px; padding-top: 70px; }
+            .mobile-menu-btn { display: block; }
+            .overlay.active { display: block; }
+            .form-grid { grid-template-columns: 1fr; }
+            .search-container { grid-template-columns: 1fr; }
+            .menu-grid { grid-template-columns: 1fr; }
+            footer { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="sidebar">
+        <div class="brand">
+            <img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> 
+            FOOTPRINT
+        </div>
+        <div class="nav-links">
+            <a href="dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            
+            <div class="nav-section">Sales & Finance</div>
+            <a href="sales-dashboard" class="nav-item"><i class="fas fa-chart-pie"></i> Sales Dashboard</a>
+            <a href="profitability" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Profitability</a>
+            <a href="promotions" class="nav-item"><i class="fas fa-tags"></i> Promotions</a>
+
+            <div class="nav-section">Operations</div>
+            <a href="#" onclick="switchTab('overview'); return false;" class="nav-item active"><i class="fas fa-users"></i> Staff Management</a>
+            <a href="credit-customers" class="nav-item"><i class="fas fa-address-book"></i> Credit Clients</a>
+            <a href="inventory" class="nav-item"><i class="fas fa-warehouse"></i> Inventory & Supply Chain</a>
+            <a href="reports" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
+            <a href="settings" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="user-profile">
+            <div class="user-avatar"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+                <div style="font-weight: bold;" id="userName">...</div>
+                <div style="font-size: 12px; opacity: 0.7;" id="userRole">...</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="margin-left: auto; cursor: pointer;" onclick="logout()" title="Logout"></i>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <div class="main-content">
+        <!-- 1. OVERVIEW TAB (Landing Page) -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="page-header">
+                <h2>Staff Management</h2>
+                <p>Onboard new staff members or manage existing user accounts.</p>
+            </div>
+            
+            <div class="menu-grid">
+                <div class="menu-card" onclick="switchTab('register')">
+                    <i class="fas fa-user-plus"></i>
+                    <h3>Onboard New Staff</h3>
+                    <p>Create a new account for cashiers, managers, or administrators.</p>
+                </div>
+                <div class="menu-card" onclick="switchTab('users')">
+                    <i class="fas fa-users-cog"></i>
+                    <h3>Manage Existing Users</h3>
+                    <p>View, edit, and manage all registered staff members.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. REGISTRATION FORM TAB -->
+        <div id="tab-register" class="tab-content">
+            <div onclick="switchTab('overview')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Menu</div>
+            
+            <div class="page-header">
+                <h2>Onboard New Staff</h2>
+                <p>Fill in all required details to create a new staff account.</p>
+            </div>
+            
+            <div class="form-card">
+                <form id="registrationForm" onsubmit="registerStaff(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="fullName" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="username" placeholder="e.g. johndoe" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="email" placeholder="john@footprint.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="phone" placeholder="024XXXXXXX" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Employee ID</label>
+                            <input type="text" id="employeeId" placeholder="Auto-generated" readonly style="background-color: #f9f9f9; cursor: not-allowed;">
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select id="role" required>
+                                <option value="">Select Role</option>
+                                <option value="cashier">Cashier</option>
+                                <option value="manager">Manager</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Assigned Store</label>
+                            <input type="text" id="store" readonly required style="background-color: #f9f9f9; cursor: not-allowed;">
+                        </div>
+                        <div class="form-group">
+                            <label>Initial Password</label>
+                            <input type="text" id="password" value="Footprint123!" readonly style="background-color: #f9f9f9; cursor: not-allowed;">
+                            <small style="color: #666; font-size: 12px; margin-top: 5px;">Default password for new users.</small>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">Register Staff Member</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 3. EXISTING USERS MANAGEMENT TAB -->
+        <div id="tab-users" class="tab-content">
+            <div onclick="switchTab('overview')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Menu</div>
+            
+            <div class="page-header">
+                <h2>Manage Existing Users</h2>
+                <p>View and manage all registered staff accounts.</p>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="userSearch" placeholder="Search by name, username, or ID..." class="search-input" onkeyup="filterUsers()">
+                <select id="roleFilter" class="search-filter" onchange="filterUsers()">
+                    <option value="">All Roles</option>
+                    <option value="cashier">Cashier</option>
+                    <option value="manager">Manager</option>
+                    <option value="admin">Administrator</option>
+                </select>
+            </div>
+            
+            <div class="data-card">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Employee ID</th>
+                            <th>Phone Number</th>
+                            <th>Role</th>
+                            <th>Store Assigned</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be populated here -->
+                    </tbody>
+                </table>
+                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center; border-top: 1px solid #eee; margin-top: 15px;">
+                    <span style="font-size: 13px; color: #666;">Rows per page:</span>
+                    <select id="rowsPerPage" onchange="changeRowsPerPage()" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 6px; outline: none;">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span id="pageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
+                    <button onclick="changePage(-1)" id="btnPrev" disabled style="padding: 5px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;"><i class="fas fa-chevron-left"></i></button>
+                    <button onclick="changePage(1)" id="btnNext" disabled style="padding: 5px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px;">Edit User Details</h3>
+            <form id="editUserForm" onsubmit="saveUserChanges(event)">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="editFullName" required>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="editUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="editEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="editPhone" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="editRole" required>
+                        <option value="cashier">Cashier</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assigned Store</label>
+                    <select id="editStore" required disabled style="background-color: #f9f9f9; cursor: not-allowed;">
+                        <option value="Accra Main Branch">Accra Main Branch</option>
+                        <option value="Accra Central">Accra Central</option>
+                        <option value="Kumasi Branch">Kumasi Branch</option>
+                        <option value="Takoradi Branch">Takoradi Branch</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="editStatus" required disabled style="background-color: #f9f9f9; cursor: not-allowed;">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div id="resetPasswordModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px;">Reset Password</h3>
+            <form id="resetPasswordForm" onsubmit="resetUserPassword(event)">
+                <input type="hidden" id="resetUserId">
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmNewPassword" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeResetModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Reset Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="confirm-overlay">
+        <div class="confirm-box">
+            <div class="confirm-icon"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="confirm-title">Permanent Delete</div>
+            <div class="confirm-text">Are you sure you want to permanently delete this user? This action cannot be undone.</div>
+            <div class="confirm-buttons">
+                <button class="btn-no" onclick="closeConfirmation()">Cancel</button>
+                <button class="btn-yes" onclick="confirmDeleteAction()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 Footprint Retail Systems
+    </footer>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        // Sample data for demonstration
+        let users = [];
+        let filteredUsers = [];
+        let currentPage = 1;
+        let rowsPerPage = 10;
+        let userToDeleteId = null;
+
+        function showNotification(message, type = 'success') {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification show ${type}`;
+            setTimeout(() => { notif.className = 'notification'; }, 3000);
+        }
+
+        // Load users from database
+        async function loadUsers() {
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const response = await fetch('/api/users', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    users = await response.json();
+                    filterUsers(); // Initialize filteredUsers and render
+                    generateNextEmployeeId();
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Tab switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            // Update navigation active state
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelector('[onclick*="' + tabId + '"]').classList.add('active');
+            
+            // Load users when switching to users tab
+            if (tabId === 'users') {
+                loadUsers();
+            }
+        }
+
+        // Register new staff
+        async function registerStaff(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const fullName = document.getElementById('fullName').value;
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const employeeId = document.getElementById('employeeId').value;
+            const role = document.getElementById('role').value;
+            const store = document.getElementById('store').value;
+            const password = document.getElementById('password').value;
+            
+            // Create new user object
+            const newUser = {
+                username: username,
+                fullName: fullName,
+                employeeId: employeeId,
+                phone: phone,
+                email: email,
+                role: role,
+                store: store,
+                password: password
+            };
+            
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(newUser)
+                });
+
+                if (response.ok) {
+                    showNotification("Staff member registered successfully!", "success");
+                    document.getElementById('registrationForm').reset();
+                    switchTab('users');
+                    loadUsers();
+                } else {
+                    const data = await response.json();
+                    showNotification(data.message || "Registration failed", "error");
+                }
+            } catch (error) {
+                console.error('Error registering user:', error);
+                showNotification("An error occurred during registration", "error");
+            }
+        }
+
+        // Render users table
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedUsers = filteredUsers.slice(start, end);
+            
+            paginatedUsers.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username || '-'}</td>
+                    <td>${user.fullName || '-'}</td>
+                    <td>${user.employeeId || '-'}</td>
+                    <td>${user.phone || '-'}</td>
+                    <td>${user.role || 'Staff'}</td>
+                    <td>${user.store || '-'}</td>
+                    <td>
+                        <span class="status-badge ${user.status === 'Active' ? 'status-active' : 'status-inactive'}">
+                            ${user.status || 'Active'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-edit" onclick="editUser(${user.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn btn-reset" onclick="openResetModal(${user.id})" title="Reset Password">
+                            <i class="fas fa-key"></i>
+                        </button>
+                        <button class="action-btn btn-delete" onclick="deleteUser(${user.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // If no users, show message
+            if (paginatedUsers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 30px; color: #888;">
+                            No users found. Register new staff members to get started.
+                        </td>
+                    </tr>
+                `;
+            }
+            updatePaginationControls();
+        }
+
+        // Filter users
+        function filterUsers() {
+            const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+
+            filteredUsers = users.filter(user => {
+                if (user.status === 'Deleted') return false;
+
+                const username = (user.username || '').toLowerCase();
+                const fullName = (user.fullName || '').toLowerCase();
+                const employeeId = (user.employeeId || '').toLowerCase();
+                const role = (user.role || '').toLowerCase();
+                
+                const matchesSearch = username.includes(searchTerm) || 
+                                     fullName.includes(searchTerm) || 
+                                     employeeId.includes(searchTerm);
+                const matchesRole = !roleFilter || role === roleFilter;
+                
+                return matchesSearch && matchesRole;
+            });
+            
+            currentPage = 1;
+            renderUsersTable();
+        }
+
+        function changeRowsPerPage() {
+            rowsPerPage = parseInt(document.getElementById('rowsPerPage').value);
+            currentPage = 1;
+            renderUsersTable();
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderUsersTable();
+        }
+
+        function updatePaginationControls() {
+            const totalItems = filteredUsers.length;
+            const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
+            
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('btnPrev').disabled = currentPage === 1;
+            document.getElementById('btnNext').disabled = currentPage === totalPages;
+        }
+
+        // Edit user
+        function editUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editFullName').value = user.fullName;
+            document.getElementById('editUsername').value = user.username;
+            document.getElementById('editEmail').value = user.email;
+            document.getElementById('editPhone').value = user.phone;
+            document.getElementById('editRole').value = user.role.toLowerCase();
+            document.getElementById('editStore').value = user.store;
+            document.getElementById('editStatus').value = user.status;
+            
+            document.getElementById('editUserModal').classList.add('active');
+        }
+
+        // Save user changes
+        async function saveUserChanges(e) {
+            e.preventDefault();
+            
+            const userId = parseInt(document.getElementById('editUserId').value);
+            const updatedData = {
+                fullName: document.getElementById('editFullName').value,
+                username: document.getElementById('editUsername').value,
+                email: document.getElementById('editEmail').value,
+                phone: document.getElementById('editPhone').value,
+                role: document.getElementById('editRole').value,
+                store: document.getElementById('editStore').value,
+                status: document.getElementById('editStatus').value
+            };
+
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+
+                if (response.ok) {
+                    showNotification("User updated successfully!", "success");
+                    closeEditModal();
+                    loadUsers();
+                } else {
+                    showNotification("Failed to update user", "error");
+                }
+            } catch (error) {
+                console.error('Error updating user:', error);
+                showNotification("An error occurred", "error");
+            }
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('editUserModal').classList.remove('active');
+            document.getElementById('editUserForm').reset();
+        }
+
+        // Open reset password modal
+        function openResetModal(userId) {
+            document.getElementById('resetUserId').value = userId;
+            document.getElementById('resetPasswordModal').classList.add('active');
+        }
+
+        // Reset user password
+        async function resetUserPassword(e) {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            
+            if (newPassword !== confirmNewPassword) {
+                showNotification("Passwords do not match!", "error");
+                return;
+            }
+            
+            const userId = parseInt(document.getElementById('resetUserId').value);
+            
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const response = await fetch(`/api/users/${userId}/reset-password`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ password: newPassword })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showNotification(data.message || "Password reset successfully", "success");
+                    closeResetModal();
+                } else {
+                    showNotification("Failed to reset password", "error");
+                }
+            } catch (error) {
+                console.error('Error resetting password:', error);
+                showNotification("An error occurred", "error");
+            }
+        }
+
+        // Close reset modal
+        function closeResetModal() {
+            document.getElementById('resetPasswordModal').classList.remove('active');
+            document.getElementById('resetPasswordForm').reset();
+        }
+
+        // Delete user
+        function deleteUser(userId) {
+            userToDeleteId = userId;
+            document.getElementById('confirmationModal').classList.add('active');
+        }
+
+        async function confirmDeleteAction() {
+            if (!userToDeleteId) return;
+            const id = userToDeleteId; // Capture ID before it's cleared
+            closeConfirmation();
+            
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const response = await fetch(`/api/users/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showNotification(data.message || "User permanently deleted", "success");
+                    loadUsers();
+                } else {
+                    const data = await response.json();
+                    showNotification(data.message || "Failed to delete user", "error");
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                showNotification("An error occurred", "error");
+            }
+        }
+
+        function closeConfirmation() {
+            document.getElementById('confirmationModal').classList.remove('active');
+            userToDeleteId = null;
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                const token = sessionStorage.getItem('authToken');
+                await fetch('/api/logout', { 
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                window.location.href = '/login';
+            } catch (e) {
+                console.error(e);
+                window.location.href = '/login';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUsers();
+            
+            // Handle URL parameters for tabs
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab') || 'overview';
+            switchTab(tab);
+
+            // Auto-populate store from current user session
+            try {
+                const userStr = sessionStorage.getItem('currentUser');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    
+                    // Update Sidebar User Info
+                    if(document.getElementById('userName')) document.getElementById('userName').textContent = user.name || user.fullName || 'User';
+                    if(document.getElementById('userRole')) document.getElementById('userRole').textContent = user.role === 'manager' ? 'Store Manager' : (user.role === 'admin' ? 'Administrator' : (user.role || 'Staff'));
+
+                    const storeInput = document.getElementById('store');
+                    if (storeInput) {
+                        storeInput.value = user.store_location || 'Main Warehouse';
+                    }
+
+                    // Remove Administrator option if current user is not an admin
+                    if (user.role !== 'admin') {
+                        const selects = ['role', 'editRole', 'roleFilter'];
+                        selects.forEach(id => {
+                            const select = document.getElementById(id);
+                            const adminOption = select ? select.querySelector('option[value="admin"]') : null;
+                            if (adminOption) adminOption.remove();
+                        });
+                    }
+                }
+            } catch(e) { console.error(e); }
+
+            // Auto-generate Username and Email from Full Name
+            const fullNameInput = document.getElementById('fullName');
+            if (fullNameInput) {
+                fullNameInput.addEventListener('input', function() {
+                    const nameParts = this.value.trim().split(/\s+/);
+                    let generated = "";
+                    
+                    if (nameParts.length > 0 && nameParts[0].length > 0) {
+                        const firstNameChar = nameParts[0].charAt(0);
+                        const surname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+                        generated = (firstNameChar + surname).toLowerCase().replace(/[^a-z0-9]/g, '');
+                    }
+                    
+                    document.getElementById('username').value = generated;
+                });
+            }
+        });
+
+        function generateNextEmployeeId() {
+            const storeInput = document.getElementById('store');
+            let prefix = 'EMP';
+            
+            if (storeInput && storeInput.value) {
+                const storeName = storeInput.value.trim();
+                // Generate prefix: First letter of each word (up to 3) or first 3 letters
+                const words = storeName.split(/\s+/);
+                if (words.length > 1) {
+                    prefix = words.map(w => w[0]).join('').toUpperCase().substring(0, 3);
+                } else {
+                    prefix = storeName.substring(0, 3).toUpperCase();
+                }
+            }
+
+            let maxId = 0;
+            if (users && users.length > 0) {
+                users.forEach(user => {
+                    const eid = user.employeeId;
+                    if (eid && typeof eid === 'string' && eid.startsWith(prefix + '-')) {
+                        const parts = eid.split('-');
+                        if (parts.length > 1) {
+                            const num = parseInt(parts[1]);
+                            if (!isNaN(num) && num > maxId) maxId = num;
+                        }
+                    }
+                });
+            }
+            const nextId = maxId + 1;
+            const empInput = document.getElementById('employeeId');
+            if (empInput) {
+                empInput.value = `${prefix}-${String(nextId).padStart(3, '0')}`;
+            }
+        }
+    </script>
+</body>
+</html>
