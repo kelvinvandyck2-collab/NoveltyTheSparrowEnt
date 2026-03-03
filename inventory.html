@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
     <style>
         /* Reusing Dashboard Styles */
         :root { --primary-color: #1a2a6c; --secondary-color: #b21f1f; --accent-color: #fdbb2d; --text-color: #333; --gray-light: #f5f7fa; --sidebar-width: 260px; }
@@ -360,6 +361,8 @@
                             <th>Category</th>
                             <th>Price</th>
                             <th id="stockColumnHeader">Stock</th>
+                            <th>Batch Number</th>
+                            <th>Expiry Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -817,7 +820,7 @@
             <div id="bulkUploadSection" style="display:none; text-align:center; padding:30px; border: 2px dashed #e0e0e0; border-radius: 12px; background: #fafafa; margin-bottom: 20px;">
                 <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
                 <h4 style="color: #555; margin-bottom: 10px;">Upload Inventory Excel Sheet</h4>
-                <p style="color: #888; font-size: 13px; margin-bottom: 20px;">Supported formats: .xlsx, .xls.<br><strong>Columns:</strong> Product Name, Category, Cost (₵), Markup, Price (₵), Current Stock, Selling Unit, Packaging Unit, Items per Package, Reorder Level</p>
+                <p style="color: #888; font-size: 13px; margin-bottom: 20px;">Supported formats: .xlsx, .xls, .csv<br><strong>Columns:</strong> Product Name, Category, Cost (₵), Markup, Price (₵), Current Stock, Physical Count, Selling Unit, Packaging Unit, Items per Package, Reorder Level, Batch Number, Expiry Date</p>
                 
                 <input type="file" id="bulkFileInput" accept=".xlsx, .xls" style="display:none" onchange="handleBulkFileSelect(this)">
                 <button onclick="document.getElementById('bulkFileInput').click()" style="background:var(--primary-color); color:white; border:none; padding:10px 25px; border-radius:6px; cursor:pointer; font-weight:600;">
@@ -1279,6 +1282,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
 
     <script>
+        // redirect https->http for local dev to avoid SSL errors
+        if (window.location.hostname === 'localhost' && window.location.protocol === 'https:') {
+            window.location.href = 'http://' + window.location.host + window.location.pathname + window.location.search;
+        }
+
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
             document.querySelector('.overlay').classList.toggle('active');
@@ -1539,6 +1547,33 @@
                 } else {
                     throw new Error('Failed to load products');
                 }
+                
+                // Fetch batch information for all products
+                try {
+                    const batchRes = await fetch('/api/batches', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (batchRes.ok) {
+                        const batches = await batchRes.json();
+                        // Map batches to products - get the latest batch for each product
+                        const batchMap = {};
+                        batches.forEach(b => {
+                            if (!batchMap[b.product_barcode] || new Date(b.created_at) > new Date(batchMap[b.product_barcode].created_at)) {
+                                batchMap[b.product_barcode] = b;
+                            }
+                        });
+                        // Add batch info to each product
+                        products.forEach(p => {
+                            if (batchMap[p.barcode]) {
+                                p.batch_number = batchMap[p.barcode].batch_number;
+                                p.expiry_date = batchMap[p.barcode].expiry_date;
+                            }
+                        });
+                    }
+                } catch (batchErr) {
+                    console.log('Could not fetch batch data:', batchErr);
+                }
+                
                 populateAnalyticsDropdown();
                 
                 // Populate Price Dropdown with existing prices
@@ -1604,6 +1639,11 @@
 
                 const reorderLevel = p.reorder_level !== undefined && p.reorder_level !== null ? p.reorder_level : 10;
                 const stockClass = branchStock <= reorderLevel ? 'stock-low' : 'stock-ok';
+                
+                // Format batch number and expiry date
+                const batchNumber = p.batch_number || '-';
+                const expiryDate = p.expiry_date ? new Date(p.expiry_date).toLocaleDateString() : '-';
+                
                 const row = `
                     <tr>
                         <td style="text-align: center;"><input type="checkbox" class="stock-check" value="${p.barcode}"></td>
@@ -1614,6 +1654,8 @@
                         <td data-stock="${branchStock}">
                             <span class="stock-badge ${stockClass}">${branchStock}</span>
                         </td>
+                        <td>${batchNumber}</td>
+                        <td>${expiryDate}</td>
                         <td>
                             <button class="action-btn btn-edit" onclick="editProduct('${p.barcode}')" title="Edit Product"><i class="fas fa-edit"></i></button>
                             <button class="action-btn btn-print" onclick="printLabel('${p.barcode}')" title="Print Label"><i class="fas fa-print"></i></button>
@@ -1855,6 +1897,24 @@
 
                 if (!res.ok) throw new Error('Failed to save');
                 
+                // If batch number is provided, create/update batch record
+                if (newProduct.batch_number) {
+                    await fetch('/api/batches', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            product_barcode: newProduct.barcode,
+                            batch_number: newProduct.batch_number,
+                            expiry_date: newProduct.expiry_date || null,
+                            quantity: inputStock,
+                            quantity_available: inputStock
+                        })
+                    });
+                }
+                
                 showNotification("Product saved successfully.", "success");
                 closeModal();
                 loadInventory();
@@ -1985,7 +2045,46 @@
             }
         }
 
+        function downloadTemplate() {
+            const data = [
+                { "Product Name": "Pineapple (each)", "Category": "Fruits", "Cost (₵)": 8, "Markup": "25%", "Price (₵)": 10, "Current Stock": 40, "Physical Count": 40, "Batch Number": "B001", "Expiry Date": "30/03/2026", "Selling Unit": "Piece", "Packaging Unit": "Crate", "Items per Package": 12, "Reorder Level": 15 },
+                { "Product Name": "Banana (bunch)", "Category": "Fruits", "Cost (₵)": 12, "Markup": "25%", "Price (₵)": 15, "Current Stock": 35, "Physical Count": 35, "Batch Number": "B002", "Expiry Date": "28/03/2026", "Selling Unit": "Bunch", "Packaging Unit": "Crate", "Items per Package": 10, "Reorder Level": 10 },
+                { "Product Name": "Watermelon (each)", "Category": "Fruits", "Cost (₵)": 18, "Markup": "30%", "Price (₵)": 23.4, "Current Stock": 20, "Physical Count": 20, "Batch Number": "B003", "Expiry Date": "05/03/2026", "Selling Unit": "Piece", "Packaging Unit": "Crate", "Items per Package": 8, "Reorder Level": 8 },
+                { "Product Name": "Tomatoes (kg)", "Category": "Vegetables", "Cost (₵)": 5, "Markup": "35%", "Price (₵)": 6.75, "Current Stock": 60, "Physical Count": 60, "Batch Number": "B008", "Expiry Date": "27/02/2026", "Selling Unit": "Kg", "Packaging Unit": "Crate", "Items per Package": 25, "Reorder Level": 20 },
+                { "Product Name": "Rice (5kg bag)", "Category": "Grains", "Cost (₵)": 35, "Markup": "20%", "Price (₵)": 42, "Current Stock": 50, "Physical Count": 50, "Batch Number": "B013", "Expiry Date": "30/08/2026", "Selling Unit": "Bag", "Packaging Unit": "Sack", "Items per Package": 10, "Reorder Level": 15 },
+                { "Product Name": "Sugar (1kg)", "Category": "Groceries", "Cost (₵)": 8, "Markup": "25%", "Price (₵)": 10, "Current Stock": 70, "Physical Count": 70, "Batch Number": "B014", "Expiry Date": "30/09/2026", "Selling Unit": "Pack", "Packaging Unit": "Carton", "Items per Package": 24, "Reorder Level": 20 },
+                { "Product Name": "Cooking Oil (1L)", "Category": "Groceries", "Cost (₵)": 15, "Markup": "20%", "Price (₵)": 18, "Current Stock": 55, "Physical Count": 55, "Batch Number": "B016", "Expiry Date": "30/10/2026", "Selling Unit": "Bottle", "Packaging Unit": "Carton", "Items per Package": 12, "Reorder Level": 20 }
+            ];
+
+            // Create worksheet
+            const ws = XLSX.utils.json_to_sheet(data);
+            
+            // Adjust column widths
+            const wscols = Object.keys(data[0]).map(k => ({ wch: k.length + 5 }));
+            ws['!cols'] = wscols;
+
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Inventory");
+            
+            // Save
+            XLSX.writeFile(wb, "inventory_template.xlsx");
+        }
+
         async function submitBulkUpload() {
+            function validateBulkFile(file) {
+                const allowedExtensions = /(\.xlsx|\.xls|\.csv)$/i;
+                if (!allowedExtensions.exec(file.name)) {
+                    alert('Invalid file type. Only .xlsx, .xls, and .csv files are allowed.');
+                    return false;
+                }
+                return true;
+            }
+
+            // Add this function to your script
+            function isValidExcelDate(date) {
+                return date instanceof Date && !isNaN(date);
+            }
             const input = document.getElementById('bulkFileInput');
             const file = input.files[0];
             if (!file) return;
@@ -1996,6 +2095,8 @@
             btn.disabled = true;
             btn.textContent = 'Uploading...';
             status.style.display = 'none';
+
+            if (!validateBulkFile(file)) return;
 
             const formData = new FormData();
             formData.append('file', file);
@@ -2015,7 +2116,9 @@
                     status.innerHTML = `<div style="color:green; background:#e8f5e9; padding:10px; border-radius:6px;">
                         ✅ Success! Added: ${data.results.success}, Failed: ${data.results.failed}
                     </div>`;
+                    // refresh data views
                     loadInventory();
+                    loadCategories(); // ensure new categories appear in dropdowns/tables
                     setTimeout(() => {
                         if(data.results.failed === 0) closeModal();
                     }, 2000);

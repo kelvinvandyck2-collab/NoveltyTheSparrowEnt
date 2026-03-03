@@ -1531,6 +1531,124 @@ app.post('/products', authenticateToken, async (req, res) => {
     }
 });
 
+// --- FLEXIBLE DATE PARSER HELPER ---
+// Intelligently parses dates in format DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD, etc.
+// Handles any separator (/, -, .) and determines month/day based on numeric values
+function parseFlexibleDate(dateInput) {
+    if (!dateInput) return null;
+    
+    // If it's a number, it's likely an Excel date serial
+    if (typeof dateInput === 'number') {
+        const excelEpoch = new Date(1900, 0, 1);
+        const date = new Date(excelEpoch.getTime() + (dateInput - 2) * 24 * 60 * 60 * 1000);
+        if (!isNaN(date.getTime())) {
+            return date.toISOString().split('T')[0];
+        }
+    }
+    
+    // If it's a string
+    if (typeof dateInput === 'string') {
+        dateInput = dateInput.trim();
+        
+        // Try common separators: /, -, .
+        let parts = [];
+        
+        if (dateInput.includes('/')) {
+            parts = dateInput.split('/').map(p => parseInt(p));
+        } else if (dateInput.includes('-')) {
+            parts = dateInput.split('-').map(p => parseInt(p));
+        } else if (dateInput.includes('.')) {
+            parts = dateInput.split('.').map(p => parseInt(p));
+        }
+        
+        if (parts.length === 3 && parts.every(p => !isNaN(p))) {
+            let day, month, year;
+            const p0 = parts[0];
+            const p1 = parts[1];
+            const p2 = parts[2];
+            
+            // Smart detection based on numeric values
+            // If any part > 31, it's definitely the year
+            // If any part > 12, it must be the day
+            
+            if (p0 > 31) {
+                // YYYY/MM/DD or YYYY/DD/MM - p0 is year
+                year = p0;
+                if (p1 > 12) {
+                    day = p1;
+                    month = p2;
+                } else if (p2 > 12) {
+                    day = p2;
+                    month = p1;
+                } else {
+                    // Both <= 12, assume MM/DD
+                    month = p1;
+                    day = p2;
+                }
+            } else if (p2 > 31) {
+                // MM/DD/YYYY or DD/MM/YYYY - p2 is year
+                year = p2;
+                if (p0 > 12) {
+                    day = p0;
+                    month = p1;
+                } else if (p1 > 12) {
+                    month = p0;
+                    day = p1;
+                } else {
+                    // Both <= 12, assume first part is day (DD/MM format is common)
+                    day = p0;
+                    month = p1;
+                }
+            } else {
+                // None > 31, year might be in different position or 2-digit
+                // Check if any looks like a year (> current realistic year or < current year)
+                if (p0 > 31 || (p0 > 12 && p1 <= 12 && p2 <= 31)) {
+                    year = p0;
+                    if (p1 > 12) {
+                        day = p1; month = p2;
+                    } else if (p2 > 12) {
+                        day = p2; month = p1;
+                    } else {
+                        month = p1; day = p2;
+                    }
+                } else if (p1 > 31 || (p1 > 12 && p0 <= 12 && p2 <= 31)) {
+                    year = p1;
+                    day = p0; month = p2;
+                } else if (p2 > 31 || p2 > 0) {
+                    // p2 is most likely year (most common format)
+                    year = p2;
+                    if (p0 > 12) {
+                        day = p0; month = p1;
+                    } else if (p1 > 12) {
+                        month = p0; day = p1;
+                    } else {
+                        day = p0; month = p1;
+                    }
+                }
+            }
+            
+            // Validate ranges
+            if (!day || !month || !year) return null;
+            if (day < 1 || day > 31 || month < 1 || month > 12) {
+                return null;
+            }
+            
+            // Handle 2-digit years
+            if (year < 100) {
+                year += year < 50 ? 2000 : 1900;
+            }
+            
+            // Create date (Date constructor: year, month (0-indexed), day)
+            const date = new Date(year, month - 1, day);
+            if (!isNaN(date.getTime())) {
+                return date.toISOString().split('T')[0];
+            }
+        }
+    }
+    
+    return null;
+}
+
 // --- BULK UPLOAD ENDPOINT ---
 app.post('/api/products/bulk', authenticateToken, upload.single('file'), async (req, res) => {
     if (!req.user) return res.status(401).json({ message: 'Not authenticated' });
@@ -1546,6 +1664,8 @@ app.post('/api/products/bulk', authenticateToken, upload.single('file'), async (
         const results = { success: 0, failed: 0, errors: [] };
         const userBranch = req.user.store_location || 'Main Warehouse';
 
+        // storage for stock‑take items (barcode + physical count)
+        const stockTakeItems = [];
         for (const row of data) {
             try {
                 // Map Excel Columns to Database Fields
@@ -1553,6 +1673,15 @@ app.post('/api/products/bulk', authenticateToken, upload.single('file'), async (
                 if (!name) continue; // Skip empty rows
 
                 const category = row['Category'] || 'General';
+                // ensure category exists in categories table
+                if (category) {
+                    const branchId = req.user.store_id || 1;
+                    await pool.query(
+                        `INSERT INTO categories (name, branch_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+                        [category, branchId]
+                    );
+                }
+
                 const cost = parseFloat(row['Cost (₵)'] || row['Cost'] || 0);
                 let price = parseFloat(row['Price (₵)'] || row['Price'] || 0);
                 const markup = parseFloat(row['Markup'] || 0);
@@ -1568,11 +1697,27 @@ app.post('/api/products/bulk', authenticateToken, upload.single('file'), async (
                 const conversionRate = parseFloat(row['Items per Package'] || 1);
                 const reorderLevel = parseInt(row['Reorder Level'] || 10);
                 
+                // Extract Batch Information
+                const batchNumber = row['Batch Number'] || '';
+                let expiryDate = row['Expiry Date'] || '';
+                
+                // Parse expiry date using flexible parser (handles any format/separator)
+                if (expiryDate) {
+                    const parsedDate = parseFlexibleDate(expiryDate);
+                    expiryDate = parsedDate || '';
+                }
+                
                 // Generate Barcode if not provided
                 let barcode = row['Barcode'];
                 if (!barcode) {
                     const prefix = name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X');
                     barcode = `${prefix}-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`;
+                }
+
+                // Optional physical count for stock take
+                const physicalCount = parseInt(row['Physical Count'] || row['Stock Take'] || row['Count'] || 0);
+                if (!isNaN(physicalCount) && physicalCount > 0) {
+                    stockTakeItems.push({ barcode, name, physicalCount });
                 }
 
                 const stockLevels = JSON.stringify({ [userBranch]: stock });
@@ -1583,10 +1728,54 @@ app.post('/api/products/bulk', authenticateToken, upload.single('file'), async (
                      ON CONFLICT (barcode) DO NOTHING`,
                     [barcode, name, category, price, cost, stock, stockLevels, sellingUnit, packagingUnit, conversionRate, reorderLevel]
                 );
+                
+                // If batch number is provided, create batch record
+                if (batchNumber) {
+                    const branchId = req.user.store_id || 1;
+                    await pool.query(
+                        `INSERT INTO product_batches (product_barcode, batch_number, expiry_date, quantity, quantity_available, quantity_received, branch_id, status)
+                         VALUES ($1, $2, $3, $4, $4, $4, $5, 'Active')
+                         ON CONFLICT DO NOTHING`,
+                        [barcode, batchNumber, expiryDate || null, stock, branchId]
+                    );
+                }
+                
+                // record barcode for stock take entry after product exists
+                if (stockTakeItems.length && stockTakeItems[stockTakeItems.length-1].name === name && !stockTakeItems[stockTakeItems.length-1].barcode) {
+                    stockTakeItems[stockTakeItems.length-1].barcode = barcode;
+                }
+
                 results.success++;
             } catch (e) {
                 results.failed++;
                 results.errors.push(`Error adding ${row['Product Name']}: ${e.message}`);
+            }
+        }
+
+        // if physical counts were provided, create a stock take record
+        if (stockTakeItems.length) {
+            try {
+                const branchId = req.user.store_id || 1;
+                const stRes = await pool.query(
+                    `INSERT INTO stock_takes (stock_take_date, branch_id, created_by, status)
+                     VALUES (CURRENT_DATE, $1, $2, 'In Progress') RETURNING id`,
+                    [branchId, req.user.id]
+                );
+                const stId = stRes.rows[0].id;
+
+                for (const item of stockTakeItems) {
+                    // fetch current system count (may have been just inserted)
+                    const sysRes = await pool.query('SELECT stock FROM products WHERE barcode = $1', [item.barcode]);
+                    const systemCount = (sysRes.rows[0] && sysRes.rows[0].stock) || 0;
+                    const variance = item.physicalCount - systemCount;
+                    await pool.query(
+                        `INSERT INTO stock_take_items (stock_take_id, product_barcode, physical_count, system_count, variance, counted_by, counted_at)
+                         VALUES ($1,$2,$3,$4,$5,$6,CURRENT_TIMESTAMP)`,
+                        [stId, item.barcode, item.physicalCount, systemCount, variance, req.user.id]
+                    );
+                }
+            } catch (stErr) {
+                console.error('Error creating stock take from bulk upload', stErr);
             }
         }
 
@@ -3511,7 +3700,7 @@ app.get('/api/shelf/inventory/:branch_id', authenticateToken, async (req, res) =
             LEFT JOIN shelf_inventory si ON pb.product_barcode = si.product_barcode 
                 AND si.branch_id = pb.branch_id
             JOIN products p ON pb.product_barcode = p.barcode
-            WHERE pb.branch_id = $1 AND pb.quantity_available > 0
+            WHERE (pb.branch_id = $1 OR pb.branch_id = 1) AND pb.quantity_available > 0
             ORDER BY pb.expiry_date ASC
         `, [branch_id]);
         res.json(result.rows);
@@ -3581,6 +3770,61 @@ app.get('/api/batches/next/:product_barcode', authenticateToken, async (req, res
         res.json(result.rows[0] || null);
     } catch (err) {
         res.status(500).json({ message: 'Error fetching next batch' });
+    }
+});
+
+// Get all batches for a user
+app.get('/api/batches', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT b.*, p.name 
+            FROM product_batches b 
+            JOIN products p ON b.product_barcode = p.barcode 
+            ORDER BY b.created_at DESC
+        `);
+        res.json(result.rows || []);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error fetching batches' });
+    }
+});
+
+// Create or update a batch
+app.post('/api/batches', authenticateToken, async (req, res) => {
+    const { product_barcode, batch_number, expiry_date, quantity, quantity_available } = req.body;
+    
+    if (!product_barcode || !batch_number) {
+        return res.status(400).json({ message: 'product_barcode and batch_number are required' });
+    }
+
+    try {
+        // Check if batch already exists
+        const existing = await pool.query(`
+            SELECT id FROM product_batches 
+            WHERE product_barcode = $1 AND batch_number = $2
+        `, [product_barcode, batch_number]);
+
+        if (existing.rows.length > 0) {
+            // Update existing batch
+            const result = await pool.query(`
+                UPDATE product_batches 
+                SET expiry_date = $1, quantity = $2, quantity_available = $3
+                WHERE product_barcode = $4 AND batch_number = $5
+                RETURNING *
+            `, [expiry_date || null, quantity || 0, quantity_available || quantity || 0, product_barcode, batch_number]);
+            res.json(result.rows[0]);
+        } else {
+            // Create new batch
+            const result = await pool.query(`
+                INSERT INTO product_batches (product_barcode, batch_number, expiry_date, quantity, quantity_available, status)
+                VALUES ($1, $2, $3, $4, $5, 'Active')
+                RETURNING *
+            `, [product_barcode, batch_number, expiry_date || null, quantity || 0, quantity_available || quantity || 0]);
+            res.json(result.rows[0]);
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error saving batch', error: err.message });
     }
 });
 
@@ -5171,9 +5415,21 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Trust proxy for local development (handles HTTPS from reverse proxies)
+app.set('trust proxy', 1);
+
+// Add middleware to handle protocol inconsistencies
+app.use((req, res, next) => {
+    // Allow both HTTP and HTTPS for local development
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', '*');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    next();
+});
+
 // Start server
 const server = app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`Server running on port ${port} (HTTP)`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 

@@ -190,9 +190,8 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3>Transaction History</h3>
                     <div style="display: flex; gap: 10px;">
-                        <select id="cashierFilter" onchange="filterTransactions()" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; outline: none;">
-                            <option value="">All Cashiers</option>
-                        </select>
+                        <input type="date" id="dateFilter" onchange="filterTransactions()" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; outline: none;">
+                        <button onclick="clearDateFilter()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">Clear</button>
                     </div>
                 </div>
                 <table>
@@ -297,17 +296,6 @@
                 });
                 if (res.ok) {
                     allTransactions = await res.json();
-                    
-                    // Populate Cashier Filter
-                    const cashiers = [...new Set(allTransactions.map(t => t.cashier_name || t.cashier || 'Teller'))].sort();
-                    const filterSelect = document.getElementById('cashierFilter');
-                    cashiers.forEach(c => {
-                        const option = document.createElement('option');
-                        option.value = c;
-                        option.textContent = c;
-                        filterSelect.appendChild(option);
-                    });
-
                     filteredTransactions = [...allTransactions];
                     renderTransactions();
                 }
@@ -375,14 +363,23 @@
         }
 
         function filterTransactions() {
-            const selected = document.getElementById('cashierFilter').value;
-            if (!selected) {
+            const selectedDate = document.getElementById('dateFilter').value;
+            if (!selectedDate) {
                 filteredTransactions = [...allTransactions];
             } else {
-                filteredTransactions = allTransactions.filter(t => (t.cashier_name || t.cashier || 'Teller') === selected);
+                filteredTransactions = allTransactions.filter(t => {
+                    const transactionDate = new Date(t.created_at || t.date);
+                    const transactionDateString = transactionDate.toISOString().split('T')[0];
+                    return transactionDateString === selectedDate;
+                });
             }
             currentPage = 1;
             renderTransactions();
+        }
+
+        function clearDateFilter() {
+            document.getElementById('dateFilter').value = '';
+            filterTransactions();
         }
 
         function renderShiftTable() {
