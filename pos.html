@@ -1628,7 +1628,7 @@ async function refreshProducts() {
 
     try {
         const token = sessionStorage.getItem('authToken');
-        const response = await fetch('/products', {
+        const response = await fetch('/api/products', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

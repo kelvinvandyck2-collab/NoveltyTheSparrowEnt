@@ -739,9 +739,15 @@
         }
 
         async function verifyManagerToken() {
-            const tokenInput = document.getElementById('managerTokenInput').value;
+            const tokenInput = document.getElementById('managerTokenInput').value.trim();
             const errorEl = document.getElementById('tokenError');
             
+            if (!tokenInput) {
+                errorEl.textContent = "Please enter a code";
+                errorEl.style.display = 'block';
+                return;
+            }
+
             try {
                 const authToken = sessionStorage.getItem('authToken');
                 const res = await fetch('/api/verify-auth-code', {
@@ -757,7 +763,11 @@
                     const creditBtn = document.querySelector('.method-btn[onclick*="credit"]');
                     if (creditBtn) creditBtn.click();
                 } else {
-                    errorEl.textContent = "Invalid Token";
+                    if (res.status === 401) {
+                        errorEl.textContent = "Invalid Authorization Code";
+                    } else {
+                        errorEl.textContent = "Verification failed";
+                    }
                     errorEl.style.display = 'block';
                     document.getElementById('managerTokenInput').value = '';
                 }
