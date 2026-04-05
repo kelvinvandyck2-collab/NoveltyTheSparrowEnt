@@ -62,12 +62,34 @@
         
         .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; align-items: flex-end; }
         .filter-group { flex: 1; }
+
+        /* Notification Toast */
+        .notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+            background-color: #333; color: white; padding: 12px 24px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 2000; opacity: 0;
+            transition: all 0.3s ease; pointer-events: none; font-size: 14px; font-weight: 500;
+        }
+        .notification.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
+        .notification.success { background-color: #2e7d32; }
+        .notification.error { background-color: #c62828; }
+
+        /* Confirmation Modal */
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; 
+        }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 400px; text-align: center; }
+        .modal-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .btn-cancel { background: #eee; color: #333; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-confirm { background: var(--secondary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="brand">
-            <img src="logo.png" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
+            <img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;">
             <div style="display: flex; flex-direction: column; align-items: flex-start;">
                 <span style="font-size: 20px; line-height: 1;">FOOTPRINT</span>
                 <span style="font-size: 10px; letter-spacing: 2px; color: var(--accent-color);">CEO PORTAL</span>
@@ -153,6 +175,7 @@
                     <button onclick="generateReport()" class="btn-primary" style="width: auto; padding: 10px 25px;"><i class="fas fa-search"></i> Generate</button>
                 </div>
             </div>
+            <p id="taxReportNote" style="font-size: 13px; color: #64748b; margin: 0 0 16px 0; line-height: 1.5; max-width: 900px;"></p>
 
             <div style="overflow-x: auto;">
                 <table id="reportTable">
@@ -187,6 +210,32 @@
             // Initial Report Load
             generateReport();
         });
+
+        function showNotification(message, type = 'success') {
+            const notif = document.getElementById('notification');
+            if (notif) {
+                notif.textContent = message;
+                notif.className = `notification show ${type}`;
+                setTimeout(() => { notif.className = 'notification'; }, 3000);
+            }
+        }
+
+        function showConfirmation(title, text, onConfirm) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmText').textContent = text;
+            onConfirmCallback = onConfirm;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            onConfirmCallback = null;
+        }
+
+        document.getElementById('confirmActionBtn').onclick = () => {
+            if (onConfirmCallback) onConfirmCallback();
+            closeConfirmModal();
+        };
 
         async function loadBranches() {
             const token = sessionStorage.getItem('authToken');
@@ -282,33 +331,44 @@
                     document.getElementById('newTaxRate').value = '';
                     loadTaxes();
                     generateReport(); // Refresh report as rules changed
-                } else alert('Failed to add tax rule');
-            } catch (err) { console.error(err); alert('Error connecting to server'); }
+                } else showNotification('Failed to add tax rule', 'error');
+            } catch (err) { console.error(err); showNotification('Error connecting to server', 'error'); }
         }
 
         async function deleteSystemVat() {
-            if (!confirm('Are you sure you want to remove the System VAT?')) return;
-            const token = sessionStorage.getItem('authToken');
-            try {
-                const res = await fetch('/api/settings/vat', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                if (res.ok) { 
-                    loadTaxes(); 
-                    generateReport(); 
-                } else alert('Failed to delete VAT');
-            } catch (err) { console.error(err); }
+            showConfirmation(
+                'Remove System VAT?',
+                'Are you sure you want to remove the global System VAT rule? This will set the rate to 0.00%.',
+                async () => {
+                    const token = sessionStorage.getItem('authToken');
+                    try {
+                        const res = await fetch('/api/settings/vat', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        if (res.ok) { 
+                            showNotification('System VAT removed successfully');
+                            loadTaxes(); 
+                            generateReport(); 
+                        } else showNotification('Failed to delete VAT', 'error');
+                    } catch (err) { console.error(err); showNotification('Connection error', 'error'); }
+                }
+            );
         }
 
         async function deleteTax(id) {
-            if (!confirm('Are you sure you want to remove this tax rule?')) return;
-            const token = sessionStorage.getItem('authToken');
-            try {
-                const res = await fetch(`/api/taxes/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                if (res.ok) { 
-                    loadTaxes(); 
-                    generateReport(); // Refresh report
+            showConfirmation(
+                'Remove Tax Rule?',
+                'Are you sure you want to remove this tax rule permanently?',
+                async () => {
+                    const token = sessionStorage.getItem('authToken');
+                    try {
+                        const res = await fetch(`/api/taxes/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        if (res.ok) { 
+                            showNotification('Tax rule removed');
+                            loadTaxes(); 
+                            generateReport(); 
+                        } else showNotification('Failed to delete tax rule', 'error');
+                    } catch (err) { console.error(err); showNotification('Connection error', 'error'); }
                 }
-                else alert('Failed to delete tax rule');
-            } catch (err) { console.error(err); }
+            );
         }
 
         async function generateReport() {
@@ -331,6 +391,16 @@
                     const data = await res.json();
                     const rules = data.rules || [];
                     const report = data.report || [];
+                    const noteEl = document.getElementById('taxReportNote');
+                    if (noteEl) noteEl.textContent = data.reportNote || '';
+
+                    function taxRuleHeaderLabel(r) {
+                        if (r.rate != null && r.rate !== '' && Number.isFinite(Number(r.rate))) {
+                            return `${r.name} (${Number(r.rate)}%)`;
+                        }
+                        if (r.historical) return `${r.name} (recorded on sale)`;
+                        return r.name;
+                    }
 
                     // 1. Rebuild Header dynamically based on active rules
                     let headerHTML = `
@@ -341,7 +411,7 @@
                     `;
                     
                     rules.forEach(r => {
-                        headerHTML += `<th style="text-align:right; font-size:11px;">${r.name} (${r.rate}%)</th>`;
+                        headerHTML += `<th style="text-align:right; font-size:11px;">${taxRuleHeaderLabel(r)}</th>`;
                     });
                     theadRow.innerHTML = headerHTML;
 

@@ -202,7 +202,6 @@ button:hover:not(:disabled) {
 .brand-logo {
     width: 120px;
     height: 120px;
-    border-radius: 50%;
     object-fit: cover;
     margin-bottom: 10px;
 }
@@ -214,7 +213,7 @@ button:hover:not(:disabled) {
 <!-- LEFT BRAND -->
 <div class="brand-section">
     <div class="brand-center">
-        <h1>Footprint</h1>
+        <h1 style="white-space: nowrap; font-size: 24px;">THE SPARROW ENTERPRISE</h1>
         <p>
             A unified retail platform for managing sales,
             inventory, and operations across all store locations.
@@ -232,7 +231,7 @@ button:hover:not(:disabled) {
 <div class="login-panel">
     <div class="login-card">
         <div style="text-align: center; margin-bottom: 20px; margin-top: 40px;">
-            <img src="logo.png" alt="Footprint" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
+            <img src="logo.png" alt="Footprint" style="width: 200px; height: 40px; object-fit: contain;">
         </div>
         <h2>Sign in</h2>
         <span>Access your Footprint account</span>
@@ -254,7 +253,7 @@ button:hover:not(:disabled) {
             <a href="forgot-password" style="color: var(--primary-color); text-decoration: none; font-size: 13px; font-weight: 500;">Forgot password?</a>
         </div>
 
-        <button id="loginBtn">Continue</button>
+        <button id="loginBtn">Sign In</button>
 
         <div id="msg" class="message"></div>
 
@@ -300,44 +299,50 @@ async function login() {
     btn.textContent = "Signing in...";
 
     try {
-        const res = await fetch("/login", {
+        // Try company login first for company emails
+        const isCompanyEmail = email.toLowerCase().includes('company') || email.toLowerCase().includes('companysales');
+        const endpoint = isCompanyEmail ? '/api/company/login' : '/login';
+        
+        const res = await fetch(endpoint, {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
             body: JSON.stringify({ email, password }),
-            credentials: 'include' // Important for sending/receiving cookies
+            credentials: 'include'
         });
 
         const data = await res.json();
 
         if (!res.ok) {
+            // If company login fails and it was a company email, try staff login
+            if (isCompanyEmail && endpoint === '/api/company/login') {
+                const staffRes = await fetch('/login', {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
+                });
+
+                const staffData = await staffRes.json();
+                if (!staffRes.ok) {
+                    throw new Error(staffData.message || "Login failed");
+                }
+                
+                // Staff login successful
+                handleSuccessfulLogin(staffData, 'staff');
+                return;
+            }
             throw new Error(data.message || "Login failed");
         }
 
-        msg.textContent = "Login successful. Redirecting…";
-        msg.classList.add("success");
-        msg.style.display = "block";
-
-        // Store user info and token in sessionStorage (per-tab isolation)
-        if (data.user) {
-            sessionStorage.setItem('currentUser', JSON.stringify(data.user));
-            if (data.token) sessionStorage.setItem('authToken', data.token);
-        }
-
-        // Redirect based on the server's response
-        setTimeout(() => {
-            if (data.redirectTo) {
-                const redirectUrl = data.redirectTo.startsWith('/') 
-                    ? data.redirectTo.substring(1) 
-                    : data.redirectTo;
-                window.location.href = redirectUrl;
-            } else {
-                const role = data.user ? data.user.role : 'cashier';
-                window.location.href = role === 'admin' ? 'dashboard' : 'open-shift';
-            }
-        }, 500);
+        // Successful login
+        const userType = endpoint === '/api/company/login' ? 'company' : 'staff';
+        handleSuccessfulLogin(data, userType);
 
     } catch (err) {
         console.error('Login error:', err);
@@ -347,7 +352,37 @@ async function login() {
     }
 
     btn.disabled = false;
-    btn.textContent = "Continue";
+    btn.textContent = "Sign In";
+}
+
+function handleSuccessfulLogin(data, userType) {
+    const msg = document.getElementById("msg");
+    
+    msg.textContent = "Login successful. Redirecting…";
+    msg.classList.add("success");
+    msg.style.display = "block";
+
+    // Store user info and token in sessionStorage
+    if (data.user) {
+        const storageKey = userType === 'company' ? 'companyUser' : 'currentUser';
+        sessionStorage.setItem(storageKey, JSON.stringify(data.user));
+        if (data.token) sessionStorage.setItem(userType === 'company' ? 'companyToken' : 'authToken', data.token);
+    }
+
+    // Redirect based on user type and server response
+    setTimeout(() => {
+        if (data.redirectTo) {
+            const redirectUrl = data.redirectTo.startsWith('/') 
+                ? data.redirectTo.substring(1) 
+                : data.redirectTo;
+            window.location.href = redirectUrl;
+        } else if (userType === 'company') {
+            window.location.href = 'company-portal';
+        } else {
+            const role = data.user ? data.user.role : 'cashier';
+            window.location.href = role === 'admin' ? 'dashboard' : 'open-shift';
+        }
+    }, 500);
 }
 </script>
 

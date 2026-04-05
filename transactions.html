@@ -84,12 +84,15 @@
 <body>
 
     <header>
-        <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <div class="brand"><img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;"> FOOTPRINT</div>
         <a href="pos" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Register</a>
     </header>
 
     <div class="container">
         <h2>Transaction History</h2>
+        <div id="shiftInfo" style="margin-bottom: 20px; padding: 10px; background: #f0f8ff; border-radius: 5px; display: none;">
+            <strong>Current Shift:</strong> <span id="shiftStatus"></span>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -129,6 +132,31 @@
         let allTransactions = [];
         let currentPage = 1;
         let rowsPerPage = 10;
+        let currentShift = null;
+
+        async function loadShiftInfo() {
+            try {
+                const token = sessionStorage.getItem('authToken');
+                const res = await fetch('/api/shifts/active', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.active && data.shift) {
+                        currentShift = data.shift;
+                        const shiftInfo = document.getElementById('shiftInfo');
+                        const shiftStatus = document.getElementById('shiftStatus');
+                        
+                        const startTime = new Date(data.shift.start_time).toLocaleString();
+                        shiftStatus.textContent = `Started at ${startTime}`;
+                        shiftInfo.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading shift info:', err);
+            }
+        }
 
         async function loadHistory() {
             try {
@@ -145,7 +173,17 @@
                 if (!res.ok) throw new Error("Failed to fetch history");
 
                 allTransactions = await res.json();
-                renderTable();
+                
+                // Update empty state message if no active shift
+                if (!currentShift && allTransactions.length === 0) {
+                    document.getElementById('historyTable').innerHTML = 
+                        '<tr><td colspan="5" class="empty-state">No active shift. Start a new shift to begin recording transactions.</td></tr>';
+                } else if (currentShift && allTransactions.length === 0) {
+                    document.getElementById('historyTable').innerHTML = 
+                        '<tr><td colspan="5" class="empty-state">No transactions in current shift yet.</td></tr>';
+                } else {
+                    renderTable();
+                }
             } catch (err) {
                 console.error(err);
                 document.getElementById('historyTable').innerHTML = '<tr><td colspan="5" class="empty-state">Error loading history.</td></tr>';
@@ -214,10 +252,13 @@
         }
 
         function reprint(trx) {
-            window.location.href = `receipt?id=${trx.id}`;
+            window.location.href = `receipt?id=${trx.receipt_number || trx.id}`;
         }
 
-        loadHistory();
+        // Load shift info first, then transaction history
+        loadShiftInfo().then(() => {
+            loadHistory();
+        });
     </script>
 </body>
 </html>

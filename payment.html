@@ -187,7 +187,7 @@
 <body>
 
     <header>
-        <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <div class="brand"><img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;"> FOOTPRINT</div>
         <a href="pos" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Register</a>
     </header>
 
@@ -384,8 +384,10 @@
                                 <span>₵${parseFloat(t.amount).toFixed(2)}</span>
                             </div>
                         `).join('');
-                    } else {
+                    } else if (parseFloat(data.tax) > 0) {
                         taxContainer.innerHTML = `<div class="summary-row"><span>VAT</span><span>₵${parseFloat(data.tax).toFixed(2)}</span></div>`;
+                    } else {
+                        taxContainer.innerHTML = '';
                     }
                     
                     document.getElementById('displayDiscount').textContent = `-₵${parseFloat(data.discount || 0).toFixed(2)}`;

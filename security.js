@@ -12,10 +12,10 @@ exports.securityHeaders = helmet({
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com', 'https://unpkg.com'],
             scriptSrcAttr: ["'unsafe-inline'"],
-            styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com'],
+            styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com', 'https://fonts.googleapis.com'],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
             connectSrc: ["'self'", 'https://api.mtn.com', 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com'],
-            fontSrc: ["'self'", 'https://cdnjs.cloudflare.com'],
+            fontSrc: ["'self'", 'https://cdnjs.cloudflare.com', 'https://fonts.gstatic.com'],
             workerSrc: ["'self'", "blob:"]
         }
     },

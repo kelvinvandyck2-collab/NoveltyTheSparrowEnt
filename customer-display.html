@@ -37,7 +37,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 100;
+            overflow: hidden;
             transition: opacity 0.5s ease;
         }
         #idleScreen.hidden {
@@ -56,7 +57,7 @@
 
         /* HEADER */
         header {
-            height: 70px;
+            height: 60px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             display: flex;
@@ -71,27 +72,27 @@
         .container {
             display: flex;
             width: 100%;
+            height: calc(100vh - 170px); /* Adjust based on header and ticker height */
             flex: 1;
-            padding: 20px;
-            justify-content: center;
+            padding: 10px;
+            justify-content: space-between;
+            gap: 15px;
         }
 
         /* MAIN CARD */
         .main-card {
-            width: 100%;
-            max-width: 800px;
+            flex: 1;
             height: 100%;
             background: var(--card-bg);
             display: flex;
             flex-direction: column;
             border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.05);
             border: 1px solid var(--border);
-            overflow: hidden;
         }
 
         .card-header {
-            padding: 20px 25px;
+            padding: 10px 15px;
             background: #fff;
             border-bottom: 1px solid var(--border);
             display: flex;
@@ -102,42 +103,53 @@
         }
         .cart-title { font-size: 24px; font-weight: 600; color: var(--primary); }
         .item-count { background: var(--bg); padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600; color: #666; }
-
+        
         .cart-items {
             flex: 1;
             overflow-y: auto;
             padding: 0;
             scroll-behavior: smooth;
+            position: relative;
         }
-
+        
+        /* Compact items to display more products */
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 25px;
+            padding: 8px 15px;
             border-bottom: 1px solid #f5f5f5;
             transition: background 0.3s;
             animation: slideIn 0.4s ease-out;
+            font-size: 15px;
         }
-        .cart-item:last-child {
+        .cart-item:nth-child(even) {
+            background: #fafafa;
+        }
+        .cart-item.last-added {
             background: #f0f7ff; /* Highlight last added */
             border-left: 4px solid var(--primary);
         }
-        .item-details { flex: 1; }
-        .item-name { font-size: 20px; font-weight: 500; color: #222; margin-bottom: 5px; }
-        .item-meta { font-size: 14px; color: #888; }
-        .item-price { font-size: 22px; font-weight: 700; color: #333; }
-
-        @keyframes slideIn {
+        .item-details { flex: 1; min-width: 0; }
+        .item-name { font-size: 16px; font-weight: 600; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-meta { font-size: 13px; color: #777; }
+        .item-price { font-size: 16px; font-weight: 700; color: var(--primary); margin-left: 15px; }
+    
+    @keyframes slideIn {
             from { opacity: 0; transform: translateX(-20px); }
             to { opacity: 1; transform: translateX(0); }
         }
 
         /* FOOTER SUMMARY */
         .card-footer {
-            padding: 25px;
-            background: #f9fafc;
-            border-top: 1px solid var(--border);
+            padding: 20px;
+            width: 28%;
+            background: #fff;        
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
 
         .breakdown {
@@ -149,7 +161,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
-            font-size: 18px;
+            font-size: 16px;
             color: #666;
         }
         .summary-row .label { font-weight: 400; }
@@ -158,14 +170,14 @@
         .summary-row.discount .label,
         .summary-row.discount .value { color: var(--secondary); }
         
-        .divider { height: 2px; background: #f0f0f0; margin: 15px 0 25px 0; border-radius: 2px; }
+        .divider { height: 1px; background: #eee; margin: 15px 0; }
 
         .total-section {
             background: var(--primary);
-            padding: 25px;
+            padding: 20px;
             border-radius: 16px;
             color: white;
-            box-shadow: 0 10px 30px rgba(26, 42, 108, 0.25);
+            box-shadow: 0 8px 20px rgba(26, 42, 108, 0.2);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -173,9 +185,9 @@
         }
         .total-label { 
             font-size: 16px; font-weight: 500; color: rgba(255,255,255,0.9); 
-            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; 
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
         }
-        .total-amount { font-size: 56px; font-weight: 800; color: white; line-height: 1.1; }
+        .total-amount { font-size: 42px; font-weight: 800; color: white; line-height: 1.1; }
 
         .promo-box {
             margin-top: 20px;
@@ -244,7 +256,7 @@
     </div>
 
     <header>
-        <div class="brand"><img src="logo.png" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <div class="brand"><img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;"> FOOTPRINT</div>
     </header>
 
     <!-- ACTIVE TRANSACTION -->
@@ -261,34 +273,40 @@
                 <!-- Items injected here -->
             </div>
 
-            <!-- Footer Summary -->
-            <div class="card-footer">
-                <div class="breakdown">
-                    <div class="summary-row">
-                        <span class="label">Subtotal</span>
-                        <span class="value" id="subtotal">₵0.00</span>
-                    </div>
-                    <div class="summary-row discount" id="discountRow" style="display:none;">
-                        <span class="label">Savings</span>
-                        <span class="value" id="discount">-₵0.00</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="label" id="vatLabel">VAT</span>
-                        <span class="value" id="vat">₵0.00</span>
-                    </div>
-                </div>
-                
-                <div class="divider"></div>
+            <!-- Scroll Buttons -->
+            <div class="scroll-controls" id="scrollControls">
+                <button class="scroll-btn" onclick="scrollCart(-150)"><i class="fas fa-chevron-up"></i></button>
+                <button class="scroll-btn" onclick="scrollCart(150)"><i class="fas fa-chevron-down"></i></button>
+            </div>
+        </div>
 
-                <div class="total-section">
-                    <span class="total-label">Total to Pay</span>
-                    <span class="total-amount" id="grandTotal">₵0.00</span>
+        <!-- Footer Summary (Shifted to Right Hand Side) -->
+        <div class="card-footer">
+            <div class="breakdown">
+                <div class="summary-row">
+                    <span class="label">Subtotal</span>
+                    <span class="value" id="subtotal">₵0.00</span>
                 </div>
+                <div class="summary-row discount" id="discountRow" style="display:none;">
+                    <span class="label">Savings</span>
+                    <span class="value" id="discount">-₵0.00</span>
+                </div>
+                <div class="summary-row" id="vatRow">
+                    <span class="label" id="vatLabel">VAT</span>
+                    <span class="value" id="vat">₵0.00</span>
+                </div>
+            </div>
+            
+            <div class="divider"></div>
 
-                <div class="promo-box" id="thankYouBox">
-                    <div class="promo-title">Thank You!</div>
-                    <div>Please come again.</div>
-                </div>
+            <div class="total-section">
+                <span class="total-label">Total to Pay</span>
+                <span class="total-amount" id="grandTotal">₵0.00</span>
+            </div>
+
+            <div class="promo-box" id="thankYouBox">
+                <div class="promo-title">Thank You!</div>
+                <div>Please come again.</div>
             </div>
         </div>
     </div>
@@ -337,16 +355,24 @@
             document.getElementById('itemCount').textContent = `${count} Item${count !== 1 ? 's' : ''}`;
 
             // Update Items List
-            itemsList.innerHTML = data.cart.map(item => `
-                <div class="cart-item">
+            itemsList.innerHTML = data.cart.map((item, idx) => `
+                <div class="cart-item ${idx === data.cart.length - 1 ? 'last-added' : ''}">
                     <div class="item-details">
                         <div class="item-name">${item.name}</div>
-                        <div class="item-meta">${item.qty} x ₵${parseFloat(item.price).toFixed(2)}</div>
+            <div class="item-meta">${item.qty} x ₵${parseFloat(item.price).toFixed(2)}</div>
                     </div>
                     <div class="item-price">₵${(item.price * item.qty).toFixed(2)}</div>
                 </div>
             `).join('');
             
+            // Show scroll buttons if more than 75 items (or unique products)
+            const scrollControls = document.getElementById('scrollControls');
+            if (data.cart.length > 75) {
+                scrollControls.style.display = 'flex';
+            } else {
+                scrollControls.style.display = 'none';
+            }
+
             // Auto scroll to bottom to show latest item
             setTimeout(() => {
                 itemsList.scrollTop = itemsList.scrollHeight;
@@ -354,11 +380,20 @@
 
             // Update Totals
             document.getElementById('subtotal').textContent = `₵${data.subtotal.toFixed(2)}`;
-            document.getElementById('vat').textContent = `₵${data.vat.toFixed(2)}`;
             
-            // Update VAT Label if rate is provided
-            if (data.vatRate) {
-                document.getElementById('vatLabel').textContent = `VAT (${data.vatRate}%)`;
+            const vatEl = document.getElementById('vat');
+            const vatRow = document.getElementById('vatRow');
+            vatEl.textContent = `₵${data.vat.toFixed(2)}`;
+            
+            // Only show VAT row if there's actual VAT
+            if (data.vat > 0) {
+                vatRow.style.display = 'flex';
+                // Update VAT Label if rate is provided
+                if (data.vatRate) {
+                    document.getElementById('vatLabel').textContent = `VAT (${data.vatRate}%)`;
+                }
+            } else {
+                vatRow.style.display = 'none';
             }
             document.getElementById('grandTotal').textContent = `₵${data.total.toFixed(2)}`;
             
@@ -371,6 +406,10 @@
             }
         }
 
+        function scrollCart(amount) {
+            itemsList.scrollTop += amount;
+        }
+
         function resetDisplay() {
             idleScreen.classList.remove('hidden');
             itemsList.innerHTML = '';
@@ -378,8 +417,10 @@
             document.getElementById('subtotal').textContent = '₵0.00';
             document.getElementById('vat').textContent = '₵0.00';
             document.getElementById('vatLabel').textContent = 'VAT';
+            document.getElementById('vatRow').style.display = 'none';
             document.getElementById('itemCount').textContent = '0 Items';
             thankYouBox.classList.remove('active');
+            document.getElementById('scrollControls').style.display = 'none';
             if (thankYouTimer) clearTimeout(thankYouTimer);
         }
 

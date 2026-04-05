@@ -72,14 +72,54 @@
             .btn-add { width: 100%; }
             footer { margin-left: 0; }
         }
+
+        /* Notification Toast */
+        .notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+            background-color: #333; color: white; padding: 12px 24px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 2000; opacity: 0;
+            transition: all 0.3s ease; pointer-events: none; font-size: 14px; font-weight: 500;
+        }
+        .notification.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
+        .notification.success { background-color: #2e7d32; }
+        .notification.error { background-color: #c62828; }
+
+        /* Confirmation Modal */
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; 
+        }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 400px; text-align: center; }
+        .modal-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .btn-cancel { background: #eee; color: #333; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-confirm { background: var(--secondary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
     <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
     <div class="overlay" onclick="toggleSidebar()"></div>
 
+    <div id="notification" class="notification"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div style="font-size: 48px; color: var(--secondary-color); margin-bottom: 20px;"><i class="fas fa-exclamation-circle"></i></div>
+            <h3 id="confirmTitle" style="margin-bottom: 10px;">Confirm Action</h3>
+            <p id="confirmText" style="color: #666; margin-bottom: 25px;"></p>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button type="button" class="btn-confirm" id="confirmActionBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <div class="sidebar">
-        <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <div class="brand" style="display: flex; flex-direction: column; align-items: center;">
+            <img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;">
+            <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">THE SPARROW ENT</div>
+        </div>
         <div class="nav-links">
             <a href="dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
             <div class="nav-section">Sales & Finance</div>
@@ -166,6 +206,31 @@
         let filteredPromotions = [];
         let promoPage = 1;
         let promoRows = 10;
+
+        function showNotification(message, type = 'success') {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification show ${type}`;
+            setTimeout(() => { notif.className = 'notification'; }, 3000);
+        }
+
+        let onConfirmCallback = null;
+        function showConfirmation(title, text, onConfirm) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmText').textContent = text;
+            onConfirmCallback = onConfirm;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            onConfirmCallback = null;
+        }
+
+        document.getElementById('confirmActionBtn').onclick = () => {
+            if (onConfirmCallback) onConfirmCallback();
+            closeConfirmModal();
+        };
 
         async function checkAuth() {
             // Immediate UI update from session storage
@@ -283,26 +348,32 @@
                     document.getElementById('newDiscount').value = '';
                     loadPromotions();
                 } else {
-                    alert("Error adding promotion (Code might already exist)");
+                    const errorData = await res.json();
+                    alert(errorData.message || "Error adding promotion (Code might already exist)");
                 }
             } catch (err) { console.error(err); }
         }
 
         async function deletePromotion(code) {
-            if (!confirm(`Are you sure you want to delete promo code: ${code}?`)) return;
-
-            try {
-                const token = sessionStorage.getItem('authToken');
-                const res = await fetch(`/api/promotions/${code}`, { 
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    loadPromotions();
-                } else {
-                    alert("Error deleting promotion");
+            showConfirmation(
+                'Delete Promotion?',
+                `Are you sure you want to delete promo code: ${code}?`,
+                async () => {
+                    try {
+                        const token = sessionStorage.getItem('authToken');
+                        const res = await fetch(`/api/promotions/${code}`, { 
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (res.ok) {
+                            loadPromotions();
+                            showNotification('Promotion deleted successfully', 'success');
+                        } else {
+                            showNotification('Error deleting promotion', 'error');
+                        }
+                    } catch (err) { console.error(err); showNotification('Server error', 'error'); }
                 }
-            } catch (err) { console.error(err); }
+            );
         }
 
         async function logout() {

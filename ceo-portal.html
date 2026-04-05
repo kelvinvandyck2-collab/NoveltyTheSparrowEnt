@@ -89,6 +89,7 @@
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
         .status-good { background: #e8f5e9; color: var(--success-color); }
         .status-warn { background: #fff3e0; color: #ef6c00; }
+        .status-severe { background: #ffebee; color: #c62828; }
 
         /* AI & Goals Section */
         .intelligence-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
@@ -254,10 +255,10 @@
 <body>
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="sidebar">
-        <div class="brand">
-            <img src="logo.png" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
-            <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                <span style="font-size: 20px; line-height: 1;">FOOTPRINT</span>
+        <div class="brand" style="display: flex; flex-direction: column; align-items: center;">
+            <img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;">
+            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 5px;">
+                <span style="font-size: 20px; line-height: 1;">THE SPARROW ENT</span>
                 <span style="font-size: 10px; letter-spacing: 2px; color: var(--accent-color);">CEO PORTAL</span>
             </div>
         </div>
@@ -332,6 +333,12 @@
 
             <!-- KPIs -->
             <div class="kpi-grid">
+                <div class="kpi-card" onclick="switchTab('overview')">
+                    <div class="kpi-title">Company Revenue</div>
+                    <div class="kpi-value" id="kpiTotalRevenue">₵0.00</div>
+                    <div class="kpi-sub"><i class="fas fa-chart-line"></i> Overall Total</div>
+                    <i class="fas fa-money-bill-trend-up kpi-icon"></i>
+                </div>
                 <div class="kpi-card" onclick="switchTab('overview')">
                     <div class="kpi-title">Monthly Revenue</div>
                     <div class="kpi-value" id="kpiRevenue">₵0.00</div>
@@ -492,7 +499,7 @@
                 <div class="menu-card" onclick="switchTab('tax-management')">
                     <i class="fas fa-percentage"></i>
                     <h3>Tax Management</h3>
-                    <p>Configure VAT, NHIS, and levies.</p>
+                    <p>Configure taxes, NHIS, and levies.</p>
                 </div>
             </div>
         </div>
@@ -640,19 +647,38 @@
         <!-- Tab: Supply Chain Bottlenecks -->
         <div id="tab-ops-bottlenecks" class="tab-content">
             <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="bottlenecksSearch" class="search-input" placeholder="Search bottlenecks..." onkeyup="filterOpsBottlenecks()">
+            <!-- Bottlenecks Summary Analytics -->
+            <div class="kpi-grid" style="margin-bottom: 25px;">
+                <div class="kpi-card" style="border-left: 4px solid #ef4444;">
+                    <div class="kpi-title">Critical Shortages</div>
+                    <div class="kpi-value" id="opsCriticalCount">0</div>
+                    <div class="kpi-sub negative"><i class="fas fa-exclamation-triangle"></i> Negative / Out of Stock</div>
+                    <i class="fas fa-exclamation-circle kpi-icon" style="color:#ef4444; opacity:0.1;"></i>
+                </div>
+                <div class="kpi-card" style="border-left: 4px solid #f59e0b;">
+                    <div class="kpi-title">Reorder Alerts</div>
+                    <div class="kpi-value" id="opsWarningCount">0</div>
+                    <div class="kpi-sub" style="color:#f59e0b;"><i class="fas fa-bell"></i> Low Stock Warning</div>
+                    <i class="fas fa-boxes kpi-icon" style="color:#f59e0b; opacity:0.1;"></i>
+                </div>
+                <div class="kpi-card" style="border-left: 4px solid #10b981;">
+                    <div class="kpi-title">Catalog Health</div>
+                    <div class="kpi-value" id="opsHealthPercent">100%</div>
+                    <div class="kpi-sub" style="color:#10b981;"><i class="fas fa-check-circle"></i> Sufficient Inventory</div>
+                    <i class="fas fa-heartbeat kpi-icon" style="color:#10b981; opacity:0.1;"></i>
+                </div>
             </div>
+
+
             <div class="table-card">
                 <div class="card-header">
                     <div class="card-title">Supply Chain Bottlenecks</div>
                     <button class="btn-control btn-white" onclick="loadOpsBottlenecks()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
                 <table>
-                    <thead><tr><th>Item Name</th><th>Stock Level</th><th>Reorder Level</th><th>Status</th></tr></thead>
+                    <thead><tr><th>Item Name</th><th>Branch</th><th>Stock Level</th><th>Reorder Level</th><th>Status</th></tr></thead>
                     <tbody id="opsTableBody">
-                        <tr><td colspan="4" style="text-align:center;">Loading inventory data...</td></tr>
+                        <tr><td colspan="5" style="text-align:center;">Loading inventory data...</td></tr>
                     </tbody>
                 </table>
                 <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center;">
@@ -1231,7 +1257,7 @@
 
     <footer>
         <div class="footer-content">
-            &copy; 2026 Footprint Retail Systems. All rights reserved. &nbsp;&nbsp;&bull;&nbsp;&nbsp; System Status: Operational &nbsp;&nbsp;&bull;&nbsp;&nbsp; Real-time Data Active &nbsp;&nbsp;&bull;&nbsp;&nbsp; Contact Support: 055-555-5555
+            &copy; 2026 Whitsun. All rights reserved. &nbsp;&nbsp;&bull;&nbsp;&nbsp; System Status: Operational &nbsp;&nbsp;&bull;&nbsp;&nbsp; Real-time Data Active &nbsp;&nbsp;&bull;&nbsp;&nbsp; Contact Support: 030-701-0806
         </div>
     </footer>
 
@@ -1417,10 +1443,14 @@
                     const fin = await finRes.json();
                     const branchPerf = await branchPerfRes.json();
                     const revenue = fin.revenue || 0;
+                    const companyRevenue = fin.companyRevenue || 0;
                     const netProfit = fin.netProfit || 0;
                     const assetValue = fin.assetValue || 0;
                     const opex = fin.opex || 0;
                     const branches = fin.branchCount || 0;
+
+                    const kpiTotalRevenueEl = document.getElementById('kpiTotalRevenue');
+                    if (kpiTotalRevenueEl) kpiTotalRevenueEl.textContent = `₵${companyRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
                     document.getElementById('kpiRevenue').textContent = `₵${revenue.toLocaleString()}`;
                     document.getElementById('kpiProfit').textContent = `₵${netProfit.toLocaleString()}`;
@@ -1433,7 +1463,9 @@
                     // Calculate Avg Txn
                     let relevantPerf = branchPerf;
                     if (selectedBranch && selectedBranch !== 'All Branches') {
-                        relevantPerf = branchPerf.filter(b => (b.branch || b.name) === selectedBranch);
+                        const bObj = allBranches.find(ab => ab.name === selectedBranch);
+                        const targetLoc = bObj ? bObj.location : selectedBranch;
+                        relevantPerf = branchPerf.filter(b => b.branch === targetLoc || b.branch === selectedBranch);
                     }
                     const totalTxns = relevantPerf.reduce((sum, b) => sum + (parseInt(b.txn_count) || 0), 0);
                     const avgTxn = totalTxns > 0 ? revenue / totalTxns : 0;
@@ -1500,7 +1532,7 @@
                     if (filter.options.length <= 1) {
                         allBranches.forEach(b => {
                             const opt = document.createElement('option');
-                            opt.value = b.location || b.name;
+                            opt.value = b.name;
                             opt.textContent = b.name;
                             filter.appendChild(opt);
                         });
@@ -1533,7 +1565,7 @@
                 <tr>
                     <td style="font-weight:600; color:var(--primary-color);">${b.name}</td>
                     <td>${b.location || '-'}</td>
-                    <td>${b.vat_rate}%</td>
+                    <td>${b.vat_rate > 0 ? b.vat_rate + '%' : '-'}</td>
                     <td>${perf.txn_count || 0}</td>
                     <td style="font-weight:600;">₵${parseFloat(perf.revenue || 0).toLocaleString()}</td>
                     <td>
@@ -2295,11 +2327,23 @@
 
         function updatePaginationControls(type, totalItems, currentPage) {
             const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
-            const prefix = type === 'pending' ? 'pending' : 'history';
             
-            document.getElementById(`${prefix}PageInfo`).textContent = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById(`btn${prefix.charAt(0).toUpperCase() + prefix.slice(1)}Prev`).disabled = currentPage === 1;
-            document.getElementById(`btn${prefix.charAt(0).toUpperCase() + prefix.slice(1)}Next`).disabled = currentPage === totalPages;
+            // Map types to their respective prefix
+            let prefix = type;
+            if (type === 'pending') prefix = 'pending';
+            else if (type === 'history') prefix = 'history';
+            else if (type === 'bottlenecks') prefix = 'bottlenecks';
+            else if (type === 'suppliers') prefix = 'suppliers';
+            
+            const btnPrefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            
+            const infoEl = document.getElementById(`${prefix}PageInfo`);
+            const prevBtn = document.getElementById(`btn${btnPrefix}Prev`);
+            const nextBtn = document.getElementById(`btn${btnPrefix}Next`);
+            
+            if (infoEl) infoEl.textContent = `Page ${currentPage} of ${totalPages}`;
+            if (prevBtn) prevBtn.disabled = (currentPage === 1);
+            if (nextBtn) nextBtn.disabled = (currentPage >= totalPages);
         }
 
         function changePendingPage(delta) {
@@ -2424,18 +2468,61 @@
             document.getElementById('opsKpiSla').textContent = '...'; 
 
             try {
-                // Fetch all products to calculate inventory health
-                const productsRes = await fetch('/products', { headers: { 'Authorization': `Bearer ${token}` }});
+                // Fetch products and branches in parallel
+                const [productsRes, branchesRes] = await Promise.all([
+                    fetch('/products?t=' + new Date().getTime(), { headers: { 'Authorization': `Bearer ${token}` }}),
+                    fetch('/api/branches', { headers: { 'Authorization': `Bearer ${token}` }})
+                ]);
+
                 if (productsRes.ok) {
                     const products = await productsRes.json();
+                    
                     const totalProducts = products.length;
                     if (totalProducts > 0) {
-                        const inStockCount = products.filter(p => {
-                            const stock = (selectedBranch === 'All Branches') 
-                                ? (p.stock || 0) 
-                                : (p.stock_levels ? (p.stock_levels[selectedBranch] || 0) : 0);
-                            return stock > 0;
-                        }).length;
+                        let inStockCount = 0;
+                        
+                        let relevantProductsCount = 0;
+                        products.forEach(p => {
+                            let levelsObj = p.stock_levels || {};
+                            if (typeof levelsObj === 'string') {
+                                try { levelsObj = JSON.parse(levelsObj); } catch(e) { levelsObj = {}; }
+                            }
+
+                            if (selectedBranch === 'All Branches') {
+                                // For all branches, sum up stock from all branches
+                                let totalItemStock = 0;
+                                Object.values(levelsObj).forEach(val => totalItemStock += Number(val || 0));
+                                if (totalItemStock > 0) inStockCount++;
+                            } else {
+                                // Specific branch check with fuzzy matching
+                                const branchesKeys = Object.keys(levelsObj);
+                                const branchKey = branchesKeys.find(k => {
+                                    const kl = k.toLowerCase().trim();
+                                    const sl = selectedBranch.toLowerCase().trim();
+                                    return kl === sl || sl.includes(kl) || kl.includes(sl);
+                                });
+                                
+                                let stockVal = 0;
+                                if (branchKey !== undefined) {
+                                    stockVal = Number(levelsObj[branchKey] || 0);
+                                } else if (selectedBranch.toLowerCase().includes('novelty') || selectedBranch.toLowerCase().includes('dzorwulu')) {
+                                    // Robust fallback for NOVELTY/Dzorwulu to Main Warehouse
+                                    const mainKey = branchesKeys.find(k => {
+                                        const kl = k.toLowerCase();
+                                        return kl === 'main warehouse' || kl.includes('warehouse');
+                                    });
+                                    if (mainKey) {
+                                        stockVal = Number(levelsObj[mainKey] || 0);
+                                    } else {
+                                        // Final fallback to p.stock if JSON key isn't found
+                                        stockVal = Number(p.stock || 0);
+                                    }
+                                }
+
+                                if (stockVal > 0) inStockCount++;
+                            }
+                        });
+
                         const healthPercentage = (inStockCount / totalProducts) * 100;
                         document.getElementById('opsKpiHealth').textContent = `${healthPercentage.toFixed(0)}%`;
                     } else {
@@ -2484,56 +2571,103 @@
             const selectedBranch = document.getElementById('globalBranchFilter').value;
             
             try {
-                // Fetch all products and filter for low stock client-side
-                const res = await fetch('/products', { headers: { 'Authorization': `Bearer ${token}` }});
-                if(res.ok) {
-                    let products = await res.json();
+                // Fetch products and branches in parallel
+                const [productsRes, branchesRes] = await Promise.all([
+                    fetch('/products?t=' + new Date().getTime(), { headers: { 'Authorization': `Bearer ${token}` }}),
+                    fetch('/api/branches', { headers: { 'Authorization': `Bearer ${token}` }})
+                ]);
+
+                if (productsRes.ok) {
+                    const products = await productsRes.json();
+                    
                     let bottlenecks = [];
+                    let criticalCount = 0;
+                    let warningCount = 0;
+                    let totalCheckPoints = 0;
+
+                    const branchFilter = document.getElementById('globalBranchFilter');
+                    const branchNames = Array.from(branchFilter.options)
+                        .map(opt => opt.value)
+                        .filter(v => v !== 'All Branches');
 
                     products.forEach(p => {
-                        const reorder = p.reorder_level || 10;
+                        const reorderVal = p.reorder_level !== undefined && p.reorder_level !== null && p.reorder_level !== '' ? Number(p.reorder_level) : 10;
+                        let levelsObj = p.stock_levels || {};
+                        if (typeof levelsObj === 'string') {
+                            try { levelsObj = JSON.parse(levelsObj); } catch(e) { levelsObj = {}; }
+                        }
 
-                        if (selectedBranch === 'All Branches') {
-                            if (p.stock_levels && typeof p.stock_levels === 'object') {
-                                Object.entries(p.stock_levels).forEach(([branch, qty]) => {
-                                    if (qty <= reorder) {
-                                        bottlenecks.push({ name: p.name, branch: branch, stock: qty, reorder: reorder });
-                                    }
+                        const targetBranches = selectedBranch === 'All Branches' ? branchNames : [selectedBranch];
+                        totalCheckPoints += targetBranches.length;
+
+                        targetBranches.forEach(bName => {
+                            const branchesKeys = Object.keys(levelsObj);
+                            const branchKey = branchesKeys.find(k => {
+                                const kl = k.toLowerCase().trim();
+                                const sl = bName.toLowerCase().trim();
+                                return kl === sl || sl.includes(kl) || kl.includes(sl);
+                            });
+
+                            let stockVal = 0;
+                            if (branchKey !== undefined) {
+                                stockVal = Number(levelsObj[branchKey] || 0);
+                            } else if (bName.toLowerCase().includes('novelty') || bName.toLowerCase().includes('dzorwulu')) {
+                                // Robust fallback for NOVELTY/Dzorwulu to Main Warehouse
+                                const mainKey = branchesKeys.find(k => {
+                                    const kl = k.toLowerCase();
+                                    return kl === 'main warehouse' || kl.includes('warehouse');
                                 });
-                            } else if ((p.stock || 0) <= reorder) {
-                                bottlenecks.push({ name: p.name, branch: 'Global', stock: p.stock || 0, reorder: reorder });
-                            }
-                        } else {
-                            let stock = 0;
-                            if (p.stock_levels && p.stock_levels[selectedBranch] !== undefined) {
-                                stock = p.stock_levels[selectedBranch];
-                            } else if (selectedBranch === 'Headquarters' || selectedBranch === 'Main Warehouse') {
-                                stock = p.stock || 0;
+                                if (mainKey) {
+                                    stockVal = Number(levelsObj[mainKey] || 0);
+                                } else {
+                                    // Final fallback to p.stock if JSON key isn't found
+                                    stockVal = Number(p.stock || 0);
+                                }
                             }
                             
-                            if (stock <= reorder) {
-                                bottlenecks.push({ name: p.name, branch: selectedBranch, stock: stock, reorder: reorder });
+                            if (stockVal <= reorderVal) {
+                                const status = stockVal <= 0 ? 'Critical' : 'Warning';
+                                if (status === 'Critical') criticalCount++; else warningCount++;
+                                
+                                bottlenecks.push({ 
+                                    name: p.name, 
+                                    branch: bName, 
+                                    stock: stockVal, 
+                                    reorder: reorderVal,
+                                    status: status
+                                });
                             }
-                        }
+                        });
                     });
+
+                    // Update Summary Analytics
+                    document.getElementById('opsCriticalCount').textContent = criticalCount;
+                    document.getElementById('opsWarningCount').textContent = warningCount;
+                    const healthPercent = totalCheckPoints > 0 ? ((totalCheckPoints - bottlenecks.length) / totalCheckPoints) * 100 : 100;
+                    document.getElementById('opsHealthPercent').textContent = `${healthPercent.toFixed(0)}%`;
                     
                     opsBottlenecksData = bottlenecks;
-                    filteredOpsBottlenecksData = [...opsBottlenecksData];
-                    opsBottlenecksPage = 1;
-                    renderOpsBottlenecksTable();
+                    filterOpsBottlenecks(); // Apply current filters
                 }
             } catch(e) { 
-                console.error('Error loading Ops data:', e); 
-                document.getElementById('opsTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center; color: red;">Failed to load data.</td></tr>';
+                console.error('Error loading Bottlenecks:', e); 
+                document.getElementById('opsTableBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color: red;">Failed to load data.</td></tr>';
             }
         }
 
         function filterOpsBottlenecks() {
-            const query = document.getElementById('bottlenecksSearch').value.toLowerCase();
-            filteredOpsBottlenecksData = opsBottlenecksData.filter(i => 
-                i.name.toLowerCase().includes(query) || 
-                (i.branch && i.branch.toLowerCase().includes(query))
-            );
+            const searchEl = document.getElementById('bottlenecksSearch');
+            const statusEl = document.getElementById('bottlenecksStatusFilter');
+            
+            const query = searchEl ? searchEl.value.toLowerCase() : '';
+            const statusFilter = statusEl ? statusEl.value : 'All';
+
+            filteredOpsBottlenecksData = opsBottlenecksData.filter(i => {
+                const matchesSearch = i.name.toLowerCase().includes(query) || (i.branch && i.branch.toLowerCase().includes(query));
+                const matchesStatus = statusFilter === 'All' || i.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+            
             opsBottlenecksPage = 1;
             renderOpsBottlenecksTable();
         }
@@ -2546,17 +2680,23 @@
 
             if (pageData.length > 0) {
                 tbody.innerHTML = pageData.map(i => {
-                    const branchLabel = i.branch && i.branch !== 'Global' ? ` <span style="font-size:11px; color:#666;">(${i.branch})</span>` : '';
+                    const isCritical = i.status === 'Critical';
+                    const statusClass = i.stock < 0 ? 'status-severe' : (i.stock === 0 ? 'status-severe' : 'status-warn');
+                    const statusText = i.stock < 0 ? 'NEGATIVE STOCK' : (i.stock === 0 ? 'OUT OF STOCK' : 'LOW STOCK');
+                    
                     return `
-                    <tr>
-                        <td style="font-weight:500;">${i.name}${branchLabel}</td>
-                        <td style="color:#c62828; font-weight:bold;">${i.stock}</td>
-                        <td>${i.reorder}</td>
-                        <td><span class="status-badge status-warn">Low Stock</span></td>
+                    <tr style="${isCritical ? 'background: rgba(239, 68, 68, 0.02);' : ''}">
+                        <td style="font-weight:600; color:var(--primary-color);">${i.name}</td>
+                        <td><span style="font-size:12px; color:#666; background:#f1f5f9; padding:2px 8px; border-radius:4px;">${i.branch}</span></td>
+                        <td style="${isCritical ? 'color:#c62828;' : 'color:#ef6c00;'} font-weight:bold;">${i.stock}</td>
+                        <td style="color:#64748b;">${i.reorder}</td>
+                        <td>
+                            <span class="status-badge ${statusClass}" style="letter-spacing:0.5px; font-size:10px;">${statusText}</span>
+                        </td>
                     </tr>
                 `}).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color: #2e7d32;"><i class="fas fa-check-circle"></i> No low stock items for this selection.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: #64748b;"><i class="fas fa-check-circle" style="color:#10b981; font-size:24px; display:block; margin-bottom:10px;"></i> No bottlenecks found for the current filters.</td></tr>';
             }
             updatePaginationControls('bottlenecks', filteredOpsBottlenecksData.length, opsBottlenecksPage);
         }
@@ -2811,7 +2951,9 @@
                 let branchPerf = branchPerfRes.ok ? await branchPerfRes.json() : [];
 
                 if (selectedBranch && selectedBranch !== 'All Branches') {
-                    branchPerf = branchPerf.filter(b => (b.branch || b.name) === selectedBranch);
+                    const bObj = allBranches.find(ab => ab.name === selectedBranch);
+                    const targetLoc = bObj ? bObj.location : selectedBranch;
+                    branchPerf = branchPerf.filter(b => b.branch === targetLoc || b.branch === selectedBranch);
                 }
 
                 renderBranchPerformanceCharts(branchPerf);
@@ -2990,7 +3132,9 @@
                         const branchPerf = await branchPerfRes.json();
                         let relevantPerf = branchPerf;
                         if (selectedBranch && selectedBranch !== 'All Branches') {
-                            relevantPerf = branchPerf.filter(b => (b.branch || b.name) === selectedBranch);
+                            const bObj = allBranches.find(ab => ab.name === selectedBranch);
+                            const targetLoc = bObj ? bObj.location : selectedBranch;
+                            relevantPerf = branchPerf.filter(b => b.branch === targetLoc || b.branch === selectedBranch);
                         }
                         const totalTxns = relevantPerf.reduce((sum, b) => sum + (parseInt(b.txn_count) || 0), 0);
                         const avgTxn = totalTxns > 0 ? revenue / totalTxns : 0;
@@ -3096,7 +3240,7 @@
             document.getElementById('branchId').value = '';
             document.getElementById('branchName').value = '';
             document.getElementById('branchLocation').value = '';
-            document.getElementById('branchVat').value = '15.0';
+            document.getElementById('branchVat').value = '';
             document.getElementById('branchModal').classList.add('active');
         }
         
@@ -3106,7 +3250,7 @@
             document.getElementById('branchId').value = branch.id;
             document.getElementById('branchName').value = branch.name;
             document.getElementById('branchLocation').value = branch.location;
-            document.getElementById('branchVat').value = branch.vat_rate;
+            document.getElementById('branchVat').value = branch.vat_rate || '';
             document.getElementById('branchModal').classList.add('active');
         }
         
@@ -3362,7 +3506,7 @@
 
                 const taxes = await taxesRes.json();
                 const settings = await settingsRes.json();
-                const vatRate = settings.vat_rate !== undefined && settings.vat_rate !== null ? parseFloat(settings.vat_rate) : 15.00;
+                const vatRate = settings.vat_rate !== undefined && settings.vat_rate !== null ? parseFloat(settings.vat_rate) : 0.00;
 
                 let html = '';
 
@@ -3443,17 +3587,22 @@
         }
 
         async function deleteTax(id) {
-            if (!confirm('Remove this tax rule?')) return;
-            const token = sessionStorage.getItem('authToken');
-            try {
-                const res = await fetch(`/api/taxes/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                if (res.ok) {
-                    showToast('Tax rule removed');
-                    loadTaxes();
-                    generateReport();
+            showConfirmationModal(
+                'Remove Tax Rule?',
+                'Are you sure you want to remove this tax rule permanently?',
+                async () => {
+                    const token = sessionStorage.getItem('authToken');
+                    try {
+                        const res = await fetch(`/api/taxes/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        if (res.ok) {
+                            showToast('Tax rule removed');
+                            loadTaxes();
+                            generateReport();
+                        }
+                        else showToast('Failed to delete tax rule');
+                    } catch (err) { console.error(err); }
                 }
-                else showToast('Failed to delete tax rule');
-            } catch (err) { console.error(err); }
+            );
         }
 
         async function generateReport() {

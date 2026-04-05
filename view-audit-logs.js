@@ -1,9 +1,12 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+const connStr = process.env.DATABASE_URL;
+const cleanConnStr = connStr.replace(/sslmode=[^&]*/g, '').replace(/\?&/, '?').replace(/&&/g, '&').replace(/[?&]$/, '');
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    connectionString: cleanConnStr,
+    ssl: { rejectUnauthorized: false }
 });
 
 function formatAction(action) {
@@ -13,8 +16,26 @@ function formatAction(action) {
 
 function formatDetails(details) {
     if (!details) return '';
-    if (typeof details === 'string') {
+    
+    // Handle JSONB data - it might already be an object
+    if (typeof details === 'object' && details !== null) {
+        // Check if it's a broken object (toString returns [object Object])
+        if (details.toString() === '[object Object]' && Object.keys(details).length === 0) {
+            return 'Return transaction details (data format issue - fixed in newer entries)';
+        }
+        // It's already an object, no need to parse
+    } else if (typeof details === 'string') {
         try { details = JSON.parse(details); } catch(e) { return details; }
+    }
+    
+    // Custom formatter for RETURN_SALE
+    if (details.total !== undefined && details.receiptNumber && details.originalTransactionId) {
+        return `Return Receipt #${details.receiptNumber}, Total: -${details.total}, Items: ${details.itemCount}, Original Transaction: ${details.originalTransactionId}`;
+    }
+    
+    // Custom formatter for regular POS_SALE
+    if (details.receiptNumber && details.total && details.originalTransactionId === undefined) {
+        return `Receipt #${details.receiptNumber}, Total: ${details.total}, Items: ${details.itemCount}`;
     }
     
     // Custom formatters for common actions
@@ -24,9 +45,6 @@ function formatDetails(details) {
     // Format for DELETE PRODUCT and other simple product actions
     if (details.name && details.barcode) {
         return `Product: ${details.name} (${details.barcode})`;
-    }
-    if (details.receiptNumber && details.total) {
-        return `Receipt #${details.receiptNumber}, Total: ${details.total}, Items: ${details.itemCount}`;
     }
     if (details.role && details.email) {
         return `Role: ${details.role}`;

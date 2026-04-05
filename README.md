@@ -65,3 +65,4 @@ To populate the database with default users (Admin, CEO, Cashier), run:
 ```bash
 node seed.js
 ```# FootprintRetailSystem
+# NoveltyTheSparrowEnt

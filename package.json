@@ -20,6 +20,7 @@
   "dependencies": {
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
+    "claude": "^0.1.1",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -30,7 +31,7 @@
     "helmet": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.12",
+    "nodemailer": "^8.0.4",
     "pdfkit": "^0.17.2",
     "pg": "^8.16.3",
     "redis": "^5.10.0",

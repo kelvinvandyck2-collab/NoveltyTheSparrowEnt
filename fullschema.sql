@@ -165,10 +165,27 @@ CREATE TABLE transactions (
     customer_name VARCHAR(255),
     store_location VARCHAR(100),
     total_amount DECIMAL(10, 2),
+    original_total DECIMAL(10, 2),
+    current_total DECIMAL(10, 2),
     payment_method VARCHAR(50), -- 'cash', 'momo', 'card', 'credit'
     receipt_number VARCHAR(100),
     items JSONB, -- Array of {barcode, name, qty, price}
     status VARCHAR(20) DEFAULT 'completed',
+    is_return BOOLEAN DEFAULT FALSE,
+    original_transaction_id INTEGER,
+    return_items JSONB,
+    has_returns BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE refunds (
+    id SERIAL PRIMARY KEY,
+    transaction_id INTEGER REFERENCES transactions(id),
+    original_receipt_number VARCHAR(100),
+    refund_receipt_number VARCHAR(100),
+    refund_amount DECIMAL(10, 2),
+    payment_method VARCHAR(50), -- 'cash', 'momo', etc.
+    processed_by INTEGER REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

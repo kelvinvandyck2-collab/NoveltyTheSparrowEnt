@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Footprint | Receipt</title>
+    <title>THE SPARROW ENT | Receipt</title>
+    <!-- Add JsBarcode library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
         body {
             font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
             background: #f5f5f5;
             display: flex;
             flex-direction: column;
@@ -17,42 +20,207 @@
         }
         .receipt-container {
             background: white;
-            width: 300px; /* Standard 80mm thermal width approx */
-            padding: 15px;
+            width: 320px; /* Slightly wider for better layout */
+            max-width: 100%;
+            padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            border: 1px solid #ddd;
         }
-        .header { text-align: center; margin-bottom: 15px; }
-        .store-name { font-size: 18px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
-        .store-info { font-size: 12px; color: #333; margin-bottom: 2px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .store-logo { margin-bottom: 10px; }
+        .store-logo img { 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%; 
+            object-fit: cover;
+            border: 2px solid #1a2a6c;
+        }
+        .store-name { 
+            font-size: 20px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            margin-bottom: 5px;
+            color: #1a2a6c;
+        }
+        .store-info { 
+            font-size: 11px; 
+            font-weight: bold;
+            color: #555; 
+            margin-bottom: 2px;
+            line-height: 1.3;
+        }
         
-        .divider { border-top: 1px dashed #333; margin: 10px 0; }
+        .divider { 
+            border-top: 1px dashed #333; 
+            margin: 15px 0; 
+        }
         
-        .txn-details { font-size: 12px; margin-bottom: 10px; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        .barcode-section {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .barcode-label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
         
-        .items-table { width: 100%; font-size: 12px; border-collapse: collapse; }
-        .items-table th { text-align: left; border-bottom: 1px dashed #333; padding-bottom: 5px; }
-        .items-table td { padding-top: 5px; vertical-align: top; }
-        .qty-col { width: 30px; text-align: center; }
-        .price-col { text-align: right; white-space: nowrap; }
+        .txn-details { 
+            font-size: 12px; 
+            margin-bottom: 15px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .detail-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+        }
         
-        .totals-section { margin-top: 10px; font-size: 12px; }
-        .total-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
-        .grand-total { font-size: 16px; font-weight: bold; margin-top: 5px; border-top: 1px dashed #333; padding-top: 5px; }
+        .items-table { 
+            width: 100%; 
+            font-size: 12px; 
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .items-table th { 
+            text-align: left; 
+            border-bottom: 2px solid #1a2a6c; 
+            padding-bottom: 8px;
+            font-weight: bold;
+            color: #1a2a6c;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .items-table td { 
+            padding: 6px 0;
+            vertical-align: top;
+            border-bottom: 1px dotted #ddd;
+            font-weight: bold;
+        }
+        .items-table tr:last-child td {
+            border-bottom: none;
+        }
+        .item-name {
+            font-weight: 500;
+            color: #333;
+        }
+        .qty-col { 
+            width: 40px; 
+            text-align: center; 
+            font-weight: bold;
+        }
+        .price-col { 
+            text-align: right; 
+            white-space: nowrap;
+            font-weight: bold;
+            color: #1a2a6c;
+        }
         
-        .footer { text-align: center; font-size: 11px; margin-top: 15px; color: #555; }
+        .totals-section { 
+            margin-top: 15px; 
+            font-size: 12px;
+            font-weight: bold;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .total-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .grand-total { 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin-top: 10px; 
+            border-top: 2px solid #1a2a6c; 
+            padding-top: 10px;
+            color: #1a2a6c;
+        }
         
-        .actions { display: flex; gap: 10px; width: 300px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: sans-serif; }
-        .btn-print { background: #1a2a6c; color: white; }
-        .btn-back { background: #e0e0e0; color: #333; }
+        .footer { 
+            text-align: center; 
+            font-size: 11px; 
+            font-weight: bold;
+            margin-top: 20px; 
+            color: #555;
+            padding-top: 15px;
+            border-top: 1px dashed #333;
+        }
+        
+        .actions { 
+            display: flex; 
+            gap: 10px; 
+            width: 320px;
+            max-width: 100%;
+        }
+        .btn { 
+            flex: 1; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-family: sans-serif;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-print { 
+            background: #1a2a6c; 
+            color: white; 
+        }
+        .btn-print:hover {
+            background: #2a3a7c;
+        }
+        .btn-back { 
+            background: #e0e0e0; 
+            color: #333; 
+        }
+        .btn-back:hover {
+            background: #d0d0d0;
+        }
 
         @media print {
-            body { background: white; padding: 0; margin: 0; display: block; }
-            .receipt-container { box-shadow: none; width: 300px; margin: 0; padding: 0; }
+            body { 
+                background: white; 
+                padding: 0; 
+                margin: 0; 
+                display: block; 
+                font-weight: bold;
+            }
+            .receipt-container { 
+                box-shadow: none; 
+                width: 320px; 
+                max-width: 100%;
+                margin: 0; 
+                padding: 15px;
+                border: none;
+            }
             .actions { display: none; }
-            @page { margin: 0; size: auto; }
+            @page { 
+                margin: 0; 
+                size: auto; 
+            }
+            .barcode-section {
+                background: white;
+            }
+            .txn-details, .totals-section {
+                background: white;
+            }
         }
     </style>
 </head>
@@ -60,18 +228,40 @@
 
     <div class="receipt-container">
         <div class="header">
-            <img src="logo.png" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 5px;">
-            <div class="store-name" id="rStoreName">Footprint Retail</div>
+            <div class="store-logo">
+                <img src="logo.png" alt="Store Logo" style="width: 200px; height: 40px; object-fit: contain;">
+            </div>
+            <div class="store-name" id="rStoreName">THE SPARROW ENT</div>
             <div class="store-info" id="rAddress">Headquarters</div>
-            <div class="store-info" id="rPhone">Tel: 055-555-5555</div>
+            <div class="store-info" id="rPhone">Tel: 0506012767</div>
         </div>
 
+        <!-- Barcode Section -->
+        <div class="barcode-section">
+            <div class="barcode-label">Receipt #</div>
+            <svg id="barcode"></svg>
+            <div id="barcodeText" style="font-size: 12px; margin-top: 5px; font-weight: bold;"></div>
+        </div>
+
+        <div class="divider"></div>
+
         <div class="txn-details">
-            <div class="detail-row"><span>Date:</span> <span id="rDate">...</span></div>
-            <div class="detail-row"><span>Receipt #:</span> <span id="rId">...</span></div>
-            <div class="detail-row"><span>Cashier:</span> <span id="rCashier">...</span></div>
-            <div class="detail-row"><span>Payment:</span> <span id="rMethod">...</span></div>
-            <div class="detail-row" id="rCustomerRow" style="display:none;"><span>Customer:</span> <span id="rCustomer">...</span></div>
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span id="rDate">...</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Cashier:</span>
+                <span id="rCashier">...</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Payment:</span>
+                <span id="rMethod">...</span>
+            </div>
+            <div class="detail-row" id="rCustomerRow" style="display:none;">
+                <span class="detail-label">Customer:</span>
+                <span id="rCustomer">...</span>
+            </div>
         </div>
 
         <div class="divider"></div>
@@ -113,8 +303,8 @@
         </div>
 
         <div class="footer">
-            <p id="rFooter">Thank you for your business!</p>
-            <p style="font-size:9px; margin-top:5px;">Powered by Footprint</p>
+            <p id="rFooter">Thank you for shopping with us</p>
+            <p style="font-size:9px; margin-top:5px;">Kindly check receipt & items purchased before exit<br>Developed by Whitsun (030 701 0806)</p>
         </div>
     </div>
 
@@ -127,6 +317,14 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
+            const source = urlParams.get('source');
+            
+            // Adjust Back button based on where the receipt was generated
+            const backBtn = document.querySelector('.btn-back');
+            if(source === 'portal' && backBtn) {
+                backBtn.textContent = 'Back to Quick Sale';
+                backBtn.onclick = () => window.location.href = 'company-portal.html';
+            }
             
             if(!id) {
                 alert("No receipt ID provided");
@@ -135,18 +333,18 @@
             }
 
             try {
-                const token = sessionStorage.getItem('authToken');
+                const token = sessionStorage.getItem('authToken') || sessionStorage.getItem('companyToken');
                 
                 // 1. Fetch Settings (for Store Name/Footer)
                 const settingsRes = await fetch('/api/settings', { headers: { 'Authorization': `Bearer ${token}` } });
                 if(settingsRes.ok) {
                     const settings = await settingsRes.json();
-                    if(settings.store_name) document.getElementById('rStoreName').textContent = settings.store_name;
+                    // if(settings.store_name) document.getElementById('rStoreName').textContent = settings.store_name;
                     if(settings.receipt_footer) document.getElementById('rFooter').textContent = settings.receipt_footer;
                 }
 
                 // 2. Fetch Transaction
-                const res = await fetch(`/transactions/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`/transactions/receipt/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 if(!res.ok) throw new Error("Transaction not found");
                 
                 const data = await res.json();
@@ -154,38 +352,106 @@
                 // Populate Data
                 const date = new Date(data.created_at);
                 document.getElementById('rDate').textContent = date.toLocaleString();
-                document.getElementById('rId').textContent = data.receipt_number || data.id;
-                document.getElementById('rCashier').textContent = data.cashier_name || 'Staff';
+                const receiptNumber = data.receipt_number || data.id;
+                let cashierName = data.cashier_name || 'Staff';
+                if (cashierName === 'Chief Executive Officer') cashierName = 'Novelty The Sparrow Ent';
+                document.getElementById('rCashier').textContent = cashierName;
+                
+                // Set branch address from transaction data
+                if(data.branch_name) {
+                    document.getElementById('rAddress').textContent = data.branch_name;
+                } else if(data.store_location) {
+                    document.getElementById('rAddress').textContent = data.store_location;
+                }
+                
+                if (data.type === 'RETURN') {
+                    const headerTitle = document.querySelector('.store-name');
+                    headerTitle.textContent = 'RECEIPT';
+                }
+                
+                // Generate Barcode
+                try {
+                    JsBarcode("#barcode", receiptNumber, {
+                        format: "CODE128",
+                        width: 1.5,
+                        height: 50,
+                        displayValue: false,
+                        fontSize: 10,
+                        margin: 3
+                    });
+                    document.getElementById('barcodeText').textContent = receiptNumber;
+                } catch (e) {
+                    console.error('Barcode generation error:', e);
+                    document.getElementById('barcodeText').textContent = receiptNumber;
+                }
                 
                 if(data.customer_name) {
                     document.getElementById('rCustomer').textContent = data.customer_name;
                     document.getElementById('rCustomerRow').style.display = 'flex';
                 }
 
-                // Items
+                // Items with better formatting
                 const tbody = document.getElementById('rItems');
                 let items = data.items;
                 if(typeof items === 'string') items = JSON.parse(items);
                 
-                tbody.innerHTML = items.map(item => `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td class="qty-col">${item.qty}</td>
-                        <td class="price-col">₵${(item.price * item.qty).toFixed(2)}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = items.map(item => {
+                    const itemTotal = (item.price * item.qty);
+                    const itemDiscount = item.discount || 0;
+                    const finalTotal = itemTotal - itemDiscount;
+                    
+                    // Calculate net amount (before tax) for display
+                    let totalTaxRate = 0;
+                    if (data.taxBreakdown && data.taxBreakdown.length > 0) {
+                        totalTaxRate = data.taxBreakdown.reduce((sum, tax) => sum + (parseFloat(tax.rate) || 0), 0) / 100;
+                    }
+                    const netTotal = finalTotal / (1 + totalTaxRate);
+                    const itemTax = finalTotal - netTotal;
+                    
+                    return `
+                        <tr>
+                            <td class="item-name">
+                                <div>${item.name}</div>
+                                ${itemDiscount > 0 ? `<div style="font-size:10px; color:#e74c3c;">Discount: ₵${itemDiscount.toFixed(2)}</div>` : ''}
+                            </td>
+                            <td class="qty-col">${item.qty}</td>
+                            <td class="price-col">₵${netTotal.toFixed(2)}</td>
+                        </tr>
+                    `;
+                }).join('');
 
-                // Totals
-                document.getElementById('rSubtotal').textContent = '₵' + parseFloat(data.subtotal).toFixed(2);
-                document.getElementById('rTotal').textContent = '₵' + parseFloat(data.total_amount).toFixed(2);
+                // Totals with better formatting - calculate from items for consistency
+                let calculatedSubtotal = 0;
+                let calculatedTotal = 0;
+                
+                items.forEach(item => {
+                    const itemTotal = (item.price * item.qty);
+                    const itemDiscount = item.discount || 0;
+                    const finalTotal = itemTotal - itemDiscount;
+                    
+                    // Calculate net amount for this item
+                    let totalTaxRate = 0;
+                    if (data.taxBreakdown && data.taxBreakdown.length > 0) {
+                        totalTaxRate = data.taxBreakdown.reduce((sum, tax) => sum + (parseFloat(tax.rate) || 0), 0) / 100;
+                    }
+                    const netTotal = finalTotal / (1 + totalTaxRate);
+                    
+                    calculatedSubtotal += netTotal;
+                    calculatedTotal += finalTotal;
+                });
+                
+                const taxAmount = calculatedTotal - calculatedSubtotal;
+                
+                document.getElementById('rSubtotal').textContent = '₵' + calculatedSubtotal.toFixed(2);
+                document.getElementById('rTotal').textContent = '₵' + calculatedTotal.toFixed(2);
                 document.getElementById('rMethod').textContent = (data.payment_method || 'Cash').toUpperCase();
 
                 if(data.discount > 0) {
-                    document.getElementById('rDiscount').textContent = '-₵' + parseFloat(data.discount).toFixed(2);
+                    document.getElementById('rDiscount').textContent = '₵' + Math.abs(parseFloat(data.discount)).toFixed(2);
                     document.getElementById('rDiscountRow').style.display = 'flex';
                 }
 
-                // Dynamic Taxes
+                // Dynamic Taxes with better formatting
                 const taxContainer = document.getElementById('rTaxContainer');
                 if(data.taxBreakdown && data.taxBreakdown.length > 0) {
                     taxContainer.innerHTML = data.taxBreakdown.map(t => `

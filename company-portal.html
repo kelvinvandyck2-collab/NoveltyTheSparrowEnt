@@ -1,0 +1,4442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Company Portal | Footprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Times+New+Roman:wght@400;600&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js" crossorigin="anonymous"></script>
+
+<style>
+:root {
+    --primary-color: #1a2a6c; /* Deep Navy */
+    --secondary-color: #b21f1f; /* Crimson */
+    --accent-color: #fdbb2d; /* Golden Amber */
+    --text-color: #333;
+    --light-text: #fff;
+    --gray-light: #f5f7fa;
+    --sidebar-width: 260px;
+    --success-color: #27ae60;
+    --warning-color: #f39c12;
+    --danger-color: #e74c3c;
+    --transition: all 0.3s ease;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* Reset & Base */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Poppins', sans-serif; }
+body { background: var(--gray-light); display: flex; flex-direction: column; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    transition: 0.3s;
+    z-index: 1000;
+}
+
+.brand {
+    padding: 25px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-family: 'Montserrat', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand img {
+    width: 200px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.brand div {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0 0 0;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.nav-links { flex: 1; padding-top: 20px; }
+
+.nav-item {
+    display: flex; 
+    align-items: center; 
+    padding: 15px 25px;
+    color: rgba(255,255,255,0.7); 
+    text-decoration: none; 
+    transition: 0.3s;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+}
+
+.nav-item:hover, .nav-item.active { 
+    background: rgba(255,255,255,0.1); 
+    color: white; 
+    border-left-color: var(--accent-color); 
+}
+
+.nav-item i { 
+    margin-right: 15px; 
+    width: 20px; 
+    text-align: center; 
+}
+
+.nav-section {
+    padding: 15px 25px 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-color);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    z-index: 3000;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast-success { background: var(--success-color) !important; }
+.toast-error { background: var(--danger-color) !important; }
+.toast-warning { background: var(--warning-color) !important; }
+
+.user-profile {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-profile .fa-sign-out-alt {
+    color: rgba(255,255,255,0.8);
+    font-size: 16px;
+    padding: 8px;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+.user-profile .fa-sign-out-alt:hover {
+    color: white;
+    background: rgba(255,255,255,0.1);
+}
+
+/* Main Content */
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 30px 40px;
+    min-height: 100vh;
+    width: calc(100% - var(--sidebar-width));
+}
+
+/* Header */
+header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 30px; 
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.header-title h2 { 
+    color: var(--primary-color); 
+    font-size: 28px;
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+
+.header-title p { 
+    color: #666; 
+    font-size: 14px;
+}
+
+.user-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.logout-btn {
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.logout-btn:hover {
+    background: #c0392b;
+}
+
+/* Dashboard V3: Data Analytic Professional Grid */
+.analytic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.kpi-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: var(--transition);
+}
+
+.kpi-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.kpi-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-color);
+    letter-spacing: -1px;
+}
+
+.kpi-trend {
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.trend-up { color: var(--success-color); }
+.trend-down { color: var(--danger-color); }
+
+/* SVG Sparkline Placeholder */
+.sparkline-svg {
+    width: 100%;
+    height: 30px;
+    margin: 10px 0;
+    stroke: var(--primary-color);
+    stroke-width: 2;
+    fill: none;
+    opacity: 0.6;
+}
+
+/* Progress Bar (Usage Rate) */
+.progress-container {
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    transition: width 0.5s ease-out;
+}
+
+/* Analytic Sections */
+.analytic-section {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+}
+
+.section-header-v3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-title-v3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Analytic Table (V3) */
+.analytic-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.analytic-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.analytic-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-color);
+}
+
+.analytic-table tr:hover { background: #fcfcfc; }
+
+/* Quick Actions Dock (Clean & Minimal) */
+.quick-dock {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 25px;
+}
+
+.dock-btn {
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+}
+
+.dock-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: #f8fafc;
+}
+
+.dock-btn i { font-size: 14px; opacity: 0.7; }
+
+/* Content Sections */
+.content-section {
+    background: white;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 40px;
+    border: 1px solid #f0f0f0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Tables */
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    padding: 18px 20px;
+    color: #666;
+    font-weight: 600;
+    border-bottom: 2px solid #f0f0f0;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    background: #fafafa;
+}
+
+td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+tr:hover {
+    background: #f8f9fa;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: #6c757d;
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.4;
+}
+
+.empty-state-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.empty-state-text {
+    font-size: 15px;
+    margin-bottom: 30px;
+    color: #6c757d;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 8px rgba(26, 42, 108, 0.3);
+}
+
+.btn-primary:hover {
+    background: #151e4d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 42, 108, 0.4);
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* Quick Sale Buttons */
+.actions-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.actions-row-top {
+    display: flex;
+    gap: 8px;
+}
+
+.actions-row-docs {
+    display: flex;
+    gap: 8px;
+}
+
+/* PAY — hero button */
+.btn-pay-main {
+    flex: 1;
+    padding: 0 !important;
+    height: 52px;
+    background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 60%, #fdbb2d 100%);
+    color: white;
+    border: none;
+    border-radius: 14px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(26, 42, 108, 0.35);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-pay-main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.btn-pay-main:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(26, 42, 108, 0.45);
+}
+
+.btn-pay-main:hover::after { opacity: 1; }
+
+.btn-pay-main:active { transform: translateY(0); }
+
+@keyframes pay-pulse {
+    0%, 100% { box-shadow: 0 6px 20px rgba(26, 42, 108, 0.35); }
+    50% { box-shadow: 0 8px 28px rgba(26, 42, 108, 0.55), 0 0 0 4px rgba(26, 42, 108, 0.12); }
+}
+
+.btn-pay-main.has-items {
+    animation: pay-pulse 2.2s ease-in-out infinite;
+}
+
+/* CREDIT button */
+.btn-credit-main {
+    flex: 1;
+    padding: 0 !important;
+    height: 52px;
+    background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+    color: white;
+    border: none;
+    border-radius: 14px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-credit-main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.btn-credit-main:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(99, 102, 241, 0.45);
+}
+
+.btn-credit-main:hover::after { opacity: 1; }
+.btn-credit-main:active { transform: translateY(0); }
+
+/* Document buttons: Proforma & Invoice */
+.btn-proforma, .btn-invoice {
+    flex: 1;
+    padding: 0 !important;
+    height: 40px;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    border-radius: 10px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-proforma {
+    background: transparent;
+    color: var(--secondary-color) !important;
+    border: 2px solid var(--secondary-color) !important;
+}
+
+.btn-proforma:hover {
+    background: var(--secondary-color);
+    color: white;
+    box-shadow: 0 4px 14px rgba(178, 31, 31, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-invoice {
+    background: transparent;
+    color: #ca8a04 !important;
+    border: 2px solid #fdbb2d !important;
+}
+
+.btn-invoice:hover {
+    background: linear-gradient(135deg, #fdbb2d, #f59e0b);
+    color: #1a2a6c;
+    box-shadow: 0 4px 14px rgba(253, 187, 45, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-proforma:active, .btn-invoice:active {
+    transform: translateY(0);
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    padding: 30px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    color: var(--primary-color);
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #6c757d;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.close-btn:hover {
+    background: #f8f9fa;
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 12px 16px;
+    border: 1px solid #e0f0f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
+}
+
+.remove-item {
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 40px;
+    height: 40px;
+}
+
+.add-item {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-weight: 500;
+}
+
+/* Pricing Section */
+.pricing-section {
+    background: #fafafa;
+    padding: 30px;
+    border-radius: 12px;
+    margin: 30px 0;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+}
+
+.total-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    border: 2px solid var(--primary-color);
+    margin-top: 30px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 15px;
+    padding: 8px 0;
+}
+
+.total-row.final {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--primary-color);
+    padding: 15px 0;
+    border-top: 2px solid #f0f0f0;
+    margin-top: 10px;
+}
+
+/* Quick Sale POS Styles */
+.quick-sale-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: calc(100vh - 150px);
+    min-height: 550px;
+}
+
+.search-customer-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.search-section {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #f0f0f0;
+    flex: 2;
+}
+
+.customer-info {
+    background: white;
+    padding: 12px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #f0f0f0;
+    flex: 1;
+    min-width: 280px;
+}
+
+.customer-info h3 {
+    margin-bottom: 8px;
+    color: var(--primary-color);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.customer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.customer-form input {
+    padding: 8px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.customer-form input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(26, 42, 108, 0.1);
+}
+
+/* Cart Section - POS Style */
+.cart-section {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 350px;
+    max-height: 450px;
+    overflow: hidden;
+}
+
+.cart-main {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #f0f0f0;
+    min-height: 0;
+}
+
+.cart-header {
+    padding: 12px;
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-color);
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+    min-height: 0;
+}
+
+.cart-labels {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 0.8fr 0.8fr 0.3fr;
+    gap: 8px;
+    padding: 8px 5px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cart-item {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 0.8fr 0.8fr 0.3fr;
+    gap: 4px;
+    align-items: center;
+    padding: 6px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+
+.cart-item-name {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.cart-item-details {
+    font-size: 11px;
+    color: #888;
+    font-family: monospace;
+}
+
+.cart-item-price {
+    font-weight: 600;
+    color: var(--primary-color);
+    text-align: right;
+}
+
+.item-discount-badge {
+    font-size: 10px;
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+.qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.qty-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: var(--transition);
+}
+
+.qty-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.promo-input {
+    width: 100%;
+    padding: 3px 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 11px;
+    text-align: center;
+}
+
+.promo-input.has-promo {
+    border-color: #27ae60;
+    background: #e8f8f5;
+    color: #27ae60;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+}
+
+.delete-btn:hover {
+    color: #c0392b;
+}
+
+.cart-summary {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 15px;
+    background: #fafafa;
+    overflow-y: auto;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #555;
+}
+
+.summary-row.total {
+    background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+    color: white;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-top: 12px;
+    margin-bottom: 0;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 16px rgba(26, 42, 108, 0.22);
+}
+
+.summary-row.total span:last-child {
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.payment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.pay-btn {
+    flex: 1;
+    padding: 14px;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.pay-btn:hover {
+    background: #1b5e20;
+    transform: translateY(-1px);
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: 15px;
+}
+
+.btn {
+    padding: 12px 2px;
+    border: none;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: white;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Footer */
+footer {
+    height: 35px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: auto;
+}
+
+/* Tax Management Styles */
+.tax-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tax-item:last-child {
+    border-bottom: none;
+}
+
+.tax-badge {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.status-active {
+    background: #e8f5e9;
+    color: var(--success-color);
+}
+
+.status-inactive {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-sm:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+.search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    transition: var(--transition);
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
+}
+
+.search-bar button {
+    padding: 16px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+}
+
+.search-bar button:hover {
+    background: #151e4d;
+    transform: translateY(-1px);
+}
+
+.search-bar button[style*="background: #ff9800;"] {
+    background: #ff9800;
+}
+
+.search-bar button[style*="background: #ff9800;"]:hover {
+    background: #f57c00;
+}
+
+/* Suggestions Dropdown */
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 0 0 10px 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: none;
+}
+
+.suggestion-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.suggestion-item:hover, .suggestion-item.active {
+    background-color: #f0f7ff;
+}
+
+.suggestion-item strong {
+    color: var(--primary-color);
+}
+
+.suggestion-item .product-details {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.suggestion-item .product-price {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+#scanResult {
+    font-size: 14px;
+    margin: 5px 0 10px 0;
+    color: #555;
+    min-height: 20px;
+    padding-left: 5px;
+}
+
+.scanner-status {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f0f7ff;
+    border-radius: 6px;
+    font-size: 13px;
+    display: none;
+    border: 1px solid #e0e0e0;
+}
+
+.scanner-status.active {
+    display: block;
+}
+
+.products-grid {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #f0f0f0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.products-grid h3 {
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.product-card {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: var(--primary-color);
+}
+
+.product-card h4 {
+    margin: 10px 0 5px;
+    font-size: 14px;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.product-card .price {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.product-card .stock {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.icon-proforma { background: #e3f2fd; color: #1e88e5; }
+.icon-sales { background: #e8f5e8; color: #43a047; }
+.icon-revenue { background: #fff3e0; color: #fb8c00; }
+.icon-pending { background: #f3e5f5; color: #8e24aa; }
+/* Status Badges - Modern Pill Design */
+.status-badge {
+    padding: 2px 10px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-draft { background: #f1f5f9; color: #64748b; }
+.status-sent { background: #e0f2fe; color: #0284c7; }
+.status-accepted, .status-paid, .status-active, .status-completed { background: #dcfce7; color: #166534; }
+.status-unpaid, .status-pending { background: #fef9c3; color: #854d0e; }
+.status-overdue, .status-inactive, .status-failed { background: #fee2e2; color: #991b1b; }
+.status-unknown { background: #f1f5f9; color: #64748b; }
+
+
+/* Invoice Items */
+.invoice-items {
+    margin: 30px 0;
+    padding: 25px;
+    background: #fafafa;
+    border-radius: 12px;
+}
+
+.invoice-items h3 {
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    font-size: 18px;
+}
+
+.item-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 20px;
+    align-items: end;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Mobile Responsive Styles */
+.mobile-menu-btn {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.overlay { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.5); 
+    z-index: 999; 
+}
+
+@media (max-width: 1200px) {
+    .main-content {
+        padding: 30px;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+    .sidebar.active { transform: translateX(0); }
+    .main-content { 
+        margin-left: 0; 
+        padding: 15px; 
+        padding-top: 70px; 
+        max-width: 100%;
+    }
+    .mobile-menu-btn { display: block; }
+    .overlay.active { display: block; }
+    
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .dashboard-grid { 
+        grid-template-columns: 1fr; 
+        gap: 20px;
+    }
+    
+    .stat-card {
+        padding: 25px;
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .content-section {
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .item-row { 
+        grid-template-columns: 1fr; 
+        gap: 15px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .pricing-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    footer { 
+        margin-left: 0; 
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+        max-height: 95vh;
+    }
+    
+    .modal-header,
+    .modal-body {
+        padding: 20px;
+    }
+}
+
+/* Pagination Styling */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #666;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: var(--gray-light);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f9f9f9;
+}
+
+.table-controls {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.per-page-select {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+/* Quick Credit Modal Styles */
+.customer-search-list {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.customer-search-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.customer-search-item:hover {
+    background: #f8fafc;
+}
+
+.customer-search-item:last-child {
+    border-bottom: none;
+}
+
+.customer-search-item strong {
+    display: block;
+    color: var(--primary-color);
+}
+
+.customer-search-item span {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.credit-status-card {
+    background: #f1f5f9;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 15px;
+    display: none;
+}
+
+.credit-stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.credit-stat-row:last-child {
+    margin-bottom: 0;
+    padding-top: 8px;
+    border-top: 1px dashed #cbd5e1;
+    font-weight: bold;
+}
+
+.credit-alert {
+    background: #fff1f2;
+    color: #e11d48;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-top: 15px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Action Toast Styles */
+.action-toast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: linear-gradient(135deg, rgba(26, 42, 108, 0.96), rgba(178, 31, 31, 0.96));
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 18px 28px 16px;
+    border-radius: 14px;
+    z-index: 4000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+    max-width: 420px;
+    width: auto;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.action-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.action-toast-buttons {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+.at-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.at-btn-confirm {
+    background: white;
+    color: #1a2a6c;
+}
+
+.at-btn-confirm:hover {
+    background: #f8fafc;
+    transform: scale(1.02);
+}
+
+.at-btn-cancel {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.at-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.02);
+}
+
+</style>
+</head>
+
+<body>
+    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <img src="logo.png" alt="Footprint" style="width: 150px; height: auto;">
+            <div style="font-size: 14px; font-weight: bold; margin-top: 5px; color: white;">THE SPARROW ENT</div>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-item active" data-tab="dashboard">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+
+            <a href="#" class="nav-item" data-tab="proforma">
+                <i class="fas fa-file-invoice"></i> Proforma Invoices
+            </a>
+            <a href="#" class="nav-item" data-tab="transactions">
+                <i class="fas fa-exchange-alt"></i> Transactions
+            </a>
+            <a href="#" class="nav-item" data-tab="quick-sale">
+                <i class="fas fa-shopping-cart"></i> Quick Sale
+            </a>
+            
+            <div class="nav-section">Management</div>
+            <a href="#" class="nav-item" data-tab="tax-management">
+                <i class="fas fa-percentage"></i> Tax Management
+            </a>
+            <a href="#" class="nav-item" data-tab="settings">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </div>
+        <div class="user-profile">
+            <div class="user-avatar"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+                <div style="font-weight: bold;" id="userName">Company User</div>
+                <div style="font-size: 12px; opacity: 0.7;" id="userRole">Administrator</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="margin-left: auto; cursor: pointer;" onclick="logout()" title="Logout"></i>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- Dashboard Tab (V3 Data Analytic) -->
+        <div id="dashboard" class="tab-content active">
+            <header>
+                <div class="header-title">
+                    <h2 style="display: flex; align-items: center; gap: 8px; font-size: 24px; font-weight: 800;">
+                        Operational Intelligence 
+                        <i class="fas fa-chart-network" style="font-size: 14px; color: var(--primary-color); opacity: 0.5;"></i>
+                    </h2>
+                    <p style="font-size: 12px; font-weight: 500; color: #64748b;">Enterprise Financial Health & Credit Risk Analytics</p>
+                </div>
+            </header>
+
+            <div class="quick-dock">
+                <button class="dock-btn" onclick="document.querySelector('[data-tab=\'quick-sale\']').click()">
+                    <i class="fas fa-plus"></i> NEW SALE
+                </button>
+                <button class="dock-btn" onclick="document.querySelector('[data-tab=\'proforma\']').click()">
+                    <i class="fas fa-file-invoice"></i> INVOICES
+                </button>
+                <button class="dock-btn" onclick="loadDashboard()">
+                    <i class="fas fa-sync"></i> REFRESH
+                </button>
+            </div>
+
+            <div class="analytic-grid">
+                <!-- KPI Card 1: Revenue -->
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        REVENUE 
+                        <i class="fas fa-sack-dollar"></i>
+                    </div>
+                    <div class="kpi-value" id="totalRevenue">₵0.00</div>
+                    <svg class="sparkline-svg" viewBox="0 0 100 30">
+                        <path d="M0 25 L 10 20 L 20 28 L 30 15 L 40 22 L 50 10 L 60 18 L 70 5 L 80 12 L 90 2 L 100 8" />
+                    </svg>
+                    <div class="kpi-trend trend-up">
+                        <i class="fas fa-arrow-up"></i> 14.2% <span style="color:#64748b; font-weight:400; margin-left:4px;">vs last month</span>
+                    </div>
+                </div>
+
+                <!-- KPI Card 2: Credit Owed -->
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        CREDIT EXPOSURE
+                        <i class="fas fa-hand-holding-dollar"></i>
+                    </div>
+                    <div class="kpi-value" id="totalCreditOwed">₵0.00</div>
+                    <svg class="sparkline-svg" viewBox="0 0 100 30" style="stroke: var(--danger-color);">
+                        <path d="M0 10 L 20 15 L 40 12 L 60 25 L 80 20 L 100 28" />
+                    </svg>
+                    <div class="kpi-trend trend-down">
+                        <i class="fas fa-arrow-down"></i> 2.1% <span style="color:#64748b; font-weight:400; margin-left:4px;">improvement</span>
+                    </div>
+                </div>
+
+                <!-- KPI Card 3: Debtors -->
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        ACTIVE DEBTORS
+                        <i class="fas fa-user-tag"></i>
+                    </div>
+                    <div class="kpi-value" id="activeDebtors">0</div>
+                    <div style="margin-top: 15px; font-size: 11px; font-weight: 600; color: #64748b;">
+                        CURRENT UTILIZATION
+                        <div class="progress-container">
+                            <div class="progress-fill" id="creditUsageBar" style="width: 0%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                            <span id="creditUsageLabel">0%</span>
+                            <span>Target: < 30%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Card 4: Proformas -->
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        PENDING INVOICES
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="kpi-value" id="totalProforma">0</div>
+                    <div style="margin-top: 15px; display: flex; gap: 4px; flex-wrap: wrap;">
+                        <span style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;">PAYMENTS: <span id="pendingPayments" style="color:var(--primary-color)">0</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analytic-section">
+                <div class="section-header-v3">
+                    <div class="section-title-v3">
+                        TRANSACTION ACTIVITY LOG
+                    </div>
+                    <button class="dock-btn" style="font-size: 10px; padding: 4px 10px;" onclick="document.querySelector('[data-tab=\'transactions\']').click()">
+                        FULL REPORT <i class="fas fa-external-link-alt"></i>
+                    </button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="analytic-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Reference</th>
+                                <th>Transaction Type</th>
+                                <th>Principal Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analyticActivityBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">
+                                    <i class="fas fa-spinner fa-spin"></i> Initializing data streams...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Proforma Invoices Tab -->
+        <div id="proforma" class="tab-content">
+            <header>
+                <div class="header-title">
+                    <h2>Proforma Invoices</h2>
+                    <p>Manage and track your proforma invoices</p>
+                </div>
+            </header>
+
+            <div class="content-section">
+                <div class="table-controls">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 14px; color: #666;">Show</span>
+                        <select id="proformaLimitSelect" class="per-page-select" onchange="changeLimit('proforma', this.value)">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span style="font-size: 14px; color: #666;">per page</span>
+                    </div>
+                    <div style="position: relative; width: 300px;">
+                        <input type="text" id="proformaSearchInput" placeholder="Search by Proforma # or Client..." style="width: 100%; padding: 10px 15px 10px 40px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; transition: border-color 0.3s;" onkeyup="filterProformaTable()">
+                        <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888;"></i>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Proforma #</th>
+                                <th>Client</th>
+                                <th>Issue Date</th>
+                                <th>Expiry Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proformaTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: #6c757d;">
+                                    No proforma invoices found
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div id="proformaPagination" class="pagination-container">
+                    <div class="pagination-info" id="proformaPaginationInfo">Showing 0-0 of 0</div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" id="proformaPrevBtn" onclick="changePage('proforma', -1)" disabled>
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <button class="pagination-btn" id="proformaNextBtn" onclick="changePage('proforma', 1)" disabled>
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Tab -->
+        <div id="transactions" class="tab-content">
+            <header>
+                <div class="header-title">
+                    <h2>Transactions</h2>
+                    <p>View all your financial transactions</p>
+                </div>
+            </header>
+
+            <div class="content-section">
+                <div class="table-controls">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 14px; color: #666;">Show</span>
+                        <select id="transactionsLimitSelect" class="per-page-select" onchange="changeLimit('transactions', this.value)">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span style="font-size: 14px; color: #666;">per page</span>
+                    </div>
+                    <div style="position: relative; width: 300px;">
+                        <input type="text" id="transactionsSearchInput" placeholder="Search by Description or Type..." style="width: 100%; padding: 10px 15px 10px 40px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; transition: border-color 0.3s;" onkeyup="filterTransactionsTable()">
+                        <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888;"></i>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 2rem; color: #6c757d;">
+                                    No transactions found
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div id="transactionsPagination" class="pagination-container">
+                    <div class="pagination-info" id="transactionsPaginationInfo">Showing 0-0 of 0</div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" id="transactionsPrevBtn" onclick="changePage('transactions', -1)" disabled>
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <button class="pagination-btn" id="transactionsNextBtn" onclick="changePage('transactions', 1)" disabled>
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Sale Tab -->
+        <div id="quick-sale" class="tab-content">
+            <header style="margin-bottom: 20px;">
+                <div class="header-title">
+                    <h2>Quick Sale</h2>
+                    <p>Fast POS-style selling for companies</p>
+                </div>
+            </header>
+
+            <div class="quick-sale-container">
+                <!-- Search and Customer Row -->
+                <div class="search-customer-row">
+                    <!-- Search Section -->
+                    <div class="search-section">
+                        <h3>Product Search</h3>
+                        <div class="search-bar">
+                            <div style="position: relative; flex: 1;">
+                                <input type="text" id="barcodeInput" placeholder="Scan barcode, type product name, or search..." autofocus autocomplete="off">
+                                <div id="searchSuggestions" class="suggestions-dropdown"></div>
+                            </div>
+                            <button onclick="manualScan()" title="Search">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button onclick="toggleScanner()" title="Scan with Camera">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <button onclick="toggleKeyboardMode()" title="Keyboard Mode" style="background: #ff9800;">
+                                <i class="fas fa-keyboard"></i>
+                            </button>
+                        </div>
+                        <div id="scanResult"></div>
+                        <div id="scannerStatus" class="scanner-status"></div>
+                    </div>
+
+                    <!-- Customer Info (Compact) -->
+                    <div class="customer-info">
+                        <h3>Customer Information</h3>
+                        <div class="customer-form">
+                            <input type="text" id="customerName" placeholder="Name *" required>
+                            <input type="email" id="customerEmail" placeholder="Email">
+                            <input type="tel" id="customerPhone" placeholder="Phone">
+                            <input type="text" id="customerCompany" placeholder="Company">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cart Section (POS Style) -->
+                <div class="cart-section">
+                    <div class="cart-main">
+                        <div class="cart-header">
+                            <span>Current Sale</span>
+                            <div style="display:flex; gap:15px; align-items:center;">
+                                <span id="cartCount">0 items</span>
+                                <button onclick="clearQuickCart()" title="Clear Cart" style="background:none;border:none;color:var(--danger-color);cursor:pointer;">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="cart-items" id="cartItems">
+                            <div style="text-align: center; padding: 40px; color: #6c757d;">
+                                <i class="fas fa-shopping-cart" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                                <div>No items in cart</div>
+                                <div style="font-size: 12px; margin-top: 5px;">Scan or search products to add</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cart-summary">
+                        <div style="display:flex;gap:5px;margin-bottom:15px;">
+                            <input id="promoCode" placeholder="Promo Code (e.g. SAVE10)" style="flex:1;padding:8px;border:1px solid #e0e0e0;border-radius:4px;">
+                            <button onclick="applyPromo()" style="background:var(--primary-color);color:white;border:none;padding:0 12px;border-radius:4px;cursor:pointer;">Apply</button>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Gross Amount</span>
+                            <span id="quickSubtotal">₵0.00</span>
+                        </div>
+                        <div class="summary-row" id="discountRow" style="display:none;color:var(--danger-color);">
+                            <span>Discount</span>
+                            <span id="discountAmt">-₵0.00</span>
+                        </div>
+                        <!-- Detailed Tax Breakdown -->
+                        <div id="quickTaxBreakdown" style="border-top: 1px solid #eee; margin-top: 5px; padding-top: 5px;"></div>
+                        <!-- Hidden field to keep total rate for script compatibility if needed -->
+                        <input type="hidden" id="taxRate" value="0">
+
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span id="quickTotal">₵0.00</span>
+                        </div>
+
+                        <div class="actions-row">
+                            <div class="actions-row-top">
+                                <button class="btn btn-pay-main" id="quickPayBtn" onclick="initiateQuickPay()">
+                                    <i class="fas fa-bolt"></i> PAY NOW
+                                </button>
+                                <button class="btn btn-credit-main" onclick="openQuickCreditModal()">
+                                    <i class="fas fa-credit-card"></i> CREDIT
+                                </button>
+                            </div>
+                            <div class="actions-row-docs">
+                                <button class="btn btn-proforma" onclick="initiateQuickDocument('proforma')">
+                                    <i class="fas fa-file-alt"></i> Proforma
+                                </button>
+                                <button class="btn btn-invoice" onclick="initiateQuickDocument('invoice')">
+                                    <i class="fas fa-file-invoice-dollar"></i> Invoice
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tax Management Tab -->
+        <div id="tax-management" class="tab-content">
+            <header>
+                <div class="header-title">
+                    <h2>Tax Management & Reporting</h2>
+                    <p>Configure tax rates and monitor liabilities for your company operations</p>
+                </div>
+            </header>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <!-- Left Column: Add New Tax -->
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-header">
+                        <h3 class="section-title">Add New Tax Rule</h3>
+                    </div>
+                    <form onsubmit="handleAddTax(event)">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label>Tax Name</label>
+                            <input type="text" id="newTaxName" required placeholder="e.g. VAT, NHIS">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label>Rate (%)</label>
+                            <input type="number" id="newTaxRate" step="0.01" required placeholder="%" min="0" max="100">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                            <i class="fas fa-plus"></i> Add Tax Rule
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right Column: Active Rules List -->
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-header">
+                        <h3 class="section-title">Active Tax Rules</h3>
+                        <button class="btn-sm" onclick="loadTaxes()" style="background: var(--gray-light); color: var(--text-color); border: 1px solid #ddd;">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                    <div id="taxList" style="max-height: 350px; overflow-y: auto;">
+                        <p style="text-align:center; color:#666; padding:20px;">Loading taxes...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tax Liability Report (Bottom Table) -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3 class="section-title">Tax Liability Report</h3>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 25px; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display:block; font-size:12px; margin-bottom:5px; font-weight:600;">Start Date</label>
+                        <input type="date" id="reportStart" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display:block; font-size:12px; margin-bottom:5px; font-weight:600;">End Date</label>
+                        <input type="date" id="reportEnd" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
+                    </div>
+                    <button onclick="generateCompanyTaxReport()" class="btn btn-primary" style="height: 42px;">
+                        <i class="fas fa-search"></i> Generate Report
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table id="taxReportTable">
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th style="text-align:right;">Gross Sales</th>
+                                <th style="text-align:right;">Net Sales</th>
+                                <th style="text-align:right; color:var(--primary-color);">Total Tax</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taxReportTableBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 2rem; color: #6c757d;">
+                                    Select dates and click Generate.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <header>
+                <div class="header-title">
+                    <h2>Company Settings</h2>
+                    <p>Configure your business profile and portal preferences</p>
+                </div>
+            </header>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <h3 class="section-title">General Configuration</h3>
+                </div>
+                <form id="companySettingsForm" onsubmit="handleSaveCompanySettings(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" id="settingCompanyName" placeholder="THE SPARROW ENT">
+                        </div>
+                        <div class="form-group">
+                            <label>Tax ID / TIN</label>
+                            <input type="text" id="settingTaxId" placeholder="P000XXXXXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Primary Phone</label>
+                            <input type="tel" id="settingPhone">
+                        </div>
+                        <div class="form-group">
+                            <label>Default Revenue Target (₵)</label>
+                            <input type="number" id="settingRevenueTarget" placeholder="50000">
+                        </div>
+                    </div>
+
+                    <div class="section-header" style="margin-top: 30px; margin-bottom: 20px; border-bottom: none; padding-bottom: 0;">
+                        <h3 class="section-title">Payment Details (for Invoices)</h3>
+                    </div>
+                    
+                    <h4 style="margin-bottom:15px; color:#666; font-size: 15px;">Bank Account Details</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Bank Name</label>
+                            <input type="text" id="settingBankName" placeholder="e.g. ECOBANK">
+                        </div>
+                        <div class="form-group">
+                            <label>Account Name</label>
+                            <input type="text" id="settingBankAccountName" placeholder="e.g. NOVELTY THE SPARROW ENTERPRISE">
+                        </div>
+                        <div class="form-group">
+                            <label>Account Number</label>
+                            <input type="text" id="settingBankAccountNumber" placeholder="e.g. 1441002424950">
+                        </div>
+                        <div class="form-group">
+                            <label>Branch</label>
+                            <input type="text" id="settingBankBranch" placeholder="e.g. ROMAN RIDGE">
+                        </div>
+                    </div>
+
+                    <h4 style="margin-bottom:15px; color:#666; font-size: 15px; margin-top:10px;">Mobile Money Details</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>MoMo Number</label>
+                            <input type="text" id="settingMomoNumber" placeholder="e.g. 0248166711">
+                        </div>
+                        <div class="form-group">
+                            <label>MoMo Name</label>
+                            <input type="text" id="settingMomoName" placeholder="e.g. NOVELTY THE SPARROW ENT.">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Save Settings</button>
+                </form>
+            </div>
+        </div>
+
+    <!-- Payment Terms Modal -->
+    <div id="paymentTermsModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-body" style="padding: 40px 30px;">
+                <h2 style="margin-bottom: 20px; color: var(--primary-color); font-size: 20px;">Select Payment Terms</h2>
+                <div style="text-align: left; margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #555;">Payment Method / Terms</label>
+                    <select id="paymentTermsSelect" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                        <option value="Cash">Cash</option>
+                        <option value="MoMo">Mobile Money (MoMo)</option>
+                        <option value="Card">Card</option>
+                        <option value="Credit">Credit/Invoice</option>
+                        <option value="Bank">Bank Transfer</option>
+                        <option value="...........................................">Blank Line (Fill later)</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn" style="background: #f1f5f9; color: #475569; flex: 1;" onclick="handleModalDone()">Done</button>
+                        <button class="btn btn-primary" style="flex: 1;" onclick="handleModalDownload()">Download</button>
+                    </div>
+                    <button class="btn" style="background: transparent; color: #64748b; font-size: 13px;" onclick="closePaymentTermsModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-body" style="padding: 40px 30px;">
+                <div id="confirmIcon" style="font-size: 48px; color: var(--danger-color); margin-bottom: 20px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h2 id="confirmTitle" style="margin-bottom: 10px; color: var(--primary-color); font-size: 20px;">Confirm Action</h2>
+                <p id="confirmMessage" style="color: #666; margin-bottom: 30px; line-height: 1.5; font-size: 14px;">Are you sure?</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn" style="background: #f1f5f9; color: #475569;" onclick="closeConfirmModal()">Cancel</button>
+                    <button id="confirmBtn" class="btn btn-danger">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </main>
+
+    <!-- Transaction Detail Modal -->
+    <div id="transactionModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Transaction Details</h2>
+                <button class="close-btn" onclick="document.getElementById('transactionModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="modal-body" id="transactionModalBody">
+                <!-- Content will be injected here -->
+            </div>
+            <div class="modal-footer" style="padding: 15px 25px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn-sm" style="background: #6c757d; color: white;" onclick="document.getElementById('transactionModal').classList.remove('active')">Close</button>
+                <button id="downloadTransactionBtn" class="btn-sm" style="background: var(--primary-color); color: white;">
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+<!-- Proforma Modal -->
+<div id="proformaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="color: var(--primary-color);">Create Proforma Invoice</h2>
+            <button class="close-btn" onclick="closeProformaModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="proformaForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Client Name</label>
+                        <input type="text" id="proformaClient" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="proformaEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="proformaPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" id="proformaDueDate" required>
+                    </div>
+                </div>
+
+                <div class="invoice-items">
+                    <h3>Invoice Items</h3>
+                    <div id="proformaItems">
+                        <div class="item-row">
+                            <input type="text" placeholder="Description" class="form-group">
+                            <input type="number" placeholder="Quantity" class="form-group">
+                            <input type="number" placeholder="Unit Price" class="form-group">
+                            <input type="number" placeholder="Total" readonly class="form-group">
+                            <button type="button" class="remove-item" onclick="removeItem(this)">×</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-item" onclick="addProformaItem()">+ Add Item</button>
+                </div>
+
+                <div class="pricing-section">
+                    <div class="pricing-grid">
+                        <div class="form-group">
+                            <label>Discount Type</label>
+                            <select id="proformaDiscountType">
+                                <option value="none">None</option>
+                                <option value="percentage">Percentage</option>
+                                <option value="fixed">Fixed Amount</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Discount Value</label>
+                            <input type="number" id="proformaDiscountValue" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Markup Type</label>
+                            <select id="proformaMarkupType">
+                                <option value="none">None</option>
+                                <option value="percentage">Percentage</option>
+                                <option value="fixed">Fixed Amount</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Markup Value</label>
+                            <input type="number" id="proformaMarkupValue" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="total-section">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span id="proformaSubtotal">₵0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Discount:</span>
+                        <span id="proformaDiscount">-₵0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Markup:</span>
+                        <span id="proformaMarkup">+₵0.00</span>
+                    </div>
+                    <div class="total-row final">
+                        <span>Total:</span>
+                        <span id="proformaTotal">₵0.00</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn" style="background: #6c757d; color: white;" onclick="closeProformaModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+    <!-- Quick Credit Modal -->
+    <div id="quickCreditModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2 style="color: #1a2a6c;"><i class="fas fa-credit-card"></i> Credit Sale Selection</h2>
+                <button class="close-btn" onclick="closeQuickCreditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Search and select a client to bill this sale to their credit account.</p>
+                
+                <div style="position: relative;">
+                    <input type="text" id="quickCreditSearch" placeholder="Search by name or phone..." 
+                        style="width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; outline: none;"
+                        onkeyup="searchQuickCreditCustomers()">
+                    <i class="fas fa-search" style="position: absolute; right: 15px; top: 15px; color: #cbd5e1;"></i>
+                </div>
+
+                <div id="quickCreditResults" class="customer-search-list" style="display: none;"></div>
+
+                <div id="quickCreditStatus" class="credit-status-card">
+                    <h4 id="qcCustomerName" style="margin-bottom: 10px; color: var(--primary-color);">Customer Name</h4>
+                    <div class="credit-stat-row">
+                        <span>Credit Limit:</span>
+                        <span id="qcLimit">₵0.00</span>
+                    </div>
+                    <div class="credit-stat-row">
+                        <span>Current Debt:</span>
+                        <span id="qcDebt">₵0.00</span>
+                    </div>
+                    <div class="credit-stat-row">
+                        <span>Total for this Sale:</span>
+                        <span id="qcSaleTotal" style="color: var(--primary-color);">₵0.00</span>
+                    </div>
+                    <div class="credit-stat-row">
+                        <span>Remaining Balance:</span>
+                        <span id="qcRemaining">₵0.00</span>
+                    </div>
+                </div>
+
+                <div id="qcLimitAlert" class="credit-alert">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span><strong>Limit Exceeded:</strong> This client does not have enough available credit for this sale.</span>
+                </div>
+
+                <div style="margin-top: 25px; display: flex; gap: 10px;">
+                    <button class="btn" style="flex: 1; background: #f1f5f9; color: #475569;" onclick="closeQuickCreditModal()">Cancel</button>
+                    <button id="btnConfirmQuickCredit" class="btn" style="flex: 2; background: linear-gradient(135deg, #1a2a6c, #b21f1f); color: white;" disabled onclick="processQuickCreditSale()">
+                        Select Client to Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Toast (Confirmation Snackbar) -->
+    <div id="actionToast" class="action-toast">
+        <span id="actionToastMessage" style="font-weight: 500;">Action message here...</span>
+        <div class="action-toast-buttons">
+            <button class="at-btn at-btn-cancel" onclick="hideActionToast()">Cancel</button>
+            <button id="actionToastConfirmBtn" class="at-btn at-btn-confirm">Confirm</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+<script>
+let currentUser = null;
+let activeTaxes = [];
+let allCustomers = [];
+let selectedQuickCreditCustomer = null;
+let systemSettings = null;
+
+// Pagination and Global Data State
+let allProforma = [];
+let allTransactions = [];
+let proformaPage = 1;
+let proformaLimit = 10;
+let transactionsPage = 1;
+let transactionsLimit = 10;
+let activeProformaId = null; // Track if current cart is from a proforma
+
+// Generic Table Rendering with Pagination
+function renderTable(tabType) {
+    let data = [];
+    let filter = "";
+    let page = 1;
+    let limit = 10;
+    let tbodyId = "";
+    let paginationInfoId = "";
+    let prevBtnId = "";
+    let nextBtnId = "";
+    let renderRowFn = null;
+
+    if (tabType === 'proforma') {
+        data = allProforma;
+        filter = document.getElementById('proformaSearchInput').value.toLowerCase();
+        page = proformaPage;
+        limit = proformaLimit;
+        tbodyId = 'proformaTableBody';
+        paginationInfoId = 'proformaPaginationInfo';
+        prevBtnId = 'proformaPrevBtn';
+        nextBtnId = 'proformaNextBtn';
+        renderRowFn = (inv) => `
+            <tr>
+                <td>${inv.invoice_number}</td>
+                <td>${inv.client_name || (inv.notes && inv.notes.includes('Quick Document for') ? inv.notes.split('for ')[1] : 'N/A')}</td>
+                <td>${new Date(inv.issue_date).toLocaleDateString()}</td>
+                <td>${new Date(inv.expiry_date).toLocaleDateString()}</td>
+                <td>₵${parseFloat(inv.total_amount).toFixed(2)}</td>
+                <td><span class="status-badge status-${(inv.status || 'sent').toLowerCase()}">${inv.status || 'Sent'}</span></td>
+                <td>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn-sm" onclick="viewProforma(${inv.id})" style="background: var(--primary-color); color: white; padding: 6px 10px;" title="View Proforma">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-sm" onclick="sendProforma(${inv.id})" style="background: #f39c12; color: white; padding: 6px 10px;" title="Send to Customer">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                        <button class="btn-sm" onclick="transferToQuickCart(${inv.id})" style="background: var(--success-color); color: white; padding: 6px 12px; font-weight: 600;" title="Transfer to Quick Sale Cart">
+                            <i class="fas fa-cart-plus"></i> Transfer to Cart
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    } else if (tabType === 'transactions') {
+        data = allTransactions;
+        filter = document.getElementById('transactionsSearchInput').value.toLowerCase();
+        page = transactionsPage;
+        limit = transactionsLimit;
+        tbodyId = 'transactionsTableBody';
+        paginationInfoId = 'transactionsPaginationInfo';
+        prevBtnId = 'transactionsPrevBtn';
+        nextBtnId = 'transactionsNextBtn';
+        renderRowFn = (trx) => `
+            <tr>
+                <td>${new Date(trx.created_at).toLocaleString()}</td>
+                <td>Invoice #${trx.invoice_number || 'N/A'}</td>
+                <td>${trx.transaction_type}</td>
+                <td>₵${parseFloat(trx.amount).toFixed(2)}</td>
+                <td><span class="status-badge status-paid">Completed</span></td>
+                <td>
+                    <button onclick="viewTransaction(${JSON.stringify(trx).replace(/"/g, '&quot;')})" 
+                        style="background: var(--primary-color, #1a73e8); color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; transition: opacity 0.2s;"
+                        onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+
+    // Apply Filter
+    const filteredData = data.filter(item => {
+        if (tabType === 'sales') {
+            const num = (item.invoice_number || "").toLowerCase();
+            const client = (item.client_name || "").toLowerCase();
+            return num.includes(filter) || client.includes(filter);
+        } else if (tabType === 'proforma') {
+            const num = (item.invoice_number || "").toLowerCase();
+            const client = (item.client_name || "").toLowerCase();
+            return num.includes(filter) || client.includes(filter);
+        } else if (tabType === 'transactions') {
+            const desc = (item.invoice_number || "").toLowerCase();
+            const type = (item.transaction_type || "").toLowerCase();
+            return desc.includes(filter) || type.includes(filter);
+        }
+        return true;
+    });
+
+    const total = filteredData.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const start = (page - 1) * limit;
+    const end = Math.min(start + limit, total);
+    const paginatedData = filteredData.slice(start, end);
+
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return; // Guard
+    
+    if (total === 0) {
+        const columns = tabType === 'transactions' ? 6 : (tabType === 'proforma' ? 7 : 6);
+        tbody.innerHTML = `<tr><td colspan="${columns}" style="text-align: center; padding: 2rem; color: #6c757d;">No results found</td></tr>`;
+    } else {
+        tbody.innerHTML = paginatedData.map(renderRowFn).join('');
+    }
+
+    // Update Pagination Info
+    document.getElementById(paginationInfoId).textContent = `Showing ${total === 0 ? 0 : start + 1}-${end} of ${total}`;
+    
+    // Update Buttons
+    document.getElementById(prevBtnId).disabled = page <= 1;
+    document.getElementById(nextBtnId).disabled = page >= totalPages;
+}
+
+function changePage(tabType, diff) {
+    if (tabType === 'sales') salesPage += diff;
+    else if (tabType === 'proforma') proformaPage += diff;
+    else if (tabType === 'transactions') transactionsPage += diff;
+    renderTable(tabType);
+}
+
+function changeLimit(tabType, newLimit) {
+    if (tabType === 'sales') { salesLimit = parseInt(newLimit); salesPage = 1; }
+    else if (tabType === 'proforma') { proformaLimit = parseInt(newLimit); proformaPage = 1; }
+    else if (tabType === 'transactions') { transactionsLimit = parseInt(newLimit); transactionsPage = 1; }
+    renderTable(tabType);
+}
+
+// Authentication
+function checkAuth() {
+    const token = sessionStorage.getItem('companyToken');
+    if (!token) {
+        window.location.href = 'login';
+        return;
+    }
+    fetch('/api/session', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Unauthorized');
+        return response.json();
+    })
+    .then(data => {
+        if (data.user) {
+            currentUser = data.user;
+            document.getElementById('userName').textContent = currentUser.company_name || currentUser.name;
+        } else {
+            window.location.href = 'login';
+        }
+    })
+        .catch(error => {
+            console.error('Auth check error:', error);
+            window.location.href = 'login';
+        });
+}
+
+// Mobile Sidebar Toggle
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.overlay');
+    if (window.innerWidth < 768) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+}
+
+// Tab Navigation
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tabId = item.dataset.tab;
+        
+        // Update active states
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        
+        // Show corresponding tab
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+
+        // Trigger data loading for specific tabs
+        if (tabId === 'tax-management') { 
+            loadTaxes();
+            generateCompanyTaxReport();
+        }
+        if (tabId === 'dashboard') loadDashboard();
+        if (tabId === 'quick-sale') loadTaxes();
+
+        if (tabId === 'proforma') loadProformaInvoices();
+        if (tabId === 'transactions') loadCompanyTransactions();
+        if (tabId === 'settings') loadCompanySettings();
+    });
+});
+
+// Global UI Helpers
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.className = `toast show toast-${type}`;
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Action Toast Helpers
+function showActionToast(message, onConfirm) {
+    const toast = document.getElementById('actionToast');
+    const msgEl = document.getElementById('actionToastMessage');
+    const confirmBtn = document.getElementById('actionToastConfirmBtn');
+    
+    msgEl.innerHTML = message;
+    confirmBtn.onclick = () => {
+        onConfirm();
+        hideActionToast();
+    };
+    
+    toast.classList.add('show');
+}
+
+function hideActionToast() {
+    const toast = document.getElementById('actionToast');
+    toast.classList.remove('show');
+}
+
+function showConfirm(title, message, onConfirm, isDanger = true) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    const btn = document.getElementById('confirmBtn');
+    btn.className = isDanger ? 'btn btn-danger' : 'btn btn-primary';
+    btn.onclick = () => {
+        onConfirm();
+        closeConfirmModal();
+    };
+    document.getElementById('confirmModal').classList.add('active');
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirmModal').classList.remove('active');
+}
+
+// Dashboard Functions
+async function loadDashboard() {
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const response = await fetch('/api/company/dashboard', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            // Update Analytic KPIs (V3)
+            document.getElementById('totalRevenue').textContent = `₵${parseFloat(data.totalRevenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('totalCreditOwed').textContent = `₵${parseFloat(data.totalCreditOwed || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('activeDebtors').textContent = data.activeDebtors || 0;
+            document.getElementById('totalProforma').textContent = data.totalProforma || 0;
+            document.getElementById('pendingPayments').textContent = data.pendingPayments || 0;
+            
+            // Usage Progress Serialization
+            const usageRate = data.creditUsageRate || 0;
+            const usageBar = document.getElementById('creditUsageBar');
+            const usageLabel = document.getElementById('creditUsageLabel');
+            if (usageBar) usageBar.style.width = `${usageRate}%`;
+            if (usageLabel) usageLabel.textContent = `${usageRate}%`;
+
+            // Populate Analytic Table (V3)
+            const analyticBody = document.getElementById('analyticActivityBody');
+            if (analyticBody) {
+                if (data.recentActivity && data.recentActivity.length > 0) {
+                    analyticBody.innerHTML = data.recentActivity.map(act => `
+                        <tr>
+                            <td style="color: #64748b;">
+                                ${new Date(act.date).toLocaleDateString()}
+                                <span style="font-size:10px; opacity:0.6; display:block;">${new Date(act.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                            </td>
+                            <td style="font-family: 'Inter', monospace; font-size:12px; font-weight:600;">#${act.invoice_number}</td>
+                            <td><span style="font-weight:700; color:var(--primary-color);">${act.type}</span></td>
+                            <td style="font-weight:800;">₵${parseFloat(act.amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                            <td><span class="status-badge status-${(act.status || 'unknown').toLowerCase().replace(' ', '-')}" style="font-size:10px; padding:1px 8px;">${act.status || 'Unknown'}</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    analyticBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 60px; color: #94a3b8;">
+                                <i class="fas fa-history" style="font-size: 32px; opacity: 0.2; margin-bottom: 15px; display: block;"></i>
+                                <h4 style="font-size: 14px; color: #64748b;">No recent operational data available</h4>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Dashboard load error:', error);
+    }
+}
+
+// Quick Credit Functions
+async function openQuickCreditModal() {
+    if (quickCart.length === 0) {
+        showToast("Cart is empty", "error");
+        return;
+    }
+    
+    document.getElementById('quickCreditModal').classList.add('active');
+    document.getElementById('quickCreditSearch').focus();
+    
+    // Update the sale total in the modal
+    const totalRaw = document.getElementById('quickTotal').textContent.replace('₵', '').replace(/,/g, '');
+    const total = parseFloat(totalRaw) || 0;
+    document.getElementById('qcSaleTotal').textContent = `₵${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    
+    // Reset modal state
+    selectedQuickCreditCustomer = null;
+    document.getElementById('quickCreditStatus').style.display = 'none';
+    document.getElementById('qcLimitAlert').style.display = 'none';
+    const confirmBtn = document.getElementById('btnConfirmQuickCredit');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Select Client to Confirm";
+    confirmBtn.style.background = "#94a3b8";
+    
+    document.getElementById('quickCreditResults').style.display = 'none';
+    document.getElementById('quickCreditSearch').value = '';
+
+    // Load Customers if not already loaded
+    try {
+        const token = sessionStorage.getItem('companyToken');
+        const res = await fetch('/api/customers', { 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        if (res.ok) {
+            allCustomers = await res.json();
+        }
+    } catch (e) {
+        console.error('Error loading customers:', e);
+    }
+}
+
+function closeQuickCreditModal() {
+    document.getElementById('quickCreditModal').classList.remove('active');
+}
+
+function searchQuickCreditCustomers() {
+    const query = document.getElementById('quickCreditSearch').value.toLowerCase();
+    const results = document.getElementById('quickCreditResults');
+    
+    if (query.length < 1) {
+        results.style.display = 'none';
+        return;
+    }
+    
+    const matches = allCustomers.filter(c => 
+        c.name.toLowerCase().includes(query) || 
+        (c.phone && c.phone.includes(query))
+    );
+    
+    if (matches.length > 0) {
+        results.innerHTML = matches.map(c => `
+            <div class="customer-search-item" onclick="selectQuickCreditCustomer(${c.id})">
+                <strong>${c.name}</strong>
+                <span>${c.phone || 'No phone'} | Limit: ₵${parseFloat(c.credit_limit).toFixed(2)}</span>
+            </div>
+        `).join('');
+        results.style.display = 'block';
+    } else {
+        results.innerHTML = '<div style="padding: 10px; color: #64748b; font-size: 13px;">No clients found</div>';
+        results.style.display = 'block';
+    }
+}
+
+function selectQuickCreditCustomer(id) {
+    selectedQuickCreditCustomer = allCustomers.find(c => c.id === id);
+    if (!selectedQuickCreditCustomer) return;
+    
+    document.getElementById('quickCreditResults').style.display = 'none';
+    document.getElementById('quickCreditSearch').value = selectedQuickCreditCustomer.name;
+    
+    // Show stats
+    document.getElementById('qcCustomerName').textContent = selectedQuickCreditCustomer.name;
+    const limit = parseFloat(selectedQuickCreditCustomer.credit_limit || 0);
+    const debt = parseFloat(selectedQuickCreditCustomer.current_balance || 0);
+    const saleTotalRaw = document.getElementById('quickTotal').textContent.replace('₵', '').replace(/,/g, '');
+    const saleTotal = parseFloat(saleTotalRaw) || 0;
+    const remaining = limit - debt - saleTotal;
+    
+    document.getElementById('qcLimit').textContent = `₵${limit.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    document.getElementById('qcDebt').textContent = `₵${debt.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    document.getElementById('qcRemaining').textContent = `₵${remaining.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    
+    document.getElementById('quickCreditStatus').style.display = 'block';
+    
+    // Strict Enforcement
+    const alert = document.getElementById('qcLimitAlert');
+    const btn = document.getElementById('btnConfirmQuickCredit');
+    
+    if (remaining < 0) {
+        alert.style.display = 'flex';
+        btn.disabled = true;
+        btn.style.background = '#94a3b8'; // gray
+        btn.textContent = "Limit Exceeded";
+    } else {
+        alert.style.display = 'none';
+        btn.disabled = false;
+        btn.style.background = 'linear-gradient(135deg, #1a2a6c, #b21f1f)'; // brand gradient
+        btn.textContent = "Confirm & Bill to Credit";
+    }
+}
+
+async function processQuickCreditSale() {
+    if (!selectedQuickCreditCustomer) return;
+    
+    const totalText = document.getElementById('quickTotal').textContent;
+    const message = `Bill <strong style="color:white; border-bottom: 2px solid rgba(255,255,255,0.4);">${totalText}</strong> to <strong>${selectedQuickCreditCustomer.name}</strong>'s credit account?`;
+    
+    showActionToast(message, async () => {
+        await processQuickPayment('credit', false, selectedQuickCreditCustomer.id);
+        closeQuickCreditModal();
+    });
+}
+
+
+// Load Proforma Invoices
+async function loadProformaInvoices() {
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const response = await fetch('/api/company/proforma-invoices', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            allProforma = await response.json();
+            proformaPage = 1; // Reset
+            renderTable('proforma');
+        }
+    } catch (error) {
+        console.error('Proforma invoices load error:', error);
+    }
+}
+
+// Proforma Modal Functions
+function openProformaModal() {
+    document.getElementById('proformaModal').classList.add('active');
+}
+
+function closeProformaModal() {
+    document.getElementById('proformaModal').classList.remove('active');
+
+}
+
+// Item management
+function addProformaItem() {
+    const container = document.getElementById('proformaItems');
+    const itemRow = document.createElement('div');
+    itemRow.className = 'item-row';
+    itemRow.innerHTML = `
+        <div class="form-group">
+            <label>Product Name</label>
+            <input type="text" name="productName" required>
+        </div>
+        <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" name="quantity" min="0.01" step="0.01" required onchange="calculateProformaTotals()">
+        </div>
+        <div class="form-group">
+            <label>Unit Price (₵)</label>
+            <input type="number" name="unitPrice" min="0" step="0.01" required onchange="calculateProformaTotals()">
+        </div>
+        <div class="form-group">
+            <label>Total (₵)</label>
+            <input type="number" name="lineTotal" readonly>
+        </div>
+        <button type="button" class="remove-item" onclick="removeItem(this)">&times;</button>
+    `;
+    container.appendChild(itemRow);
+}
+
+function removeItem(button) {
+    button.parentElement.remove();
+    calculateProformaTotals();
+    calculateSalesTotals();
+}
+
+// Calculations
+function calculateProformaTotals() {
+    const items = document.querySelectorAll('#proformaItems .item-row');
+    let subtotal = 0;
+    
+    items.forEach(row => {
+        const quantity = parseFloat(row.querySelector('input[name="quantity"]').value) || 0;
+        const unitPrice = parseFloat(row.querySelector('input[name="unitPrice"]').value) || 0;
+        const lineTotal = quantity * unitPrice;
+        row.querySelector('input[name="lineTotal"]').value = lineTotal.toFixed(2);
+        subtotal += lineTotal;
+    });
+    
+    const markupType = document.getElementById('proformaMarkupType').value;
+    const markupValue = parseFloat(document.getElementById('proformaMarkupValue').value) || 0;
+    const discountType = document.getElementById('proformaDiscountType').value;
+    const discountValue = parseFloat(document.getElementById('proformaDiscountValue').value) || 0;
+    
+    const markupAmount = markupType === 'percentage' ? (subtotal * markupValue / 100) : markupValue;
+    const discountAmount = discountType === 'percentage' ? ((subtotal + markupAmount) * discountValue / 100) : discountValue;
+    const total = subtotal + markupAmount - discountAmount;
+    
+    document.getElementById('proformaSubtotal').textContent = `₵${subtotal.toFixed(2)}`;
+    document.getElementById('proformaMarkup').textContent = `+₵${markupAmount.toFixed(2)}`;
+    document.getElementById('proformaDiscount').textContent = `-₵${discountAmount.toFixed(2)}`;
+    document.getElementById('proformaTotal').textContent = `₵${total.toFixed(2)}`;
+}
+
+function calculateSalesTotals() {
+    const items = document.querySelectorAll('#salesItems .item-row');
+    let subtotal = 0;
+    
+    items.forEach(row => {
+        const quantity = parseFloat(row.querySelector('input[name="quantity"]').value) || 0;
+        const unitPrice = parseFloat(row.querySelector('input[name="unitPrice"]').value) || 0;
+        const lineTotal = quantity * unitPrice;
+        row.querySelector('input[name="lineTotal"]').value = lineTotal.toFixed(2);
+        subtotal += lineTotal;
+    });
+    
+    const markupType = document.getElementById('salesMarkupType').value;
+    const markupValue = parseFloat(document.getElementById('salesMarkupValue').value) || 0;
+    const discountType = document.getElementById('salesDiscountType').value;
+    const discountValue = parseFloat(document.getElementById('salesDiscountValue').value) || 0;
+    
+    const markupAmount = markupType === 'percentage' ? (subtotal * markupValue / 100) : markupValue;
+    const discountAmount = discountType === 'percentage' ? ((subtotal + markupAmount) * discountValue / 100) : discountValue;
+    const total = subtotal + markupAmount - discountAmount;
+    
+    document.getElementById('salesSubtotal').textContent = `₵${subtotal.toFixed(2)}`;
+    document.getElementById('salesMarkup').textContent = `+₵${markupAmount.toFixed(2)}`;
+    document.getElementById('salesDiscount').textContent = `-₵${discountAmount.toFixed(2)}`;
+    document.getElementById('salesTotal').textContent = `₵${total.toFixed(2)}`;
+}
+
+let currentPrintDocumentId = null;
+let currentPrintDocumentType = null;
+let isCreatingQuickSale = false;
+
+function showPaymentTermsModal(id, type) {
+    currentPrintDocumentId = id;
+    currentPrintDocumentType = type;
+    isCreatingQuickSale = false; // Called from view/history contexts
+    document.getElementById('paymentTermsModal').classList.add('active');
+}
+
+function initiateQuickPay() {
+    if (quickCart.length === 0) {
+        showToast('Please add items to the cart first.', 'warning');
+        return;
+    }
+    const name = document.getElementById('customerName').value.trim();
+    if (!name) {
+        showToast('Please enter customer name.', 'warning');
+        return;
+    }
+    
+    currentPrintDocumentType = 'SALES';
+    isCreatingQuickSale = true;
+    document.getElementById('paymentTermsModal').classList.add('active');
+}
+
+function initiateQuickDocument(type) {
+    if (quickCart.length === 0) {
+        showToast('Please add items to the cart first.', 'warning');
+        return;
+    }
+    const name = document.getElementById('customerName').value.trim();
+    if (!name) {
+        showToast('Please enter customer name.', 'warning');
+        return;
+    }
+    
+    currentPrintDocumentType = type.toUpperCase(); // 'PROFORMA' or 'INVOICE'
+    isCreatingQuickSale = true;
+    document.getElementById('paymentTermsModal').classList.add('active');
+}
+
+async function handleModalDone() {
+    const terms = document.getElementById('paymentTermsSelect').value;
+    if (isCreatingQuickSale) {
+        if (currentPrintDocumentType === 'SALES') {
+            await processQuickPayment(terms, false);
+        } else {
+            await processQuickDocument(currentPrintDocumentType.toLowerCase(), terms, false);
+        }
+    } else {
+        closePaymentTermsModal();
+    }
+}
+
+async function handleModalDownload() {
+    const terms = document.getElementById('paymentTermsSelect').value;
+    if (isCreatingQuickSale) {
+        if (currentPrintDocumentType === 'SALES') {
+            await processQuickPayment(terms, true);
+        } else {
+            await processQuickDocument(currentPrintDocumentType.toLowerCase(), terms, true);
+        }
+    } else {
+        closePaymentTermsModal();
+        if (!currentPrintDocumentId) return;
+        const token = sessionStorage.getItem('companyToken');
+        const endpoint = currentPrintDocumentType === 'PROFORMA' ? 'proforma-invoices' : 'sales-invoices';
+        try {
+            const res = await fetch(`/api/company/${endpoint}/${currentPrintDocumentId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                printDocument(data, currentPrintDocumentType, terms);
+            }
+        } catch (e) { console.error(e); }
+    }
+}
+
+function closePaymentTermsModal() {
+    document.getElementById('paymentTermsModal').classList.remove('active');
+}
+
+function viewProforma(id) {
+    showPaymentTermsModal(id, 'PROFORMA');
+}
+
+function viewSales(id) {
+    showPaymentTermsModal(id, 'SALES');
+}
+
+async function sendProforma(id) {
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const res = await fetch(`/api/company/proforma-invoices/${id}/send`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            showToast('Proforma sent to client successfully');
+            loadProformaInvoices();
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function transferToQuickCart(id) {
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        // Ensure inventory data is loaded to enable metadata recovery (barcodes, IDs)
+        if (!products || products.length === 0) {
+            await loadQuickSaleProducts();
+        }
+
+        const res = await fetch(`/api/company/proforma-invoices/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            
+            // Clear existing cart to prevent mixing orders
+            quickCart = [];
+            activeProformaId = id; // Track source proforma for completion status update
+            
+            // Map proforma items back to quick sale cart structure
+            data.items.forEach(item => {
+                let bc = item.barcode;
+                let pid = item.product_id;
+                
+                // Robust recovery: If the stored item lacks metadata, look it up in active inventory
+                if (!bc || bc === 'N/A' || bc === 'undefined' || !pid) {
+                    const p = products.find(prod => 
+                        (item.product_id && prod.id == item.product_id) || 
+                        (prod.name.trim().toLowerCase() === item.product_name.trim().toLowerCase())
+                    );
+                    if (p) {
+                        if (!bc || bc === 'N/A' || bc === 'undefined') bc = p.barcode;
+                        if (!pid) pid = p.id;
+                    }
+                }
+
+                quickCart.push({
+                    id: pid, 
+                    name: item.product_name,
+                    price: parseFloat(item.unit_price),
+                    quantity: parseFloat(item.quantity),
+                    barcode: bc || 'N/A'
+                });
+            });
+            
+            // Pre-fill customer details
+            document.getElementById('customerName').value = data.client_name || (data.notes && data.notes.includes('Quick Document for') ? data.notes.split('for ')[1] : '');
+
+            // Switch to Quick Sale tab
+            document.querySelector('[data-tab="quick-sale"]').click();
+            
+            // Update Cart UI and Totals
+            updateQuickCart();
+            showToast('Items transferred to Quick Sale cart');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('Error transferring proforma', 'error');
+    }
+}
+
+async function loadCompanyTransactions() {
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const response = await fetch('/api/company/transactions', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            allTransactions = await response.json();
+            transactionsPage = 1;
+            renderTable('transactions');
+        }
+    } catch (error) {
+        console.error('Transactions load error:', error);
+    }
+}
+
+async function recordPayment(id) {
+    const amount = prompt("Enter payment amount (₵):");
+    if (!amount || isNaN(amount)) return;
+    
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const res = await fetch(`/api/company/sales-invoices/${id}/payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ amount: parseFloat(amount) })
+        });
+        if (res.ok) {
+            showToast('Payment recorded');
+            loadSalesInvoices();
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function printDocument(data, type, terms = '...........................................') {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Always fetch latest settings to ensure PDF reflects recent changes
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const settingsRes = await fetch('/api/settings', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (settingsRes.ok) systemSettings = await settingsRes.json();
+    } catch (e) {
+        console.error("Error fetching settings for PDF:", e);
+    }
+
+    const items = data.items || [];
+    const issueDateObj = new Date(data.issue_date);
+    const dateStr = issueDateObj.toLocaleDateString('en-GB');
+    
+    // Default to +7 days if no expiry date was provided
+    let expiryDateObj = data.expiry_date ? new Date(data.expiry_date) : new Date(issueDateObj);
+    if (!data.expiry_date) {
+        expiryDateObj.setDate(expiryDateObj.getDate() + 7);
+    }
+    const expiryStr = expiryDateObj.toLocaleDateString('en-GB');
+    
+    const customerInfo = data.client_name || (data.notes && data.notes.includes('for ') ? data.notes.split('for ')[1] : 'N/A');
+
+    // Dynamically build the tax label from Tax Management rules
+    const taxLabel = activeTaxes.map(t => `${t.name} (${t.rate}%)`).join(' & ') || 'Tax / VAT';
+
+    // Add logo and company info
+    const img = new Image();
+    img.src = 'logo.png';
+    await new Promise(resolve => img.onload = resolve); // Ensure image is loaded before adding to PDF
+
+    doc.addImage(img, 'PNG', 14, 10, 42, 8.4); // Adjust size as needed
+    doc.setFont('times', 'bold'); // Use standard font name
+    doc.setFontSize(17);
+    doc.text('THE SPARROW ENT.', 60, 17); // Same line as logo
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9.5);
+    doc.text('P.O.BOX AN 5530 | Phone: 0506012767', 14, 24); // Under the logo
+    doc.text('NII NORTEY NYANCHI STREET - DZORWULU', 14, 28); // Under the logo
+
+    // Invoice details (right side)
+    doc.setFontSize(10);
+    doc.text(`Invoice #: ${data.invoice_number}`, 196, 18, { align: 'right' });
+    doc.text(`Date: ${dateStr}`, 196, 24, { align: 'right' });
+    
+    // Show expiration date if provided or if it's a proforma invoice
+    if (data.expiry_date || type === 'PROFORMA') {
+        doc.text(`Expires: ${expiryStr}`, 196, 30, { align: 'right' });
+    }
+
+    // Document type
+    doc.setFontSize(14);
+    doc.setFont('times', 'bold');
+    doc.setTextColor(178, 31, 31); // Red color
+    doc.text(type === 'PROFORMA' ? 'PRO FORMA INVOICE' : 'SALES RECEIPT', 105, 47.5, { align: 'center' });
+    doc.setDrawColor(178, 31, 31); // Red color
+    doc.setLineWidth(0.5);
+    doc.line(14, 42, 196, 42); // Top line
+    doc.line(14, 51, 196, 51); // Bottom line
+
+    // Bill To
+    doc.setTextColor(0, 0, 0); // Black text
+    doc.setFontSize(9.5);
+    doc.setFont('times', 'bold');
+    doc.text('BILL TO:', 14, 58);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(11);
+    doc.text(customerInfo, 14, 63);
+
+    // Items table using autoTable
+    const tableHeaders = [['No.', 'Description', 'Qty', 'Qty in Box/Pack', 'Unit Price', 'Total (GHS)']];
+    const tableRows = items.map((item, index) => [
+        index + 1,
+        item.product_name,
+        item.quantity,
+        item.conversion_rate || item.items_per_package || '-',
+        parseFloat(item.unit_price).toFixed(2),
+        parseFloat(item.line_total).toFixed(2)
+    ]);
+
+    doc.autoTable({
+        startY: 70,
+        head: tableHeaders,
+        body: tableRows,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [178, 31, 31], // Red
+            textColor: [255, 255, 255], // White
+            fontStyle: 'bold',
+            fontSize: 8
+        },
+        styles: {
+            fontSize: 9.5,
+            cellPadding: 3,
+            lineColor: [68, 68, 68], // Dark gray for borders
+            lineWidth: 0.1,
+            font: 'times'
+        },
+        columnStyles: {
+            0: { halign: 'center', cellWidth: 8 },
+            1: { cellWidth: 72 },
+            2: { halign: 'center', cellWidth: 12 },
+            3: { halign: 'center', cellWidth: 25 },
+            4: { halign: 'right', cellWidth: 23 },
+            5: { halign: 'right', cellWidth: 30 }
+        },
+        margin: { left: 14, right: 14 }
+    });
+
+    let finalY = doc.autoTable.previous.finalY;
+
+    // Totals
+    doc.setFontSize(9.5);
+    doc.setFont('times', 'normal');
+    doc.setTextColor(0, 0, 0); // Black text
+    doc.text('Sub-Total:', 110, finalY + 10);
+    doc.text(`GHS ${parseFloat(data.subtotal).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 196, finalY + 10, { align: 'right' });
+
+    doc.text(`${taxLabel}:`, 110, finalY + 16);
+    doc.text(`GHS ${parseFloat(data.tax_amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 196, finalY + 16, { align: 'right' });
+
+    doc.setDrawColor(68, 68, 68);
+    doc.line(110, finalY + 19, 196, finalY + 19); // Line above total
+
+    doc.setFontSize(12);
+    doc.setFont('times', 'bold');
+    doc.setFillColor(178, 31, 31); // Red background for total
+    doc.setTextColor(255, 255, 255); // White text
+    doc.rect(108, finalY + 22, 90, 12, 'F'); // Expanded rectangle for total
+    doc.text('TOTAL PAYABLE:', 110, finalY + 29.5);
+    doc.text(`GHS ${parseFloat(data.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 196, finalY + 29.5, { align: 'right' });
+
+    // Red outline box for Payment Details
+    doc.setDrawColor(178, 31, 31); // Red color
+    doc.setLineWidth(0.5);
+    doc.rect(12, finalY + 34, 186, 24); // Outline box
+
+    // Payment details
+    doc.setFontSize(9);
+    doc.setFont('times', 'bold');
+    doc.setTextColor(0, 0, 0); // Black text
+    doc.text('PAYMENT DETAILS', 15, finalY + 40);
+    doc.setDrawColor(0, 0, 0); // Black for underline
+    doc.setLineWidth(0.1);
+    doc.line(15, finalY + 41, 45, finalY + 41); // Underline
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(8.5);
+    
+    // Use system settings or fallback to defaults
+    const bankName = systemSettings.bank_name || 'ECOBANK';
+    const accName = systemSettings.bank_account_name || 'NOVELTY THE SPARROW ENTERPRISE';
+    const accNo = systemSettings.bank_account_number || '1441002424950';
+    const bankBranch = systemSettings.bank_branch || 'ROMAN RIDGE';
+    
+    const momoNo = systemSettings.momo_number || '0248166711';
+    const momoName = systemSettings.momo_name || 'NOVELTY THE SPARROW ENT.';
+
+    doc.setFont('times', 'bold');
+    doc.text('BANK ACCOUNT DETAILS', 14, finalY + 46);
+    doc.setFont('times', 'normal');
+    doc.text(`Bank: ${bankName}  |  Account: ${accName}`, 14, finalY + 50);
+    doc.text(`Acc No: ${accNo}  |  Branch: ${bankBranch}`, 14, finalY + 54);
+
+    doc.setFont('times', 'bold');
+    doc.text('MOBILE MONEY DETAILS', 110, finalY + 46);
+    doc.setFont('times', 'normal');
+    doc.text(`MoMo Number: ${momoNo}`, 110, finalY + 50);
+    doc.text(`MoMo Name: ${momoName}`, 110, finalY + 54);
+
+    // Solid Red Banner for Terms and Signature (dropped down)
+    doc.setFillColor(178, 31, 31); // Red background
+    doc.rect(12, finalY + 70, 186, 12, 'F');
+    
+    doc.setFont('times', 'bold');
+    doc.setFontSize(10); // INCREASED TEXT SIZE
+    doc.setTextColor(255, 255, 255); // White text
+    
+    doc.text('Terms of Payment: ', 15, finalY + 78);
+    doc.text('...........................................', 45, finalY + 78);
+    
+    if (!terms.includes('...')) {
+        doc.text(terms.toUpperCase(), 48, finalY + 77.2); // Term sits cleanly on top of the white dots
+    }
+    doc.text('Authorized Signature: ........................................', 110, finalY + 78);
+
+
+    const fileNameDate = new Date(data.issue_date).toISOString().split('T')[0];
+    const safeName = customerInfo.replace(/[^a-z0-9]/gi, '_');
+    doc.save(`${safeName}_${type}_${fileNameDate}.pdf`);
+}
+
+
+// Quick Sale POS Functions
+let quickCart = [];
+let products = [];
+let scannerActive = false;
+
+// Load products for quick sale
+async function loadQuickSaleProducts() {
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const response = await fetch('/api/products/full?t=' + new Date().getTime(), {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            products = await response.json();
+            displayProductsGrid();
+        }
+    } catch (error) {
+        console.error('Error loading products:', error);
+    }
+}
+
+// Display products in grid
+function displayProductsGrid() {
+    const grid = document.getElementById('productGrid');
+    if (!grid) return;
+    
+    const popularProducts = products.slice(0, 12); // Show first 12 products
+    
+    grid.innerHTML = popularProducts.map(product => `
+        <div class="product-card" onclick="addToQuickCart(${JSON.stringify(product).replace(/"/g, '&quot;')})">
+            <h4>${product.name}</h4>
+            <div class="price">₵${parseFloat(product.price).toFixed(2)}</div>
+            <div class="stock">Stock: ${product.stock || 0}</div>
+        </div>
+    `).join('');
+}
+
+// Search products with suggestions
+function searchProducts() {
+    const query = document.getElementById('barcodeInput').value.trim();
+    if (!query) return;
+    
+    manualScan();
+}
+
+// Manual scan (like pos.html)
+function manualScan() {
+    const query = document.getElementById('barcodeInput').value.trim();
+    if (!query) return;
+    
+    const scanResult = document.getElementById('scanResult');
+    scanResult.innerHTML = `🔍 Searching for: <strong>${query}</strong>`;
+    
+    // Find product by barcode or name
+    const product = products.find(p => 
+        p.barcode === query || 
+        p.name.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    if (product) {
+        addToQuickCart(product);
+        scanResult.innerHTML = `✅ Added: <strong>${product.name}</strong>`;
+        document.getElementById('barcodeInput').value = '';
+        closeSuggestions();
+        setTimeout(() => {
+            scanResult.innerHTML = '';
+        }, 2000);
+    } else {
+        scanResult.innerHTML = `❌ Product not found: <strong>${query}</strong>`;
+        setTimeout(() => {
+            scanResult.innerHTML = '';
+        }, 3000);
+    }
+}
+
+// Show search suggestions
+function showSuggestions(query) {
+    const suggestionsDropdown = document.getElementById('searchSuggestions');
+    
+    if (!query || query.length < 2) {
+        closeSuggestions();
+        return;
+    }
+    
+    const matches = products.filter(p => {
+        const name = (p.name || '').toLowerCase();
+        const barcode = (p.barcode || '').toLowerCase();
+        return name.includes(query.toLowerCase()) || barcode.includes(query.toLowerCase());
+    }).slice(0, 8); // Limit to 8 suggestions
+    
+    if (matches.length === 0) {
+        closeSuggestions();
+        return;
+    }
+    
+    suggestionsDropdown.innerHTML = matches.map(product => `
+        <div class="suggestion-item" onclick="selectSuggestion(${JSON.stringify(product).replace(/"/g, '&quot;')})">
+            <div>
+                <div><strong>${product.name}</strong></div>
+                <div class="product-details">Barcode: ${product.barcode || 'N/A'} | Stock: ${product.stock || 0}</div>
+            </div>
+            <div class="product-price">₵${parseFloat(product.price).toFixed(2)}</div>
+        </div>
+    `).join('');
+    
+    suggestionsDropdown.style.display = 'block';
+}
+
+// Close suggestions dropdown
+function closeSuggestions() {
+    const suggestionsDropdown = document.getElementById('searchSuggestions');
+    suggestionsDropdown.style.display = 'none';
+}
+
+// Select suggestion
+function selectSuggestion(product) {
+    addToQuickCart(product);
+    document.getElementById('barcodeInput').value = '';
+    closeSuggestions();
+    
+    const scanResult = document.getElementById('scanResult');
+    scanResult.innerHTML = `✅ Added: <strong>${product.name}</strong>`;
+    setTimeout(() => {
+        scanResult.innerHTML = '';
+    }, 2000);
+}
+
+// Handle input events for suggestions
+document.addEventListener('DOMContentLoaded', function() {
+    const barcodeInput = document.getElementById('barcodeInput');
+    
+    if (barcodeInput) {
+        // Input event for suggestions
+        barcodeInput.addEventListener('input', function(e) {
+            showSuggestions(e.target.value);
+        });
+        
+        // Key events
+        barcodeInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                manualScan();
+            } else if (e.key === 'Escape') {
+                closeSuggestions();
+            }
+        });
+        
+        // Click outside to close suggestions
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-bar')) {
+                closeSuggestions();
+            }
+        });
+    }
+});
+
+// Add product to cart
+function addToQuickCart(product) {
+    const existingItem = quickCart.find(item => item.id === product.id);
+    
+    if (existingItem) {
+        existingItem.quantity++;
+    } else {
+        quickCart.push({
+            id: product.id,
+            name: product.name,
+            price: parseFloat(product.price),
+            quantity: 1,
+            barcode: product.barcode,
+            conversion_rate: product.conversion_rate
+        });
+    }
+    
+    updateQuickCart();
+}
+
+// Update cart display
+function updateQuickCart() {
+    const cartItems = document.getElementById('cartItems');
+    const cartCount = document.getElementById('cartCount');
+    
+    if (quickCart.length === 0) {
+        cartItems.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #6c757d;">
+                <i class="fas fa-shopping-cart" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                <div>No items in cart</div>
+                <div style="font-size: 12px; margin-top: 5px;">Scan or search products to add</div>
+            </div>
+        `;
+        cartCount.textContent = '0 items';
+    } else {
+        cartItems.innerHTML = `
+            <div class="cart-labels">
+                <span>Product</span>
+                <span>Barcode</span>
+                <span style="text-align: right;">Price</span>
+                <span style="text-align: center;">Qty</span>
+                <span style="text-align: center;">Promo</span>
+                <span></span>
+            </div>
+        ` + quickCart.map((item, index) => `
+            <div class="cart-item">
+                <div class="cart-item-name" title="${item.name}">
+                    ${item.name}
+                </div>
+                <div class="cart-item-details">${item.barcode || 'N/A'}</div>
+                <div class="cart-item-price">
+                    ₵${item.price.toFixed(2)}
+                    ${item.discount ? `<div class="item-discount-badge">-₵${item.discount.toFixed(2)}</div>` : ''}
+                </div>
+                <div style="display:flex; align-items:center; justify-content: center; gap:3px;">
+                    <button class="qty-btn" onclick="updateQuickQuantity(${index}, -1)">-</button>
+                    <input type="number" value="${item.quantity}" min="1" style="width:35px; text-align:center; padding:2px; border:1px solid #ddd; border-radius:4px; font-size: 12px;" onchange="setQuickQuantity(${index}, this.value)" onclick="this.select()">
+                    <button class="qty-btn" onclick="updateQuickQuantity(${index}, 1)">+</button>
+                </div>
+                <div>
+                    <input type="text" class="promo-input ${item.promo ? 'has-promo' : ''}" value="${item.promo || ''}" placeholder="Promo code" onblur="applyItemPromo(${index}, this.value)" onkeypress="if(event.key==='Enter')applyItemPromo(${index}, this.value)" title="${item.promo || 'Enter promo code'}">
+                </div>
+                <div>
+                    <button class="delete-btn" onclick="removeFromQuickCart(${index})" title="Remove from cart"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        `).join('');
+        
+        const totalItems = quickCart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCount.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`;
+    }
+    
+    updateQuickTotals();
+}
+
+// Set quantity directly
+function setQuickQuantity(index, value) {
+    const qty = parseInt(value) || 1;
+    if (qty > 0) {
+        quickCart[index].quantity = qty;
+        updateQuickCart();
+    }
+}
+
+// Apply item-level promo
+function applyItemPromo(index, promoValue) {
+    const item = quickCart[index];
+    const originalPrice = parseFloat(item.price);
+    
+    if (!promoValue) {
+        item.promo = null;
+        item.discount = 0;
+        item.finalPrice = originalPrice;
+    } else {
+        item.promo = promoValue;
+        
+        // Calculate discount based on promo type
+        if (promoValue.includes('%')) {
+            const percentage = parseFloat(promoValue.replace('%', '')) || 0;
+            item.discount = (originalPrice * percentage / 100) * item.quantity;
+        } else {
+            item.discount = parseFloat(promoValue) || 0;
+        }
+        item.finalPrice = originalPrice - (item.discount / item.quantity);
+    }
+    
+    updateQuickCart();
+}
+
+// Apply global promo code
+function applyPromo() {
+    const promoCode = document.getElementById('promoCode').value.trim();
+    if (!promoCode) return;
+    
+    // This would typically validate against a database of promo codes
+    // For now, we'll apply a simple 10% discount
+    const discountRate = 0.1;
+    const subtotal = quickCart.reduce((sum, item) => sum + (item.finalPrice || item.price) * item.quantity, 0);
+    const discount = subtotal * discountRate;
+    
+    document.getElementById('discountRow').style.display = 'flex';
+    document.getElementById('discountAmt').textContent = `-₵${discount.toFixed(2)}`;
+    
+    updateQuickTotals();
+}
+
+// Process payment with specific method (Tax-Inclusive Pricing - Net subtotal + tax)
+async function processQuickPayment(paymentMethod, shouldDownload = false, customerId = null) {
+    // Note: Validation is now done in initiateQuickPay()
+    let customerName = document.getElementById('customerName').value.trim();
+    
+    // If credit sale and no customer name provided manually, use the selected credit customer name
+    if (paymentMethod === 'credit' && !customerName && selectedQuickCreditCustomer) {
+        customerName = selectedQuickCreditCustomer.name;
+    }
+
+    const subtotal = quickCart.reduce((sum, item) => sum + (item.finalPrice || item.price) * item.quantity, 0);
+    const discountElement = document.getElementById('discountAmt');
+    const discount = discountElement ? parseFloat(discountElement.textContent.replace('₵', '').replace('-', '').replace(/,/g, '')) || 0 : 0;
+    
+    // Tax-inclusive pricing: subtotal shows net amount, tax is added back
+    const discountedSubtotal = subtotal - discount;
+    const totalTaxRate = activeTaxes.reduce((sum, t) => sum + parseFloat(t.rate || 0), 0);
+    const tax = discountedSubtotal * (totalTaxRate / (100 + totalTaxRate));
+    const netSubtotal = discountedSubtotal - tax; // Amount without tax
+    const totalAmount = discountedSubtotal; // Customer pays full amount (net + tax)
+    
+    const saleData = {
+        customer_name: customerName,
+        customer_email: document.getElementById('customerEmail').value.trim(),
+        customer_phone: document.getElementById('customerPhone').value.trim(),
+        customer_company: document.getElementById('customerCompany').value.trim(),
+        customer_id: customerId, // Added customer_id
+        items: quickCart.map(item => ({
+            product_id: item.id,
+            product_name: item.name,
+            quantity: item.quantity,
+            unit_price: item.price,
+            final_price: item.finalPrice || item.price,
+            discount: item.discount || 0,
+            promo: item.promo || null,
+            total: (item.finalPrice || item.price) * item.quantity,
+            barcode: item.barcode
+        })),
+        subtotal: netSubtotal, // Send net amount (Sales - Tax)
+        discount: discount,
+        tax: tax,
+        tax_details: activeTaxes.map(t => ({
+            name: t.name,
+            rate: t.rate,
+            amount: (discountedSubtotal * (parseFloat(t.rate) / (100 + totalTaxRate)))
+        })),
+        net_subtotal: netSubtotal,
+        total: totalAmount, // Send gross amount (Total)
+        payment_method: paymentMethod,
+        type: 'quick_sale',
+        proforma_id: activeProformaId
+    };
+    
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const response = await fetch('/api/company/quick-sale', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(saleData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            closePaymentTermsModal();
+            
+            if (shouldDownload) {
+                // Fetch the record we just created to ensure we have all correct metadata (invoice number, etc)
+                const res = await fetch(`/api/company/sales-invoices/${result.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const fullData = await res.json();
+                    printDocument(fullData, 'SALES', paymentMethod);
+                }
+            } else {
+                showToast('Sale finalized successfully');
+            }
+            
+            // Shared Reset Logic
+            quickCart = [];
+            updateQuickCart();
+            activeProformaId = null;
+            selectedQuickCreditCustomer = null; 
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerEmail').value = '';
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('customerCompany').value = '';
+            document.getElementById('promoCode').value = '';
+            if(document.getElementById('discountRow')) document.getElementById('discountRow').style.display = 'none';
+            
+            loadDashboard();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.message);
+        }
+    } catch (error) {
+        console.error('Error processing sale:', error);
+        alert('Error processing sale. Please try again.');
+    }
+}
+
+// Update item quantity
+function updateQuickQuantity(index, change) {
+    quickCart[index].quantity += change;
+    
+    if (quickCart[index].quantity <= 0) {
+        quickCart.splice(index, 1);
+    }
+    
+    updateQuickCart();
+}
+
+// Remove item from cart
+function removeFromQuickCart(index) {
+    quickCart.splice(index, 1);
+    updateQuickCart();
+}
+
+// Update totals (Tax-Inclusive Pricing - Subtotal shows net amount)
+function updateQuickTotals() {
+    const subtotal = quickCart.reduce((sum, item) => sum + (item.finalPrice || item.price) * item.quantity, 0);
+    const discountElement = document.getElementById('discountAmt');
+    const discount = discountElement ? parseFloat(discountElement.textContent.replace('₵', '').replace('-', '')) || 0 : 0;
+    
+    // Sum up the tax rates from the dynamic tax settings
+    const totalTaxRate = activeTaxes.reduce((sum, t) => sum + parseFloat(t.rate || 0), 0);
+    
+    // For tax-inclusive pricing: subtotal shows net amount, tax is added back
+    const discountedSubtotal = subtotal - discount;
+    const totalTaxAmount = discountedSubtotal * (totalTaxRate / (100 + totalTaxRate));
+    const netSubtotal = discountedSubtotal - totalTaxAmount; // Amount without tax
+    const totalAmount = discountedSubtotal; // Customer pays full amount (net + tax)
+    
+    document.getElementById('quickSubtotal').textContent = `₵${netSubtotal.toFixed(2)}`;
+    
+    // Render detailed tax breakdown (e.g. NHIS, VAT)
+    const breakdownContainer = document.getElementById('quickTaxBreakdown');
+    if (breakdownContainer) {
+        breakdownContainer.innerHTML = activeTaxes.map(tax => {
+            const amount = discountedSubtotal * (parseFloat(tax.rate) / (100 + totalTaxRate));
+            return `
+                <div class="summary-row" style="font-size: 13px; color: #666; margin-bottom: 4px;">
+                    <span>${tax.name} (${tax.rate}%)</span>
+                    <span>₵${amount.toFixed(2)}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    document.getElementById('quickTotal').textContent = `₵${totalAmount.toFixed(2)}`;
+}
+
+// Clear cart
+function clearQuickCart() {
+    if (quickCart.length === 0) return;
+    
+    if (confirm('Are you sure you want to clear the cart?')) {
+        quickCart = [];
+        updateQuickCart();
+        
+        // Clear customer info
+        document.getElementById('customerName').value = '';
+        document.getElementById('customerEmail').value = '';
+        document.getElementById('customerPhone').value = '';
+        document.getElementById('customerCompany').value = '';
+    }
+}
+
+// Process quick document (Proforma/Invoice) after modal confirmation
+async function processQuickDocument(docType, paymentMethod, shouldDownload = false) {
+    // Note: Validation is now done in initiateQuickDocument()
+    const customerName = document.getElementById('customerName').value.trim();
+    const subtotal = quickCart.reduce((sum, item) => sum + (item.finalPrice || item.price) * item.quantity, 0);
+    const discountElement = document.getElementById('discountAmt');
+    const discount = discountElement ? parseFloat(discountElement.textContent.replace('₵', '').replace('-', '')) || 0 : 0;
+    
+    const totalTaxRate = activeTaxes.reduce((sum, t) => sum + parseFloat(t.rate || 0), 0);
+    const discountedSubtotal = subtotal - discount;
+    const totalTaxAmount = discountedSubtotal * (totalTaxRate / (100 + totalTaxRate));
+    const totalAmount = discountedSubtotal;
+    
+    const docData = {
+        customer_name: customerName,
+        customer_email: document.getElementById('customerEmail').value.trim(),
+        customer_phone: document.getElementById('customerPhone').value.trim(),
+        customer_company: document.getElementById('customerCompany').value.trim(),
+        items: quickCart.map(item => ({
+            product_id: item.id,
+            product_name: item.name,
+            quantity: item.quantity,
+            unit_price: item.price,
+            final_price: item.finalPrice || item.price,
+            discount: item.discount || 0,
+            promo: item.promo || null,
+            total: (item.finalPrice || item.price) * item.quantity,
+            barcode: item.barcode
+        })),
+        subtotal: totalAmount - totalTaxAmount, // Send net amount (Sales - Tax)
+        discount: discount,
+        tax: totalTaxAmount,
+        total: totalAmount, // Send gross amount (Total)
+        payment_method: paymentMethod, // Selected from modal
+        type: docType,
+        skip_stock: true 
+    };
+    
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const response = await fetch('/api/company/quick-sale', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(docData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            closePaymentTermsModal();
+
+            if (shouldDownload) {
+                // Fetch full record for printing
+                const endpoint = docType === 'proforma' ? 'proforma-invoices' : 'sales-invoices';
+                const res = await fetch(`/api/company/${endpoint}/${result.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const fullData = await res.json();
+                    printDocument(fullData, docType.toUpperCase(), paymentMethod);
+                }
+            } else {
+                showToast(`${docType.toUpperCase()} generated successfully!`);
+            }
+            
+            // Reset UI
+            quickCart = [];
+            updateQuickCart();
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerEmail').value = '';
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('customerCompany').value = '';
+            document.getElementById('promoCode').value = '';
+            document.getElementById('discountRow').style.display = 'none';
+            
+            loadDashboard();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.message);
+        }
+    } catch (error) {
+        console.error('Error generating document:', error);
+        alert('Error generating document. Please try again.');
+    }
+}
+
+// Toggle scanner (placeholder for camera functionality)
+function toggleScanner() {
+    scannerActive = !scannerActive;
+    const btn = event.target.closest('.scanner-btn');
+    
+    if (scannerActive) {
+        btn.classList.add('active');
+        alert('Camera scanner would open here. This requires camera permissions and scanner library integration.');
+    } else {
+        btn.classList.remove('active');
+    }
+}
+
+// Toggle keyboard mode
+function toggleKeyboardMode() {
+    const btn = event.target.closest('.scanner-btn');
+    btn.classList.toggle('active');
+    
+    const input = document.getElementById('barcodeInput');
+    if (btn.classList.contains('active')) {
+        input.focus();
+        input.placeholder = 'Enter barcode or product name (keyboard mode active)...';
+    } else {
+        input.placeholder = 'Scan barcode, type product name, or search...';
+    }
+}
+
+// Form Submissions
+document.getElementById('proformaForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // Handle proforma form submission
+    console.log('Proforma form submitted');
+    closeProformaModal();
+
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
+    loadDashboard();
+    loadQuickSaleProducts();
+    loadTaxes();
+
+    // Initialize report dates
+    const now = new Date();
+    document.getElementById('reportEnd').valueAsDate = now;
+    document.getElementById('reportStart').valueAsDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Automatically generate tax report
+    generateCompanyTaxReport();
+});
+
+// Hotkey Bindings (F1-F6)
+window.addEventListener('keydown', function(e) {
+    // Ignore hotkeys if any modal is active to prevent accidental triggers
+    if (document.querySelector('.modal.active')) return;
+
+    switch(e.key) {
+        case 'F1':
+            e.preventDefault();
+            processQuickPayment('cash');
+            break;
+        case 'F2':
+            e.preventDefault();
+            processQuickPayment('momo');
+            break;
+        case 'F3':
+            e.preventDefault();
+            processQuickPayment('card');
+            break;
+        case 'F4':
+            e.preventDefault();
+            processQuickPayment('credit');
+            break;
+        case 'F5':
+            e.preventDefault();
+            processQuickDocument('proforma');
+            break;
+        case 'F6':
+            e.preventDefault();
+            processQuickDocument('invoice');
+            break;
+    }
+});
+
+// Logout function
+async function logout() {
+    try {
+        const response = await fetch('/api/company/logout', {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            // Clear session and redirect to login
+            sessionStorage.clear();
+            window.location.href = 'login';
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        // Even if error, redirect to login
+        sessionStorage.clear();
+        window.location.href = 'login';
+    }
+}
+
+// Tax Management Functions
+async function loadTaxes() {
+    const modalList = document.getElementById('taxList');
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const response = await fetch('/api/company/taxes', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            const taxes = await response.json();
+
+            // Update global activeTaxes and calculate total rate
+            activeTaxes = taxes.filter(t => t.status === 'Active');
+            const totalRate = activeTaxes.reduce((sum, t) => sum + parseFloat(t.rate || 0), 0);
+            const quickTaxInput = document.getElementById('taxRate');
+            if (quickTaxInput) {
+                quickTaxInput.value = totalRate.toFixed(2);
+            }
+            updateQuickTotals();
+
+            // Update list using the two-column layout
+            if (modalList) {
+                if (taxes.length === 0) {
+                    modalList.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">No tax rules found.</p>';
+                } else {
+                    modalList.innerHTML = taxes.map(tax => `
+                        <div class="tax-item">
+                            <div style="flex: 1;">
+                                <strong style="font-size: 14px;">${tax.name}</strong>
+                                <span class="tax-badge">${tax.rate}%</span>
+                                <span class="status-badge ${tax.status === 'Active' ? 'status-active' : 'status-inactive'}" style="margin-left: 10px;">
+                                    ${tax.status}
+                                </span>
+                            </div>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn-sm" onclick="toggleTaxStatus(${tax.id}, ${tax.status === 'Active'})" 
+                                        style="background: ${tax.status === 'Active' ? '#ffc107' : '#28a745'}; color: white; padding: 4px 8px; font-size: 12px;">
+                                    <i class="fas ${tax.status === 'Active' ? 'fa-pause' : 'fa-play'}"></i>
+                                </button>
+                                <button class="btn-sm" onclick="deleteTax(${tax.id})" 
+                                        style="background: #dc3545; color: white; padding: 4px 8px; font-size: 12px;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading taxes:', error);
+    }
+}
+
+async function handleAddTax(event) {
+    event.preventDefault();
+    const name = document.getElementById('newTaxName').value.trim();
+    const rate = parseFloat(document.getElementById('newTaxRate').value);
+    const token = sessionStorage.getItem('companyToken');
+
+    if (!name || isNaN(rate) || rate < 0 || rate > 100) {
+        showToast('Please enter valid tax name and rate.', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/company/taxes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, rate })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            showToast('Tax rule added successfully!');
+            
+            // Clear form
+            document.getElementById('newTaxName').value = '';
+            document.getElementById('newTaxRate').value = '';
+            
+            // Reload taxes
+            loadTaxes();
+        } else {
+            const error = await response.json();
+            showToast(error.message || 'Failed to add tax rule', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding tax:', error);
+        showToast('Connection error. Please try again.', 'error');
+    }
+}
+
+async function toggleTaxStatus(taxId, currentStatus) {
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const response = await fetch(`/api/company/taxes/${taxId}/toggle`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            showToast('Tax status updated');
+            loadTaxes();
+        } else {
+            const error = await response.json();
+            showToast(error.message || 'Failed to toggle status', 'error');
+        }
+    } catch (error) {
+        console.error('Error toggling tax:', error);
+        showToast('Connection error. Please try again.', 'error');
+    }
+}
+
+function deleteTax(taxId) {
+    showConfirm('Delete Tax Rule', 'Are you sure you want to delete this tax rule?', async () => {
+        const token = sessionStorage.getItem('companyToken');
+        try {
+            const response = await fetch(`/api/company/taxes/${taxId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.ok) {
+                showToast('Tax rule deleted');
+                loadTaxes();
+            } else {
+                const error = await response.json();
+                showToast(error.message || 'Error deleting tax', 'error');
+            }
+            } catch (error) {
+                console.error('Error deleting tax:', error);
+                showToast('Connection error. Please try again.', 'error');
+            }
+        }
+    );
+}
+
+async function generateCompanyTaxReport() {
+    const start = document.getElementById('reportStart').value;
+    const end = document.getElementById('reportEnd').value;
+    const tbody = document.getElementById('taxReportTableBody');
+    const token = sessionStorage.getItem('companyToken');
+    
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">Generating...</td></tr>';
+
+    try {
+        const response = await fetch(`/api/company/tax-report?startDate=${start}&endDate=${end}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            tbody.innerHTML = data.map(row => `
+                <tr>
+                    <td>${row.period}</td>
+                    <td style="text-align:right;">₵${parseFloat(row.gross_sales).toLocaleString()}</td>
+                    <td style="text-align:right;">₵${parseFloat(row.net_sales).toLocaleString()}</td>
+                    <td style="text-align:right; font-weight:bold; color:var(--primary-color);">₵${parseFloat(row.total_tax).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function loadCompanySettings() {
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const response = await fetch('/api/settings', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            systemSettings = await response.json();
+            document.getElementById('settingCompanyName').value = systemSettings.store_name || '';
+            document.getElementById('settingTaxId').value = systemSettings.tax_id || '';
+            document.getElementById('settingPhone').value = systemSettings.phone || '';
+            document.getElementById('settingRevenueTarget').value = systemSettings.monthly_target || '';
+            
+            // Populate dynamic payment fields
+            document.getElementById('settingBankName').value = systemSettings.bank_name || '';
+            document.getElementById('settingBankAccountName').value = systemSettings.bank_account_name || '';
+            document.getElementById('settingBankAccountNumber').value = systemSettings.bank_account_number || '';
+            document.getElementById('settingBankBranch').value = systemSettings.bank_branch || '';
+            document.getElementById('settingMomoNumber').value = systemSettings.momo_number || '';
+            document.getElementById('settingMomoName').value = systemSettings.momo_name || '';
+        }
+    } catch (error) {
+        console.error('Error loading settings:', error);
+    }
+}
+
+async function handleSaveCompanySettings(e) {
+    e.preventDefault();
+    const token = sessionStorage.getItem('companyToken');
+    const settings = {
+        storeName: document.getElementById('settingCompanyName').value,
+        taxId: document.getElementById('settingTaxId').value,
+        phone: document.getElementById('settingPhone').value,
+        monthlyTarget: parseFloat(document.getElementById('settingRevenueTarget').value),
+        
+        // Payment fields
+        bankName: document.getElementById('settingBankName').value,
+        bankAccountName: document.getElementById('settingBankAccountName').value,
+        bankAccountNumber: document.getElementById('settingBankAccountNumber').value,
+        bankBranch: document.getElementById('settingBankBranch').value,
+        momoNumber: document.getElementById('settingMomoNumber').value,
+        momoName: document.getElementById('settingMomoName').value
+    };
+    
+    try {
+        const response = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(settings)
+        });
+        if (response.ok) {
+            showToast('Settings updated successfully!');
+            // Update local cache with DB-style keys so PDF logic sees the new values immediately
+            systemSettings = { 
+                ...systemSettings, 
+                store_name: settings.storeName,
+                tax_id: settings.taxId,
+                phone: settings.phone,
+                monthly_target: settings.monthlyTarget,
+                bank_name: settings.bankName,
+                bank_account_name: settings.bankAccountName,
+                bank_account_number: settings.bankAccountNumber,
+                bank_branch: settings.bankBranch,
+                momo_number: settings.momoNumber,
+                momo_name: settings.momoName
+            };
+        }
+    } catch (e) { console.error(e); }
+}
+
+
+
+function viewTransaction(trx) {
+    const modal = document.getElementById('transactionModal');
+    const body = document.getElementById('transactionModalBody');
+    const downloadBtn = document.getElementById('downloadTransactionBtn');
+    
+    if (!modal || !body) return;
+    
+    const dateStr = new Date(trx.created_at).toLocaleString();
+    const amount = parseFloat(trx.amount).toFixed(2);
+    
+    body.innerHTML = `
+        <div style="padding: 10px 0;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <span style="color: #666;">Date:</span>
+                <span style="font-weight: 600;">${dateStr}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <span style="color: #666;">Document:</span>
+                <span style="font-weight: 600;">Invoice #${trx.invoice_number || 'N/A'}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <span style="color: #666;">Type:</span>
+                <span style="font-weight: 600; text-transform: uppercase;">${trx.transaction_type}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <span style="color: #666;">Amount:</span>
+                <span style="font-weight: 700; font-size: 18px; color: var(--primary-color);">₵${amount}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <span style="color: #666;">Status:</span>
+                <span class="status-badge status-paid">Completed</span>
+            </div>
+            ${trx.notes ? `<div style="margin-top: 10px;"><p style="color: #666; font-size: 13px;">Notes: ${trx.notes}</p></div>` : ''}
+        </div>
+    `;
+    
+    downloadBtn.onclick = () => downloadTransaction(trx);
+    modal.classList.add('active');
+}
+
+async function downloadTransaction(trx) {
+    if (!trx.invoice_id) {
+        showToast('This transaction has no associated invoice to download.', 'warning');
+        return;
+    }
+    
+    const token = sessionStorage.getItem('companyToken');
+    try {
+        const res = await fetch(`/api/company/sales-invoices/${trx.invoice_id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            printDocument(data, 'SALES', data.payment_method || '....................');
+        } else {
+            showToast('Could not find invoice details for this transaction.', 'error');
+        }
+    } catch (e) {
+        console.error('Download error:', e);
+        showToast('Error generating PDF.', 'error');
+    }
+}
+
+function filterProformaTable() {
+    proformaPage = 1;
+    renderTable('proforma');
+}
+
+function filterTransactionsTable() {
+    transactionsPage = 1;
+    renderTable('transactions');
+}
+
+</script>
+
+<footer>© 2026 Footprint Retail Systems
+</footer>
+
+</body>
+</html>

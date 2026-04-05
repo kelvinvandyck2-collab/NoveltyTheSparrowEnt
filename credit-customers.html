@@ -146,7 +146,10 @@
     <div class="overlay" onclick="toggleSidebar()"></div>
 
     <div class="sidebar">
-        <div class="brand"><img src="logo.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> FOOTPRINT</div>
+        <div class="brand" style="display: flex; flex-direction: column; align-items: center;">
+            <img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;">
+            <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">THE SPARROW ENT</div>
+        </div>
         <div class="nav-links">
             <a href="dashboard" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
             <div class="nav-section">Sales & Finance</div>
@@ -749,6 +752,9 @@
             // Purchases Table
             const tableData = [];
             let periodTotal = 0;
+            
+            // Get VAT rate from settings (default 0)
+            const vatRate = 0; // Frontend uses 0 as server handles VAT calculation
 
             customerTxns.forEach(t => {
                 const date = new Date(t.created_at || t.date).toLocaleDateString();
@@ -768,8 +774,18 @@
 
                 if (items && Array.isArray(items)) {
                     items.forEach(item => {
-                        const itemTotal = parseFloat(item.price) * parseFloat(item.qty) * ratio;
-                        tableData.push([date, item.name, item.qty, `GHS ${itemTotal.toFixed(2)}`]);
+                        const qty = parseFloat(item.qty);
+                        const price = parseFloat(item.price);
+                        const subtotal = qty * price * ratio;
+                        const taxAmount = subtotal * (vatRate / 100);
+                        const itemTotal = subtotal + taxAmount;
+                        tableData.push([
+                            date, 
+                            item.name, 
+                            qty, 
+                            vatRate > 0 ? `GHS ${taxAmount.toFixed(2)}` : '-',
+                            `GHS ${itemTotal.toFixed(2)}`
+                        ]);
                         periodTotal += itemTotal;
                     });
                 }
@@ -777,9 +793,9 @@
 
             doc.autoTable({
                 startY: 70,
-                head: [['Date', 'Item Description', 'Qty', 'Amount']],
+                head: [['Date', 'Item Description', 'Qty', 'VAT', 'Amount']],
                 body: tableData,
-                foot: [['', '', 'TOTAL (This Period)', `GHS ${periodTotal.toFixed(2)}`]],
+                foot: [['', '', '', 'TOTAL (This Period)', `GHS ${periodTotal.toFixed(2)}`]],
                 theme: 'striped'
             });
 
