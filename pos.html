@@ -2010,8 +2010,17 @@ function checkout() {
     // Check if this is a return transaction
     const isReturn = cart.some(item => item.returnMode);
     
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const discountVal = subtotal * discountRate;
+    // Subtotal: account for per-item promos (fixed or %) PLUS cart-wide discount
+    const subtotal = cart.reduce((sum, item) => {
+        const base = (parseFloat(item.price) || 0) * (parseInt(item.qty) || 1);
+        let itemDiscount = 0;
+        if (item.promoCode && item.promoType) {
+            if (item.promoType === 'percentage') itemDiscount = base * (parseFloat(item.promoValue) || 0) / 100;
+            else if (item.promoType === 'fixed') itemDiscount = parseFloat(item.promoValue) || 0;
+        }
+        return sum + base - itemDiscount;
+    }, 0);
+    const discountVal = subtotal * discountRate; // cart-wide % promo
     const totalAfterDiscount = subtotal - discountVal;
     
     console.log(`Debug: subtotal=${subtotal}, totalAfterDiscount=${totalAfterDiscount}`);
@@ -2035,6 +2044,30 @@ function checkout() {
     const user = currentUser;
     const token = sessionStorage.getItem('authToken');
     
+    // Build items with effective (discounted) price so receipts and history match
+    const adjustedItems = cart.map(item => {
+        const basePrice = parseFloat(item.price) || 0;
+        const qty = parseInt(item.qty) || 1;
+        // Item-level promo (fixed or percentage)
+        let itemDiscount = 0;
+        if (item.promoCode && item.promoType) {
+            if (item.promoType === 'percentage') {
+                itemDiscount = (basePrice * qty) * (parseFloat(item.promoValue) || 0) / 100;
+            } else if (item.promoType === 'fixed') {
+                itemDiscount = parseFloat(item.promoValue) || 0;
+            }
+        }
+        const itemTotalBeforeCartDiscount = (basePrice * qty) - itemDiscount;
+        // Apply cart-wide discount proportionally
+        const itemTotalAfterDiscount = itemTotalBeforeCartDiscount * (1 - discountRate);
+        const effectivePrice = qty > 0 ? itemTotalAfterDiscount / qty : basePrice;
+        return {
+            ...item,
+            price: parseFloat(effectivePrice.toFixed(4)),
+            total: parseFloat(itemTotalAfterDiscount.toFixed(4))
+        };
+    });
+
     // Prepare transaction data
     const transactionData = {
         userId: user ? user.id : null,
@@ -2046,7 +2079,7 @@ function checkout() {
         tax: totalTax,
         taxBreakdown: taxBreakdown,
         paymentMethod: isReturn ? (cart[0].refundMethod || 'cash') : 'pending',
-        items: cart,
+        items: adjustedItems,
         status: (isReturn && (cart[0].refundMethod || 'cash') !== 'credit') ? 'completed' : 'pending',
         promoCode: currentPromoCode,
         customerId: customerId || null
@@ -2139,8 +2172,17 @@ async function processQuickPayment(method) {
         return;
     }
 
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const discountVal = subtotal * discountRate;
+    // Subtotal: account for per-item promos (fixed or %) PLUS cart-wide discount
+    const subtotal = cart.reduce((sum, item) => {
+        const base = (parseFloat(item.price) || 0) * (parseInt(item.qty) || 1);
+        let itemDiscount = 0;
+        if (item.promoCode && item.promoType) {
+            if (item.promoType === 'percentage') itemDiscount = base * (parseFloat(item.promoValue) || 0) / 100;
+            else if (item.promoType === 'fixed') itemDiscount = parseFloat(item.promoValue) || 0;
+        }
+        return sum + base - itemDiscount;
+    }, 0);
+    const discountVal = subtotal * discountRate; // cart-wide % promo
     const totalAfterDiscount = subtotal - discountVal;
     
     console.log(`Quick Payment Debug: subtotal=${subtotal}, totalAfterDiscount=${totalAfterDiscount}`);
@@ -2159,6 +2201,28 @@ async function processQuickPayment(method) {
     console.log(`Quick Payment Debug: totalTax=${totalTax}, grandTotal=${grandTotal}`);
     const token = sessionStorage.getItem('authToken');
 
+    // Build items with effective (discounted) price
+    const adjustedItemsQ = cart.map(item => {
+        const basePrice = parseFloat(item.price) || 0;
+        const qty = parseInt(item.qty) || 1;
+        let itemDiscount = 0;
+        if (item.promoCode && item.promoType) {
+            if (item.promoType === 'percentage') {
+                itemDiscount = (basePrice * qty) * (parseFloat(item.promoValue) || 0) / 100;
+            } else if (item.promoType === 'fixed') {
+                itemDiscount = parseFloat(item.promoValue) || 0;
+            }
+        }
+        const itemTotalBeforeCartDiscount = (basePrice * qty) - itemDiscount;
+        const itemTotalAfterDiscount = itemTotalBeforeCartDiscount * (1 - discountRate);
+        const effectivePrice = qty > 0 ? itemTotalAfterDiscount / qty : basePrice;
+        return {
+            ...item,
+            price: parseFloat(effectivePrice.toFixed(4)),
+            total: parseFloat(itemTotalAfterDiscount.toFixed(4))
+        };
+    });
+
     try {
         const res = await fetch('/api/transactions', {
             method: 'POST',
@@ -2175,7 +2239,7 @@ async function processQuickPayment(method) {
                 tax: totalTax,
                 taxBreakdown: taxBreakdown,
                 paymentMethod: method,
-                items: cart,
+                items: adjustedItemsQ,
                 status: 'completed',
                 promoCode: currentPromoCode,
                 isReturn: isReturn,

@@ -6983,7 +6983,7 @@ app.post('/api/company/quick-sale', authenticateToken, async (req, res) => {
                             SELECT stock_levels FROM products WHERE ${pid ? 'id = $1' : 'barcode = $1'}
                         `, [pid || barcode]);
 
-                        let actualKey = targetBranch;
+                        let actualKey = null; // null = key not found in this product's stock_levels
                         if (prodRes.rows.length > 0) {
                             const levels = prodRes.rows[0].stock_levels || {};
                             const keys = Object.keys(levels);
@@ -6995,17 +6995,29 @@ app.post('/api/company/quick-sale', authenticateToken, async (req, res) => {
                         const productIdentifier = pid ? 'id = $3' : 'barcode = $3';
                         const identifierValue = pid || barcode;
 
-                        await client.query(`
-                            UPDATE products 
-                            SET 
-                                stock_levels = jsonb_set(
-                                    COALESCE(stock_levels, '{}'::jsonb), 
-                                    ARRAY[$1], 
-                                    (COALESCE((stock_levels->>$1)::int, 0) - $2)::text::jsonb
-                                ),
-                                stock = COALESCE(stock, 0) - $2
-                            WHERE ${productIdentifier}
-                        `, [actualKey, item.quantity, identifierValue]);
+                        if (actualKey) {
+                            // Key exists in stock_levels — decrement it safely
+                            await client.query(`
+                                UPDATE products 
+                                SET 
+                                    stock_levels = jsonb_set(
+                                        COALESCE(stock_levels, '{}'::jsonb), 
+                                        ARRAY[$1], 
+                                        (COALESCE((stock_levels->>$1)::int, 0) - $2)::text::jsonb
+                                    ),
+                                    stock = COALESCE(stock, 0) - $2
+                                WHERE ${productIdentifier}
+                            `, [actualKey, item.quantity, identifierValue]);
+                        } else {
+                            // Key does NOT exist for this branch — only decrement the total stock column.
+                            // Do NOT create a new negative key in stock_levels (that was the bug).
+                            console.warn(`[COMPANY SALE] Branch key "${targetBranch}" not found in stock_levels for product ${pid || barcode}. Skipping jsonb_set to prevent phantom negatives. Decrementing total stock only.`);
+                            await client.query(`
+                                UPDATE products 
+                                SET stock = COALESCE(stock, 0) - $1
+                                WHERE ${productIdentifier}
+                            `, [item.quantity, identifierValue]);
+                        }
 
                         // 2. Log inventory movement for audit
                         // Note: Using $6 for the product identification in the WHERE clause to avoid indexing conflicts
