@@ -5325,15 +5325,16 @@ app.post('/api/pos/sale/:barcode', authenticateToken, async (req, res) => {
 
 app.get('/api/settings', authenticateToken, async (req, res) => {
     try {
-        // Fetch fresh store_id from DB to ensure accuracy even if token is stale
-        const userRes = await pool.query('SELECT store_id FROM users WHERE id = $1', [req.user.id]);
-        const dbStoreId = userRes.rows[0]?.store_id;
+        // Company portal users always manage the master settings (branch_id=1)
+        let branchId = 1;
+        if (req.user.type !== 'company') {
+            const userRes = await pool.query('SELECT store_id FROM users WHERE id = $1', [req.user.id]);
+            const dbStoreId = userRes.rows[0]?.store_id;
+            branchId = dbStoreId || req.user.store_id || 1;
+        }
 
-        const branchId = dbStoreId || req.user.store_id || 1;
         let result = await pool.query('SELECT * FROM system_settings WHERE branch_id = $1', [branchId]);
-
         if (result.rows.length === 0) {
-            // Fallback to default (branch 1) if specific branch settings don't exist
             result = await pool.query('SELECT * FROM system_settings WHERE branch_id = 1');
         }
 
@@ -5343,6 +5344,7 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 app.post('/api/settings', authenticateToken, async (req, res) => {
     // Allow admin, ceo, or company users
@@ -5354,7 +5356,8 @@ app.post('/api/settings', authenticateToken, async (req, res) => {
         storeName, currencySymbol, vatRate, receiptFooter, taxId, phone, monthlyTarget,
         bankName, bankAccountName, bankAccountNumber, bankBranch, momoNumber, momoName
     } = req.body;
-    const branchId = req.user.store_id || 1;
+    // Company portal users always manage the master settings (branch_id=1)
+    const branchId = req.user.type === 'company' ? 1 : (req.user.store_id || 1);
 
     try {
         await pool.query(`

@@ -204,9 +204,11 @@
         }
 
         async function loadData() {
+            const token = sessionStorage.getItem('authToken');
             let transactions = [];
+
+            // 1. Fetch all transactions
             try {
-                const token = sessionStorage.getItem('authToken');
                 const res = await fetch('/transactions/all', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -214,18 +216,65 @@
             } catch (e) {
                 console.error("Error loading transactions:", e);
             }
-            
             if (transactions.length === 0) transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            
-            // Calculate Totals
+
+            // 2. Calculate Revenue
             const totalRevenue = transactions.reduce((sum, t) => sum + parseFloat(t.total_amount || t.total || 0), 0);
-            // Simulating Cost as 70% of revenue for demo purposes
-            const totalCost = totalRevenue * 0.70; 
+
+            // 3. Calculate REAL COGS directly from cost_price stored on each transaction item
+            let totalCost = 0;
+            let missingCostProducts = new Set();
+
+            transactions.forEach(t => {
+                let items = t.items;
+                if (typeof items === 'string') {
+                    try { items = JSON.parse(items); } catch(e) { items = []; }
+                }
+                if (!Array.isArray(items)) return;
+
+                items.forEach(item => {
+                    const qty = parseFloat(item.qty) || 1;
+                    const costPrice = parseFloat(item.cost_price) || 0;
+                    if (costPrice === 0) missingCostProducts.add(item.name || item.barcode || 'Unknown');
+                    totalCost += costPrice * qty;
+                });
+            });
+
             const netProfit = totalRevenue - totalCost;
+            const actualCostRatio = totalRevenue > 0 ? ((totalCost / totalRevenue) * 100).toFixed(1) : '0.0';
 
             document.getElementById('totalRev').textContent = `₵${totalRevenue.toFixed(2)}`;
             document.getElementById('totalCost').textContent = `₵${totalCost.toFixed(2)}`;
             document.getElementById('netProfit').textContent = `₵${netProfit.toFixed(2)}`;
+
+            // Update the COGS subtitle
+            const cogsSmall = document.querySelector('#totalCost')?.closest('.kpi-card')?.querySelector('small');
+            if (cogsSmall) {
+                cogsSmall.textContent = `Real COGS from actual cost prices`;
+                cogsSmall.style.color = '#2e7d32';
+            }
+            const revenueSmall = document.querySelector('#totalRev')?.closest('.kpi-card')?.querySelector('small');
+            if (revenueSmall) revenueSmall.textContent = `Gross Sales · Cost Ratio: ${actualCostRatio}%`;
+
+            // Show alert for products missing cost price so user knows what to fix
+            let alertBox = document.getElementById('missingCostAlert');
+            if (!alertBox) {
+                alertBox = document.createElement('div');
+                alertBox.id = 'missingCostAlert';
+                alertBox.style.cssText = `background:#fff3e0;border:1px solid #ffb300;border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#5d4037;`;
+                const kpiGrid = document.querySelector('.kpi-grid');
+                if (kpiGrid) kpiGrid.after(alertBox);
+            }
+            if (missingCostProducts.size > 0) {
+                alertBox.style.display = 'block';
+                alertBox.innerHTML = `
+                    <strong>⚠️ ${missingCostProducts.size} product(s) have no cost price set</strong> — their COGS is counted as ₵0, which understates your real costs and overstates profit.<br>
+                    <span style="font-size:12px;">Go to <a href="inventory" style="color:#e65100;font-weight:600;">Inventory</a> and add a Cost Price for: 
+                    <strong>${[...missingCostProducts].join(', ')}</strong></span>
+                `;
+            } else {
+                alertBox.style.display = 'none';
+            }
 
             // --- Performance Insights Calculation ---
             const productSales = {};
@@ -276,13 +325,23 @@
             transactions.forEach(t => {
                 const date = new Date(t.created_at || t.date).toLocaleDateString();
                 if (!dailyStats[date]) dailyStats[date] = { rev: 0, cost: 0, profit: 0 };
-                
+
                 const rev = parseFloat(t.total_amount || t.total || 0);
-                const cost = rev * 0.7;
-                
+
+                // Use cost_price stored directly on each item
+                let realCost = 0;
+                let items = t.items;
+                if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
+                if (Array.isArray(items)) {
+                    items.forEach(item => {
+                        const qty = parseFloat(item.qty) || 1;
+                        realCost += (parseFloat(item.cost_price) || 0) * qty;
+                    });
+                }
+
                 dailyStats[date].rev += rev;
-                dailyStats[date].cost += cost;
-                dailyStats[date].profit += (rev - cost);
+                dailyStats[date].cost += realCost;
+                dailyStats[date].profit += (rev - realCost);
             });
 
             const labels = Object.keys(dailyStats).slice(-7); // Last 7 days

@@ -2577,6 +2577,19 @@
                     fetch('/api/branches', { headers: { 'Authorization': `Bearer ${token}` }})
                 ]);
 
+                const branches = branchesRes.ok ? await branchesRes.json() : [];
+
+                // Build lookup maps for both directions:
+                //   location → branch name   e.g. "Dzorwulu" → "NOVELTY"
+                //   branch name → location   e.g. "NOVELTY" → "Dzorwulu"
+                const locationToName = {};  // location → name
+                const nameToLocation = {};  // name → location
+                branches.forEach(b => {
+                    if (b.location) locationToName[b.location] = b.name;
+                    if (b.name && b.location) nameToLocation[b.name] = b.location;
+                    locationToName[b.name] = b.name; // name maps to itself
+                });
+
                 if (productsRes.ok) {
                     const products = await productsRes.json();
                     
@@ -2586,7 +2599,7 @@
                     let totalCheckPoints = 0;
 
                     const branchFilter = document.getElementById('globalBranchFilter');
-                    const branchNames = Array.from(branchFilter.options)
+                    const branchLocations = Array.from(branchFilter.options)
                         .map(opt => opt.value)
                         .filter(v => v !== 'All Branches');
 
@@ -2597,32 +2610,36 @@
                             try { levelsObj = JSON.parse(levelsObj); } catch(e) { levelsObj = {}; }
                         }
 
-                        const targetBranches = selectedBranch === 'All Branches' ? branchNames : [selectedBranch];
-                        totalCheckPoints += targetBranches.length;
+                        const targetLocations = selectedBranch === 'All Branches' ? branchLocations : [selectedBranch];
+                        totalCheckPoints += targetLocations.length;
 
-                        targetBranches.forEach(bName => {
+                        targetLocations.forEach(bLocation => {
+                            const branchName = locationToName[bLocation] || bLocation;  // e.g. "NOVELTY"
+                            const branchLocation = nameToLocation[branchName] || bLocation; // e.g. "Dzorwulu"
                             const branchesKeys = Object.keys(levelsObj);
-                            const branchKey = branchesKeys.find(k => {
-                                const kl = k.toLowerCase().trim();
-                                const sl = bName.toLowerCase().trim();
-                                return kl === sl || sl.includes(kl) || kl.includes(sl);
+
+                            // Collect all possible candidate keys for this branch and pick the one with highest stock
+                            // This handles phantom zero entries (e.g. "NOVELTY":0) vs real entries (e.g. "Dzorwulu":120)
+                            const candidates = [branchName, branchLocation].filter(Boolean);
+                            let stockVal = 0;
+                            candidates.forEach(candidate => {
+                                // Exact match first
+                                let key = branchesKeys.find(k => k === candidate);
+                                // Fuzzy match fallback
+                                if (!key) key = branchesKeys.find(k => {
+                                    const kl = k.toLowerCase().trim();
+                                    const sl = candidate.toLowerCase().trim();
+                                    return kl === sl || sl.includes(kl) || kl.includes(sl);
+                                });
+                                if (key !== undefined) {
+                                    const val = Number(levelsObj[key] || 0);
+                                    if (val > stockVal) stockVal = val; // take highest value across all matching keys
+                                }
                             });
 
-                            let stockVal = 0;
-                            if (branchKey !== undefined) {
-                                stockVal = Number(levelsObj[branchKey] || 0);
-                            } else if (bName.toLowerCase().includes('novelty') || bName.toLowerCase().includes('dzorwulu')) {
-                                // Robust fallback for NOVELTY/Dzorwulu to Main Warehouse
-                                const mainKey = branchesKeys.find(k => {
-                                    const kl = k.toLowerCase();
-                                    return kl === 'main warehouse' || kl.includes('warehouse');
-                                });
-                                if (mainKey) {
-                                    stockVal = Number(levelsObj[mainKey] || 0);
-                                } else {
-                                    // Final fallback to p.stock if JSON key isn't found
-                                    stockVal = Number(p.stock || 0);
-                                }
+                            // If no candidate found at all, use total stock
+                            if (stockVal === 0 && candidates.every(c => !branchesKeys.some(k => k === c || k.toLowerCase().includes(c.toLowerCase())))) {
+                                stockVal = Number(p.stock || 0);
                             }
                             
                             if (stockVal <= reorderVal) {
@@ -2631,7 +2648,7 @@
                                 
                                 bottlenecks.push({ 
                                     name: p.name, 
-                                    branch: bName, 
+                                    branch: branchName,
                                     stock: stockVal, 
                                     reorder: reorderVal,
                                     status: status
