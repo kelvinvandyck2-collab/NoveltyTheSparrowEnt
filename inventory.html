@@ -391,7 +391,7 @@
                             <th>Product Name</th>
                             <th>Category</th>
                             <th>Price</th>
-                            <th id="stockColumnHeader">Stock</th>
+                            <th id="stockColumnHeader">Quantity</th>
                             <th>Batch Number</th>
                             <th>Expiry Date</th>
                             <th>Actions</th>
@@ -1869,7 +1869,7 @@
             
             // Update header
             const stockHeader = document.getElementById('stockColumnHeader');
-            if(stockHeader) stockHeader.textContent = `Stock`;
+            if(stockHeader) stockHeader.textContent = `Quantity`;
 
             // Initialize filteredStock
             filterInventory();
