@@ -128,16 +128,49 @@
         }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
 
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 20px; padding-top: 70px; }
             .mobile-menu-btn { display: block; }
             .overlay.active { display: block; }
             .search-container { flex-direction: column; align-items: stretch; }
             .menu-grid { grid-template-columns: 1fr; }
-            .card { overflow-x: auto; }
             footer { margin-left: 0; }
+
+            /* Clients card-table layout */
+            .clients-table thead { display: none; }
+            .clients-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                margin: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .clients-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .clients-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+                text-align: left !important;
+            }
+            .clients-table td:last-child { border-bottom: none; }
+            .clients-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+            }
         }
     </style>
 </head>
@@ -214,7 +247,7 @@
         </div>
 
         <div class="card" style="padding: 0; overflow: hidden;">
-            <table>
+                <table class="clients-table">
                 <thead>
                     <tr>
                         <th>Client Details</th>
@@ -512,16 +545,18 @@
 
                 return `
                     <tr>
-                        <td>
-                            <div style="font-weight: 600; color: #1e293b; font-size: 15px;">${c.name}</div>
-                            <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">${c.email || 'No email linked'}</div>
+                        <td data-label="Client">
+                            <div style="text-align:right;">
+                                <div style="font-weight: 600; color: #1e293b; font-size: 15px;">${c.name}</div>
+                                <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">${c.email || 'No email linked'}</div>
+                            </div>
                         </td>
-                        <td style="font-family: 'Courier New', monospace; letter-spacing: -0.5px;">${c.phone || '-'}</td>
-                        <td><span style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600; color: #475569;">₵${limit.toFixed(2)}</span></td>
-                        <td><span class="${balanceClass}">₵${balance.toFixed(2)}</span></td>
-                        <td><span style="color: #059669; font-weight: 700;">₵${available.toFixed(2)}</span></td>
-                        <td><span class="status-badge ${statusClass}">${status}</span></td>
-                        <td style="text-align: right;">
+                        <td data-label="Contact" style="font-family: 'Courier New', monospace; letter-spacing: -0.5px;">${c.phone || '-'}</td>
+                        <td data-label="Credit Limit"><span style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600; color: #475569;">₵${limit.toFixed(2)}</span></td>
+                        <td data-label="Current Debt"><span class="${balanceClass}">₵${balance.toFixed(2)}</span></td>
+                        <td data-label="Available"><span style="color: #059669; font-weight: 700;">₵${available.toFixed(2)}</span></td>
+                        <td data-label="Status"><span class="status-badge ${statusClass}">${status}</span></td>
+                        <td data-label="Actions">
                             <button onclick="openViewModal(${c.id})" class="btn-icon" style="background: #f1f5f9; color: #475569; width: auto; padding: 0 15px; font-weight: 600; font-size: 13px; height: 36px;">
                                 <i class="fas fa-eye" style="margin-right: 8px;"></i> View
                             </button>

@@ -62,8 +62,8 @@
         }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
 
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 20px; padding-top: 70px; }
             .mobile-menu-btn { display: block; }
@@ -71,6 +71,38 @@
             .add-form { flex-direction: column; align-items: stretch; }
             .btn-add { width: 100%; }
             footer { margin-left: 0; }
+
+            /* Promo card-table layout */
+            .promo-table thead { display: none; }
+            .promo-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .promo-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .promo-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .promo-table td:last-child { border-bottom: none; }
+            .promo-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 110px;
+                margin-right: 10px;
+            }
         }
 
         /* Notification Toast */
@@ -164,7 +196,7 @@
             <div style="margin-bottom: 20px;">
                 <input type="text" id="promoSearch" placeholder="Search promotions..." onkeyup="filterPromotions()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none;">
             </div>
-            <table>
+            <table class="promo-table">
                 <thead>
                     <tr>
                         <th>Code</th>
@@ -285,11 +317,11 @@
             } else {
                 tbody.innerHTML = pageData.map(p => `
                         <tr>
-                            <td style="font-weight:bold; color:var(--primary-color);">${p.code}</td>
-                            <td>${p.discount_percentage}%</td>
-                            <td>₵${parseFloat(p.total_discounted || 0).toFixed(2)}</td>
-                            <td>${new Date(p.created_at).toLocaleDateString()}</td>
-                            <td>
+                            <td data-label="Code" style="font-weight:bold; color:var(--primary-color);">${p.code}</td>
+                            <td data-label="Discount">${p.discount_percentage}%</td>
+                            <td data-label="Total Discounted">₵${parseFloat(p.total_discounted || 0).toFixed(2)}</td>
+                            <td data-label="Created At">${new Date(p.created_at).toLocaleDateString()}</td>
+                            <td data-label="Action">
                                 <button class="btn-delete" onclick="deletePromotion('${p.code}')" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>

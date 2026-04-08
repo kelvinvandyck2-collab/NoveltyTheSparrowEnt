@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Footprint | User Profile</title>
+    <title>THE SPARROW ENT | User Profile</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -12,8 +13,20 @@
             --gray-light: #f5f7fa;
             --text-color: #333;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        body { background: var(--gray-light); min-height: 100vh; display: flex; flex-direction: column; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--gray-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
         /* Header */
         header {
@@ -24,11 +37,35 @@
             align-items: center;
             justify-content: space-between;
             color: white;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
-        .brand { font-size: 24px; font-weight: 700; letter-spacing: 1px; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
-        .back-btn { color: white; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 14px; opacity: 0.9; transition: 0.2s; }
-        .back-btn:hover { opacity: 1; transform: translateX(-3px); }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            opacity: 0.9;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            opacity: 1;
+            transform: translateX(-3px);
+        }
 
         /* Main Container */
         .container {
@@ -41,43 +78,143 @@
         }
 
         /* Cards */
-        .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        
-        /* Profile Info Side */
-        .profile-header { text-align: center; margin-bottom: 20px; }
-        .avatar-large {
-            width: 100px; height: 100px; background: #e3f2fd; color: var(--primary-color);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 40px; margin: 0 auto 15px;
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
-        .user-name { font-size: 20px; font-weight: 600; color: var(--text-color); }
-        .user-role { color: #666; font-size: 14px; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .info-list { margin-top: 30px; }
-        .info-item { padding: 15px 0; border-bottom: 1px solid #eee; }
-        .info-item:last-child { border-bottom: none; }
-        .info-label { font-size: 12px; color: #888; display: block; margin-bottom: 4px; }
-        .info-value { font-size: 15px; color: #333; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+
+        /* Profile Info Side */
+        .profile-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar-large {
+            width: 100px;
+            height: 100px;
+            background: #e3f2fd;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 15px;
+        }
+
+        .user-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .user-role {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-list {
+            margin-top: 30px;
+        }
+
+        .info-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #888;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: #333;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
         /* Security Side */
-        h3 { color: var(--primary-color); margin-bottom: 20px; font-weight: 600; }
-        
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 14px; color: #555; margin-bottom: 8px; }
-        .form-group input {
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s;
+        h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 600;
         }
-        .form-group input:focus { border-color: var(--primary-color); }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-color);
+        }
 
         .btn-save {
-            background: var(--primary-color); color: white; border: none; padding: 12px 24px;
-            border-radius: 8px; cursor: pointer; font-weight: 500; width: 100%; transition: 0.3s;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            width: 100%;
+            transition: 0.3s;
         }
-        .btn-save:hover { opacity: 0.9; }
 
-        .logout-section { margin-top: 30px; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
-        .btn-logout { color: var(--secondary-color); background: none; border: 1px solid var(--secondary-color); padding: 10px 20px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
-        .btn-logout:hover { background: var(--secondary-color); color: white; }
+        .btn-save:hover {
+            opacity: 0.9;
+        }
+
+        .logout-section {
+            margin-top: 30px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .btn-logout {
+            color: var(--secondary-color);
+            background: none;
+            border: 1px solid var(--secondary-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: var(--secondary-color);
+            color: white;
+        }
 
         /* Notification Toast */
         .notification {
@@ -89,7 +226,7 @@
             color: white;
             padding: 12px 24px;
             border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             z-index: 2000;
             opacity: 0;
             transition: all 0.3s ease;
@@ -97,9 +234,19 @@
             font-size: 14px;
             font-weight: 500;
         }
-        .notification.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
-        .notification.success { background-color: #2e7d32; }
-        .notification.error { background-color: #c62828; }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(10px);
+        }
+
+        .notification.success {
+            background-color: #2e7d32;
+        }
+
+        .notification.error {
+            background-color: #c62828;
+        }
 
         /* Footer */
         footer {
@@ -111,14 +258,49 @@
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         }
 
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                margin: 20px auto;
+                gap: 20px;
+            }
+
+            header {
+                padding: 0 15px;
+                height: 60px;
+            }
+
+            .brand {
+                font-size: 16px;
+                gap: 5px;
+            }
+
+            .brand img {
+                width: 120px !important;
+                height: 25px !important;
+            }
+
+            .back-btn {
+                font-size: 0;
+            }
+
+            .back-btn i {
+                font-size: 18px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div id="notification" class="notification"></div>
 
     <header>
-        <div class="brand"><img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;"> FOOTPRINT</div>
+        <div class="brand"><img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;"> THE SPARROW ENT</div>
         <a href="#" onclick="goBack()" class="back-btn"><i class="fas fa-arrow-left"></i> Back to App</a>
     </header>
 
@@ -177,7 +359,7 @@
         const userStr = sessionStorage.getItem('currentUser');
         if (!userStr) window.location.href = '/';
         const user = JSON.parse(userStr);
-        
+
         // Handle role-based redirection if needed
         if (user.role === 'admin') {
             // Admin can stay on profile page
@@ -214,16 +396,16 @@
                 }
             }
         }
-        async function logout() { 
-            try { 
+        async function logout() {
+            try {
                 const token = sessionStorage.getItem('authToken');
-                await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } }); 
-            } catch(e) {}
+                await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            } catch (e) { }
             sessionStorage.clear();
             localStorage.removeItem('currentUser'); // Cleanup
-            window.location.href = '/login'; 
+            window.location.href = '/login';
         }
-        
+
         function showNotification(message, type) {
             const notif = document.getElementById('notification');
             notif.textContent = message;
@@ -233,9 +415,9 @@
             }, 3000);
         }
 
-        async function updatePassword(e) { 
-            e.preventDefault(); 
-            
+        async function updatePassword(e) {
+            e.preventDefault();
+
             const currentPass = document.getElementById('currentPass').value;
             const newPass = document.getElementById('newPass').value;
             const confirmPass = document.getElementById('confirmPass').value;
@@ -253,7 +435,7 @@
                 const token = sessionStorage.getItem('authToken');
                 const res = await fetch('/api/update-password', {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
@@ -261,7 +443,7 @@
                 });
 
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     showNotification(data.message, "success");
                     e.target.reset();
@@ -277,4 +459,5 @@
         }
     </script>
 </body>
+
 </html>

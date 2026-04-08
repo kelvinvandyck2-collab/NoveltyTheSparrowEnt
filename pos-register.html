@@ -524,8 +524,8 @@
         }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
 
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 20px; padding-top: 70px; }
             .mobile-menu-btn { display: block; }
@@ -534,6 +534,40 @@
             .search-container { grid-template-columns: 1fr; }
             .menu-grid { grid-template-columns: 1fr; }
             footer { margin-left: 0; }
+
+            /* Users card-table layout */
+            .users-table thead { display: none; }
+            .users-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .users-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .users-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+                word-break: break-word;
+                white-space: normal;
+            }
+            .users-table td:last-child { border-bottom: none; }
+            .users-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+            }
         }
     </style>
 </head>
@@ -671,7 +705,7 @@
             </div>
             
             <div class="data-card">
-                <table id="usersTable">
+                <table id="usersTable" class="users-table">
                     <thead>
                         <tr>
                             <th>Username</th>
@@ -912,18 +946,18 @@
             paginatedUsers.forEach(user => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${user.username || '-'}</td>
-                    <td>${user.fullName || '-'}</td>
-                    <td>${user.employeeId || '-'}</td>
-                    <td>${user.phone || '-'}</td>
-                    <td>${user.role || 'Staff'}</td>
-                    <td>${user.store || '-'}</td>
-                    <td>
+                    <td data-label="Username">${user.username || '-'}</td>
+                    <td data-label="Full Name">${user.fullName || '-'}</td>
+                    <td data-label="Employee ID">${user.employeeId || '-'}</td>
+                    <td data-label="Phone">${user.phone || '-'}</td>
+                    <td data-label="Role">${user.role || 'Staff'}</td>
+                    <td data-label="Store">${user.store || '-'}</td>
+                    <td data-label="Status">
                         <span class="status-badge ${user.status === 'Active' ? 'status-active' : 'status-inactive'}">
                             ${user.status || 'Active'}
                         </span>
                     </td>
-                    <td>
+                    <td data-label="Actions">
                         <button class="action-btn btn-edit" onclick="editUser(${user.id})" title="Edit">
                             <i class="fas fa-edit"></i>
                         </button>

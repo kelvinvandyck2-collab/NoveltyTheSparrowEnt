@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Footprint | Login</title>
 
 <style>
@@ -204,6 +205,19 @@ button:hover:not(:disabled) {
     height: 120px;
     object-fit: cover;
     margin-bottom: 10px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    body {
+        grid-template-columns: 1fr;
+    }
+    .brand-section {
+        display: none;
+    }
+    .login-panel {
+        padding: 20px;
+    }
 }
 </style>
 </head>

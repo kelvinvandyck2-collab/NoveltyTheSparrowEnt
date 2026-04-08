@@ -2690,6 +2690,49 @@ app.post('/api/suppliers', authenticateToken, async (req, res) => {
     } catch (err) { res.status(500).json({ message: 'Error adding supplier' }); }
 });
 
+app.put('/api/suppliers/:id', authenticateToken, async (req, res) => {
+    const { name, contact, phone, email, address } = req.body;
+    try {
+        let query = 'UPDATE suppliers SET name = $1, contact_person = $2, phone = $3, email = $4, address = $5 WHERE id = $6';
+        let params = [name, contact, phone, email, address, req.params.id];
+
+        if (req.user.role !== 'admin' && req.user.role !== 'ceo' && req.user.store_id) {
+            query += ' AND (branch_id = $7 OR branch_id IS NULL)';
+            params.push(req.user.store_id);
+        }
+
+        const result = await pool.query(query, params);
+        if (result.rowCount === 0) return res.status(404).json({ message: 'Supplier not found or access denied' });
+
+        await logActivity(req, 'UPDATE_SUPPLIER', { id: req.params.id, name });
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ message: 'Error updating supplier' }); }
+});
+
+app.delete('/api/suppliers/:id', authenticateToken, async (req, res) => {
+    try {
+        let query = 'DELETE FROM suppliers WHERE id = $1';
+        let params = [req.params.id];
+
+        if (req.user.role !== 'admin' && req.user.role !== 'ceo' && req.user.store_id) {
+            query += ' AND (branch_id = $2 OR branch_id IS NULL)';
+            params.push(req.user.store_id);
+        }
+
+        const result = await pool.query(query, params);
+        if (result.rowCount === 0) return res.status(404).json({ message: 'Supplier not found or access denied' });
+
+        await logActivity(req, 'DELETE_SUPPLIER', { id: req.params.id });
+        res.json({ success: true });
+    } catch (err) { 
+        console.error(err); 
+        if (err.code === '23503') {
+            return res.status(400).json({ message: 'Cannot delete supplier because it is linked to existing purchase orders.' });
+        }
+        res.status(500).json({ message: 'Error deleting supplier' }); 
+    }
+});
+
 // --- PRODUCT UPDATES (Consolidated & Fixed) ---
 
 app.put('/api/products/:identifier', authenticateToken, async (req, res) => {

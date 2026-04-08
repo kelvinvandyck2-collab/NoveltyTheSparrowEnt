@@ -94,6 +94,74 @@
             .menu-grid { grid-template-columns: 1fr; }
             .card { overflow-x: auto; }
             footer { margin-left: 0; }
+
+            /* Shift card-table */
+            .shift-table thead { display: none; }
+            .shift-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .shift-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .shift-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+                text-align: right;
+            }
+            .shift-table td:last-child { border-bottom: none; }
+            .shift-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+                text-align: left;
+            }
+
+            /* Transaction card-table */
+            .transaction-table thead { display: none; }
+            .transaction-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .transaction-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .transaction-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+                text-align: right;
+            }
+            .transaction-table td:last-child { border-bottom: none; }
+            .transaction-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+                text-align: left;
+            }
         }
     </style>
 </head>
@@ -157,7 +225,7 @@
                     <h3>Shift Reports</h3>
                     <input type="text" id="shiftSearch" placeholder="Search cashier..." style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; outline: none;" onkeyup="filterShifts()">
                 </div>
-                <table style="margin-top: 20px;" id="shiftReportTable">
+                <table class="shift-table" style="margin-top: 20px;" id="shiftReportTable">
                     <thead>
                         <tr>
                             <th>Staff</th>
@@ -197,7 +265,7 @@
                         <button onclick="clearDateFilter()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">Clear</button>
                     </div>
                 </div>
-                <table>
+                <table class="transaction-table">
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -333,11 +401,11 @@
                 
                 tbody.innerHTML += `
                     <tr>
-                        <td>${date}</td>
-                        <td>#${(t.receipt_number || t.id).slice(-8)}</td>
-                        <td>${itemCount} items</td>
-                        <td>₵${total.toFixed(2)}</td>
-                        <td>${t.cashier_name || t.cashier || 'Teller'}</td>
+                        <td data-label="Date">${date}</td>
+                        <td data-label="Transaction ID">#${(t.receipt_number || t.id).slice(-8)}</td>
+                        <td data-label="Items">${itemCount} items</td>
+                        <td data-label="Total">₵${total.toFixed(2)}</td>
+                        <td data-label="Cashier">${t.cashier_name || t.cashier || 'Teller'}</td>
                     </tr>
                 `;
             });
@@ -405,14 +473,14 @@
                     
                     tbody.innerHTML += `
                         <tr>
-                            <td>${s.user_name || 'Unknown'}</td>
-                            <td>${start}</td>
-                            <td>${end}</td>
-                            <td>₵${parseFloat(s.start_cash).toFixed(2)}</td>
-                            <td>${s.end_cash ? '₵' + parseFloat(s.end_cash).toFixed(2) : '-'}</td>
-                            <td>₵${parseFloat(s.total_sales).toFixed(2)}</td>
-                            <td style="font-weight:bold; text-transform:uppercase; ${statusStyle}">${s.status}</td>
-                            <td>
+                            <td data-label="Staff">${s.user_name || 'Unknown'}</td>
+                            <td data-label="Start Time">${start}</td>
+                            <td data-label="End Time">${end}</td>
+                            <td data-label="Start Cash">₵${parseFloat(s.start_cash).toFixed(2)}</td>
+                            <td data-label="End Cash">${s.end_cash ? '₵' + parseFloat(s.end_cash).toFixed(2) : '-'}</td>
+                            <td data-label="Total Sales">₵${parseFloat(s.total_sales).toFixed(2)}</td>
+                            <td data-label="Status" style="font-weight:bold; text-transform:uppercase; ${statusStyle}">${s.status}</td>
+                            <td data-label="Action">
                                 <button onclick="generateShiftReport(${originalIndex})" title="Download Detailed Report" style="padding: 6px 12px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
                                     <i class="fas fa-file-download"></i>
                                 </button>

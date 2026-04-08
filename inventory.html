@@ -224,16 +224,424 @@
         }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
 
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 20px; padding-top: 70px; }
             .mobile-menu-btn { display: block; }
             .overlay.active { display: block; }
             .inventory-menu-grid { grid-template-columns: 1fr; }
-            .inventory-card { overflow-x: auto; }
             .modal-content { width: 95%; }
             footer { margin-left: 0; }
+
+            /* Category card-table layout */
+            .category-table thead { display: none; }
+            .category-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .category-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .category-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .category-table td:last-child { border-bottom: none; }
+            .category-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+            }
+
+            /* Supplier card-table layout */
+            .supplier-table thead { display: none; }
+            .supplier-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .supplier-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .supplier-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+                word-break: break-word;
+                white-space: normal;
+            }
+            .supplier-table td:last-child { border-bottom: none; }
+            .supplier-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+            }
+
+            /* Stock Items card-table layout */
+            .stock-table thead { display: none; }
+            .stock-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .stock-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .stock-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .stock-table td:last-child { border-bottom: none; }
+            .stock-table td[data-label=""] { display: none; }
+            .stock-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 90px;
+                margin-right: 10px;
+            }
+
+            /* Stock filter bar */
+            .stock-filter-bar {
+                grid-template-columns: 1fr !important;
+            }
+            .stock-filter-bar select,
+            .stock-filter-bar input[type="text"] {
+                width: 100%;
+            }
+
+            /* Purchase Orders card-table */
+            .po-table thead { display: none; }
+            .po-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .po-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .po-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .po-table td:last-child { border-bottom: none; }
+            .po-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 80px;
+                margin-right: 10px;
+            }
+
+            /* Goods Receiving card-table */
+            .receiving-table thead { display: none; }
+            .receiving-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .receiving-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .receiving-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .receiving-table td:last-child { border-bottom: none; }
+            .receiving-table td[data-label=""] { display: none; }
+            .receiving-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 80px;
+                margin-right: 10px;
+            }
+
+            /* Batch & Expiration card-table */
+            .shelf-table thead { display: none; }
+            .shelf-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .shelf-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .shelf-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .shelf-table td:last-child { border-bottom: none; }
+            .shelf-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+            }
+
+            /* Distribution card-table */
+            .transfer-table thead { display: none; }
+            .transfer-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .transfer-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .transfer-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .transfer-table td:last-child { border-bottom: none; }
+            .transfer-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 80px;
+                margin-right: 10px;
+            }
+
+            /* Stock Taking card-table */
+            .stocktake-table thead { display: none; }
+            .stocktake-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .stocktake-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .stocktake-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .stocktake-table td:last-child { border-bottom: none; }
+            .stocktake-table td[data-label="Physical Count"] {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+            .stocktake-table td[data-label="Physical Count"] input {
+                width: 100% !important;
+            }
+            .stocktake-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+            }
+            .stocktake-table td[data-label="Physical Count"]::before {
+                min-width: unset;
+                margin-right: 0;
+            }
+
+            /* Analytics header */
+            .analytics-header {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 15px;
+            }
+            .analytics-header > div {
+                width: 100%;
+            }
+            .analytics-header input {
+                width: 100% !important;
+            }
+
+            /* Analytics card-table */
+            .analytics-table thead { display: none; }
+            .analytics-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white !important;
+            }
+            .analytics-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .analytics-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px !important;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+                text-align: right;
+            }
+            .analytics-table td:last-child { border-bottom: none; }
+            .analytics-table td[data-label=""] { display: none; }
+            .analytics-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+                text-align: left;
+            }
+
+            /* Returns filter bar */
+            .returns-filter-bar {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+            .returns-filter-bar > div {
+                width: 100%;
+            }
+            .returns-filter-bar input, .returns-filter-bar button {
+                width: 100% !important;
+            }
+
+            /* Returns card-table */
+            .returns-table thead { display: none; }
+            .returns-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .returns-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .returns-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px !important;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+                text-align: right;
+            }
+            .returns-table td:last-child { border-bottom: none; }
+            .returns-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+                text-align: left;
+            }
+
+            /* Negative Stock card-table */
+            .negative-table thead { display: none; }
+            .negative-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .negative-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .negative-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+                text-align: right;
+            }
+            .negative-table td:last-child { border-bottom: none; }
+            .negative-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 100px;
+                margin-right: 10px;
+                text-align: left;
+            }
         }
 
         /* Search Suggestions Styles */
@@ -374,7 +782,7 @@
                 <button class="btn-add" onclick="prepareAddProduct()"><i class="fas fa-plus"></i> Add Product</button>
             </div>
 
-            <div style="display: grid; grid-template-columns: 3fr 1fr auto; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); align-items: center;">
+            <div class="stock-filter-bar" style="display: grid; grid-template-columns: 3fr 1fr auto; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); align-items: center;">
                 <input type="text" id="searchInput" placeholder="Search by name or barcode..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none;" onkeyup="filterInventory()">
                 <select id="categoryFilter" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none;" onchange="filterInventory()"></select>
                 <label style="display: flex; align-items: center; gap: 5px; font-size: 14px; color: #555; cursor: pointer; white-space: nowrap;">
@@ -383,7 +791,7 @@
             </div>
 
             <div class="inventory-card">
-                <table>
+                <table class="stock-table">
                     <thead>
                         <tr>
                             <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllStock" onchange="toggleAllStock(this)"></th>
@@ -426,7 +834,7 @@
                 <input type="text" id="supplierSearch" placeholder="Search by name or contact..." onkeyup="filterSuppliers()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
             </div>
             <div class="inventory-card">
-                <table>
+                <table class="supplier-table">
                     <thead>
                         <tr>
                             <th>Supplier Name</th>
@@ -466,7 +874,7 @@
                 <input type="text" id="poSearch" placeholder="Search by PO # or supplier..." onkeyup="filterPOs()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
             </div>
             <div class="inventory-card">
-                <table>
+                <table class="po-table">
                     <thead><tr><th>PO #</th><th>Supplier</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody id="poTable"><tr><td colspan="5" style="text-align:center; color:#888;">Loading...</td></tr></tbody>
                 </table>
@@ -502,7 +910,7 @@
             </div>
 
             <div class="inventory-card">
-                <table id="receivingTable">
+                <table id="receivingTable" class="receiving-table">
                     <thead>
                         <tr>
                             <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllReceiving" onchange="toggleSelectAllReceiving(this)"></th>
@@ -542,7 +950,7 @@
                 <input type="text" id="transferSearch" placeholder="Search transfers..." onkeyup="filterTransfers()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
             </div>
             <div class="inventory-card">
-                <table>
+                <table class="transfer-table">
                     <thead>
                         <tr>
                             <th>Transfer ID</th>
@@ -613,7 +1021,7 @@
 
             <!-- Data Table Section -->
             <div class="inventory-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                <div class="analytics-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
                     <h4 style="margin: 0; color: var(--primary-color);">Product Performance Breakdown</h4>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="analyticsFilter" placeholder="Search products..." style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; width: 250px; outline: none;" onkeyup="filterAnalyticsTable()">
@@ -621,7 +1029,7 @@
                 </div>
 
                 <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <table class="analytics-table" style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="background: #f8f9fa;">
                                 <th style="width: 40px; text-align: center; padding: 15px; border-bottom: 2px solid #eee;"><input type="checkbox" id="selectAllAnalytics" onchange="toggleAllAnalytics(this)"></th>
@@ -726,7 +1134,7 @@
                 <input type="text" id="categorySearch" placeholder="Search categories..." onkeyup="filterCategories()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
             </div>
             <div class="inventory-card">
-                <table>
+                <table class="category-table">
                     <thead>
                         <tr>
                             <th>Category Name</th>
@@ -770,7 +1178,7 @@
                     </div>
                     <input type="text" id="stockTakeSearch" placeholder="Search products..." style="padding:8px; border:1px solid #ddd; border-radius:4px; width: 250px;" onkeyup="filterStockTake()">
                 </div>
-                <table id="stockTakingTable">
+                <table id="stockTakingTable" class="stocktake-table">
                     <thead>
                         <tr>
                             <th>Product</th>
@@ -819,7 +1227,7 @@
                 <!-- Shelf Inventory Table -->
                 <div class="inventory-card">
                     <h4 style="margin-bottom: 15px; color: var(--primary-color);">Current Shelf Inventory</h4>
-                    <table>
+                    <table class="shelf-table">
                         <thead>
                             <tr>
                                 <th>Product</th>
@@ -888,7 +1296,7 @@
                 <div style="margin-bottom: 20px;">
                     <input type="text" id="negSearch" placeholder="Search by name or barcode..." onkeyup="filterNegative()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                 </div>
-                <table>
+                <table class="negative-table">
                     <thead>
                         <tr>
                             <th>Product Name</th>
@@ -925,7 +1333,7 @@
                 <p style="color: #666; font-size: 14px; margin-top: 5px;">View and manage all product returns and refunds.</p>
             </div>
 
-            <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
+            <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-header">
                         <div class="kpi-title">Total Returns</div>
@@ -962,7 +1370,7 @@
 
             <!-- Filters Section -->
             <div class="inventory-card" style="margin-bottom: 20px;">
-                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <div class="returns-filter-bar" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 200px;">
                         <input type="text" id="returnsSearch" placeholder="Search by receipt #, customer, or product..." 
                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none;" 
@@ -986,7 +1394,7 @@
             <!-- Returns Table -->
             <div class="inventory-card">
                 <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <table class="returns-table" style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="background: #f8f9fa;">
                                 <th style="padding: 15px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #eee;">Receipt #</th>
@@ -1157,6 +1565,19 @@
         </div>
     </div>
 
+    <!-- Delete Supplier Confirm Modal -->
+    <div id="deleteSupplierModal" class="modal">
+        <div class="modal-content" style="width: 350px; text-align: center;">
+            <div style="font-size: 48px; color: #c62828; margin-bottom: 15px;"><i class="fas fa-exclamation-circle"></i></div>
+            <h3 style="margin-bottom: 10px;">Delete Supplier?</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 25px;">Are you sure you want to delete this supplier? This action cannot be undone.</p>
+            <div class="modal-actions" style="justify-content: center; gap: 10px;">
+                <button type="button" class="btn-cancel" onclick="closeDeleteSupplierModal()" style="flex: 1;">Cancel</button>
+                <button type="button" class="btn-save" style="background: #c62828; flex: 1;" onclick="confirmDeleteSupplier()">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Category Modal -->
     <div id="categoryModal" class="modal">
         <div class="modal-content" style="width: 400px;">
@@ -1175,6 +1596,19 @@
                     <button type="submit" class="btn-save">Save</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Delete Category Confirm Modal -->
+    <div id="deleteCategoryModal" class="modal">
+        <div class="modal-content" style="width: 350px; text-align: center;">
+            <div style="font-size: 48px; color: #c62828; margin-bottom: 15px;"><i class="fas fa-exclamation-circle"></i></div>
+            <h3 style="margin-bottom: 10px;">Delete Category?</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 25px;">Are you sure you want to delete this category? This action cannot be undone.</p>
+            <div class="modal-actions" style="justify-content: center; gap: 10px;">
+                <button type="button" class="btn-cancel" onclick="closeDeleteCategoryModal()" style="flex: 1;">Cancel</button>
+                <button type="button" class="btn-save" style="background: #c62828; flex: 1;" onclick="confirmDeleteCategory()">Delete</button>
+            </div>
         </div>
     </div>
 
@@ -1766,10 +2200,10 @@
             } else {
                 tbody.innerHTML = pageData.map(c => `
                     <tr>
-                        <td style="font-weight:600; color:var(--primary-color);">${c.name}</td>
-                        <td>${c.description || '-'}</td>
-                        <td>${new Date(c.created_at).toLocaleDateString()}</td>
-                        <td>
+                        <td data-label="Category" style="font-weight:600; color:var(--primary-color);">${c.name}</td>
+                        <td data-label="Description">${c.description || '-'}</td>
+                        <td data-label="Created At">${new Date(c.created_at).toLocaleDateString()}</td>
+                        <td data-label="Actions">
                             <button class="action-btn btn-delete" onclick="deleteCategory(${c.id})" title="Delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
@@ -1899,17 +2333,17 @@
                 
                 const row = `
                     <tr>
-                        <td style="text-align: center;"><input type="checkbox" class="stock-check" value="${p.barcode}"></td>
-                        <td>${p.barcode}</td>
-                        <td>${p.name}</td>
-                        <td>${p.category || 'General'}</td>
-                        <td>₵${parseFloat(p.price).toFixed(2)}</td>
-                        <td data-stock="${branchStock}">
+                        <td data-label=""><input type="checkbox" class="stock-check" value="${p.barcode}"></td>
+                        <td data-label="Barcode">${p.barcode}</td>
+                        <td data-label="Product">${p.name}</td>
+                        <td data-label="Category">${p.category || 'General'}</td>
+                        <td data-label="Price">₵${parseFloat(p.price).toFixed(2)}</td>
+                        <td data-label="Qty" data-stock="${branchStock}">
                             <span class="stock-badge ${stockClass}">${branchStock}</span>
                         </td>
-                        <td>${batchNumber}</td>
-                        <td>${expiryDate}</td>
-                        <td>
+                        <td data-label="Batch">${batchNumber}</td>
+                        <td data-label="Expiry">${expiryDate}</td>
+                        <td data-label="Actions">
                             <button class="action-btn btn-edit" onclick="editProduct(${p.id})" title="Edit Product"><i class="fas fa-edit"></i></button>
                             <button class="action-btn btn-print" onclick="printLabel('${p.barcode}')" title="Print Label"><i class="fas fa-print"></i></button>
                             <button class="action-btn btn-delete" onclick="deleteProduct(${p.id})" title="Delete"><i class="fas fa-trash"></i></button>
@@ -2496,12 +2930,12 @@
 
             tbody.innerHTML = pageData.length ? pageData.map(s => `
                 <tr>
-                    <td>${s.name}</td>
-                    <td>${s.contact_person || s.contact || '-'}</td>
-                    <td>${s.phone || '-'}</td>
-                    <td>${s.address || '-'}</td>
-                    <td><span class="stock-badge stock-ok">${s.status || 'Active'}</span></td>
-                    <td>
+                    <td data-label="Supplier">${s.name}</td>
+                    <td data-label="Contact">${s.contact_person || s.contact || '-'}</td>
+                    <td data-label="Phone/Email">${s.phone || '-'}</td>
+                    <td data-label="Address">${s.address || '-'}</td>
+                    <td data-label="Status"><span class="stock-badge stock-ok">${s.status || 'Active'}</span></td>
+                    <td data-label="Actions">
                         <button class="action-btn btn-edit" onclick="editSupplier(${s.id})" title="Edit"><i class="fas fa-edit"></i></button>
                         <button class="action-btn btn-delete" onclick="deleteSupplier(${s.id})" title="Delete"><i class="fas fa-trash"></i></button>
                     </td>
@@ -2545,28 +2979,73 @@
                 address: document.getElementById('supAddress').value
             };
 
-            const token = sessionStorage.getItem('authToken');
-            // Assuming server has update endpoint, for now using POST for create
-            // In a real scenario, handle PUT for edit
-            await fetch('/api/suppliers', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(supplierData)
-            });
+            try {
+                const token = sessionStorage.getItem('authToken');
+                let endpoint = '/api/suppliers';
+                let method = 'POST';
 
-            document.getElementById('supplierModal').classList.remove('active');
-            loadSuppliers();
+                if (isEdit) {
+                    endpoint = `/api/suppliers/${idInput}`;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(endpoint, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(supplierData)
+                });
+
+                if (res.ok) {
+                    showNotification(isEdit ? "Supplier updated successfully" : "Supplier added successfully", "success");
+                    document.getElementById('supplierModal').classList.remove('active');
+                    loadSuppliers();
+                } else {
+                    const data = await res.json();
+                    showNotification(data.message || "Failed to save supplier", "error");
+                }
+            } catch (err) {
+                showNotification("Network error saving supplier", "error");
+            }
         }
 
+        let supplierToDelete = null;
+
         function deleteSupplier(id) {
-            if (!confirm("Are you sure you want to delete this supplier?")) return;
-            
-            suppliers = suppliers.filter(s => s.id !== id);
-            localStorage.setItem('suppliers', JSON.stringify(suppliers));
-            loadSuppliers();
+            supplierToDelete = id;
+            document.getElementById('deleteSupplierModal').classList.add('active');
+        }
+
+        async function confirmDeleteSupplier() {
+            if (supplierToDelete !== null) {
+                try {
+                    const token = sessionStorage.getItem('authToken');
+                    const res = await fetch(`/api/suppliers/${supplierToDelete}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (res.ok) {
+                        showNotification("Supplier deleted successfully", "success");
+                        closeDeleteSupplierModal();
+                        loadSuppliers();
+                    } else {
+                        const data = await res.json();
+                        showNotification(data.message || "Failed to delete supplier", "error");
+                        closeDeleteSupplierModal();
+                    }
+                } catch (e) {
+                    showNotification("Network error deleting supplier", "error");
+                    closeDeleteSupplierModal();
+                }
+            }
+        }
+
+        function closeDeleteSupplierModal() {
+            supplierToDelete = null;
+            document.getElementById('deleteSupplierModal').classList.remove('active');
         }
 
         function filterSuppliers() {
@@ -2631,11 +3110,11 @@
 
                 return `
                     <tr>
-                        <td>#${id}</td>
-                        <td>${supplierName}</td>
-                        <td>₵${parseFloat(total).toFixed(2)}</td>
-                        <td><span class="stock-badge ${status === 'Received' ? 'stock-ok' : 'stock-low'}">${status}</span></td>
-                        <td><button onclick="viewPO(${id})" title="View Details" style="padding: 5px 15px; background: #f0f7ff; color: var(--primary-color); border: 1px solid #b3e5fc; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px;">View</button></td>
+                        <td data-label="PO #">#${id}</td>
+                        <td data-label="Supplier">${supplierName}</td>
+                        <td data-label="Total">₵${parseFloat(total).toFixed(2)}</td>
+                        <td data-label="Status"><span class="stock-badge ${status === 'Received' ? 'stock-ok' : 'stock-low'}">${status}</span></td>
+                        <td data-label="Action"><button onclick="viewPO(${id})" title="View Details" style="padding: 5px 15px; background: #f0f7ff; color: var(--primary-color); border: 1px solid #b3e5fc; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px;">View</button></td>
                     </tr>
                 `;
             }).join('') : '<tr><td colspan="5" style="text-align:center;">No POs found</td></tr>';
@@ -2674,12 +3153,12 @@
 
                 return `
                     <tr>
-                        <td style="text-align: center;"><input type="checkbox" class="receiving-check" value="${id}" ${!isPending ? 'disabled' : ''}></td>
-                        <td>#${id}</td>
-                        <td>${supplierName}</td>
-                        <td>₵${parseFloat(total).toFixed(2)}</td>
-                        <td><span class="stock-badge ${statusClass}">${status}</span></td>
-                        <td>
+                        <td data-label=""><input type="checkbox" class="receiving-check" value="${id}" ${!isPending ? 'disabled' : ''}></td>
+                        <td data-label="PO #">#${id}</td>
+                        <td data-label="Supplier">${supplierName}</td>
+                        <td data-label="Total">₵${parseFloat(total).toFixed(2)}</td>
+                        <td data-label="Status"><span class="stock-badge ${statusClass}">${status}</span></td>
+                        <td data-label="Actions">
                             <button onclick="viewPO(${id})" title="View Details" style="padding: 5px 15px; background: #f0f7ff; color: var(--primary-color); border: 1px solid #b3e5fc; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px; margin-right: 5px;">View</button>
                             ${isPending ? `<button onclick="receiveGoods(${id})" style="padding: 5px 15px; background: var(--secondary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px;">Receive</button>` : ''}
                         </td>
@@ -3002,11 +3481,11 @@
                     
                     return `
                         <tr>
-                            <td>#${t.id}</td>
-                            <td>${t.from_location}</td>
-                            <td>${t.to_location}</td>
-                            <td><span class="stock-badge ${statusClass}">${status}</span></td>
-                            <td>
+                            <td data-label="Transfer ID">#${t.id}</td>
+                            <td data-label="From">${t.from_location}</td>
+                            <td data-label="To">${t.to_location}</td>
+                            <td data-label="Status"><span class="stock-badge ${statusClass}">${status}</span></td>
+                            <td data-label="Actions">
                                 <button class="action-btn btn-print" onclick="viewTransfer(${t.id})" title="View Details"><i class="fas fa-eye"></i></button>
                                 <button class="action-btn ${status === 'In Transit' ? 'btn-receive' : 'btn-disabled'}"
                                     onclick="${status === 'In Transit' ? `receiveTransfer(${t.id})` : ''}"
@@ -3621,12 +4100,12 @@
 
             tbody.innerHTML = pageData.map(item => {
                 return `<tr style="border-bottom: 1px solid #eee; transition: background 0.2s;">
-                    <td style="text-align: center; padding: 12px;"><input type="checkbox" class="analytics-check" value="${item.id}"></td>
-                    <td style="padding: 12px; font-weight: 500;">${item.name}</td>
-                    <td style="padding: 12px; color: #666; font-family: monospace;">${item.barcode}</td>
-                    <td style="padding: 12px; color: #666;">${item.category}</td>
-                    <td style="padding: 12px; text-align: center;">${item.qty}</td>
-                    <td style="padding: 12px; text-align: right; font-weight: 600; color: var(--primary-color);">₵${item.revenue.toFixed(2)}</td>
+                    <td data-label="" style="text-align: center; padding: 12px;"><input type="checkbox" class="analytics-check" value="${item.id}"></td>
+                    <td data-label="Product Name" style="padding: 12px; font-weight: 500;">${item.name}</td>
+                    <td data-label="Barcode" style="padding: 12px; color: #666; font-family: monospace;">${item.barcode}</td>
+                    <td data-label="Category" style="padding: 12px; color: #666;">${item.category}</td>
+                    <td data-label="Units Sold" style="padding: 12px; text-align: center;">${item.qty}</td>
+                    <td data-label="Revenue" style="padding: 12px; text-align: right; font-weight: 600; color: var(--primary-color);">₵${item.revenue.toFixed(2)}</td>
                 </tr>
             `}).join('');
             updatePagination('anal', data.length, analPage, analRows);
@@ -3720,16 +4199,41 @@
             } catch (e) { console.error(e); }
         }
 
-        async function deleteCategory(id) {
-            if (!confirm("Are you sure?")) return;
-            try {
-                const token = sessionStorage.getItem('authToken');
-                const res = await fetch(`/api/categories/${id}`, { 
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) { loadCategories(); showNotification("Category deleted", "success"); }
-            } catch (e) { console.error(e); }
+        let categoryToDelete = null;
+
+        function deleteCategory(id) {
+            categoryToDelete = id;
+            document.getElementById('deleteCategoryModal').classList.add('active');
+        }
+
+        async function confirmDeleteCategory() {
+            if (categoryToDelete !== null) {
+                try {
+                    const token = sessionStorage.getItem('authToken');
+                    const res = await fetch(`/api/categories/${categoryToDelete}`, { 
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) { 
+                        loadCategories(); 
+                        showNotification("Category deleted successfully", "success"); 
+                        closeDeleteCategoryModal();
+                    } else {
+                        const data = await res.json();
+                        showNotification(data.message || "Failed to delete category", "error");
+                        closeDeleteCategoryModal();
+                    }
+                } catch (e) { 
+                    console.error(e); 
+                    showNotification("Network error deleting category", "error");
+                    closeDeleteCategoryModal();
+                }
+            }
+        }
+
+        function closeDeleteCategoryModal() {
+            categoryToDelete = null;
+            document.getElementById('deleteCategoryModal').classList.remove('active');
         }
 
         // --- STOCK TAKING FUNCTIONS ---
@@ -3751,10 +4255,10 @@
                 const sysCount = inventoryDisplayStock(p);
                 return `
                 <tr>
-                    <td>${p.name}<br><small style="color:#888;">${p.barcode}</small></td>
-                    <td>${p.category || '-'}</td>
-                    <td>${sysCount}</td>
-                    <td>
+                    <td data-label="Product">${p.name}<br><small style="color:#888;">${p.barcode}</small></td>
+                    <td data-label="Category">${p.category || '-'}</td>
+                    <td data-label="System Stock">${sysCount}</td>
+                    <td data-label="Physical Count">
                         <input type="number" class="stock-count-input" 
                             data-barcode="${p.barcode}" 
                             data-system="${sysCount}" 
@@ -3763,7 +4267,7 @@
                             oninput="calculateStockVariance(this)"
                             onfocus="this.select()">
                     </td>
-                    <td class="variance-cell" style="font-weight:bold; color:#ccc;">0</td>
+                    <td data-label="Variance" class="variance-cell" style="font-weight:bold; color:#ccc;">0</td>
                 </tr>
             `;
             }).join('');
@@ -3952,12 +4456,12 @@
 
                 return `
                 <tr>
-                    <td>${i.name}</td>
-                    <td style="font-family:monospace; color:#555;">${i.batch_number || '-'}</td>
-                    <td style="${getExpiryColor(i.expiry_date)}">${new Date(i.expiry_date).toLocaleDateString()}</td>
-                    <td style="font-weight:600;">${currentStock}</td>
-                    <td style="font-weight:bold; color:var(--primary-color);">${i.quantity} ${i.selling_unit || 'Units'}</td>
-                    <td><span class="stock-badge ${statusClass}">${status}</span></td>
+                    <td data-label="Product">${i.name}</td>
+                    <td data-label="Batch" style="font-family:monospace; color:#555;">${i.batch_number || '-'}</td>
+                    <td data-label="Expiry" style="${getExpiryColor(i.expiry_date)}">${new Date(i.expiry_date).toLocaleDateString()}</td>
+                    <td data-label="Stock" style="font-weight:600;">${currentStock}</td>
+                    <td data-label="Quantity" style="font-weight:bold; color:var(--primary-color);">${i.quantity} ${i.selling_unit || 'Units'}</td>
+                    <td data-label="Status"><span class="stock-badge ${statusClass}">${status}</span></td>
                 </tr>
             `}).join('') : '<tr><td colspan="6" style="text-align:center; padding:20px;">No matching items found.</td></tr>';
         }
@@ -4076,12 +4580,12 @@
 
             tbody.innerHTML = pageData.length ? pageData.map(item => `
                 <tr>
-                    <td style="font-weight:600; color:var(--secondary-color);">${item.name}</td>
-                    <td style="font-family:monospace;">${item.barcode}</td>
-                    <td>${item.category || 'General'}</td>
-                    <td style="text-align:center;"><span class="stock-badge stock-negative">${item.stock}</span></td>
-                    <td style="text-align:center; font-weight:bold;">${item.units_owed}</td>
-                    <td style="text-align:right; font-weight:600; color:var(--primary-color);">₵${parseFloat(item.debt_value).toFixed(2)}</td>
+                    <td data-label="Product Name" style="font-weight:600; color:var(--secondary-color);">${item.name}</td>
+                    <td data-label="Barcode" style="font-family:monospace;">${item.barcode}</td>
+                    <td data-label="Category">${item.category || 'General'}</td>
+                    <td data-label="Current Stock" style="text-align:center;"><span class="stock-badge stock-negative">${item.stock}</span></td>
+                    <td data-label="Units Owed" style="text-align:center; font-weight:bold;">${item.units_owed}</td>
+                    <td data-label="Debt Value" style="text-align:right; font-weight:600; color:var(--primary-color);">₵${parseFloat(item.debt_value).toFixed(2)}</td>
                 </tr>
             `).join('') : '<tr><td colspan="6" style="text-align:center; padding:20px; color:#888;">No products with negative stock found.</td></tr>';
             
@@ -4514,24 +5018,24 @@
                 
                 return `
                     <tr>
-                        <td style="padding: 15px;">
+                        <td data-label="Receipt #" style="padding: 15px;">
                             <strong style="color: #f44336;">${r.receipt_number}</strong>
                         </td>
-                        <td style="padding: 15px;">${date}</td>
-                        <td style="padding: 15px;">${r.customer_name || 'Walk-in'}</td>
-                        <td style="padding: 15px;">${r.cashier_name || 'Staff'}</td>
-                        <td style="padding: 15px; max-width: 300px;">
+                        <td data-label="Date" style="padding: 15px;">${date}</td>
+                        <td data-label="Customer" style="padding: 15px;">${r.customer_name || 'Walk-in'}</td>
+                        <td data-label="Cashier" style="padding: 15px;">${r.cashier_name || 'Staff'}</td>
+                        <td data-label="Items Returned" style="padding: 15px; max-width: 300px;">
                             <div style="font-size: 12px; line-height: 1.4;" title="${itemsList}">
                                 ${itemsList.length > 100 ? itemsList.substring(0, 100) + '...' : itemsList}
                             </div>
                         </td>
-                        <td style="padding: 15px; text-align: right; font-weight: 600; color: #f44336;">
+                        <td data-label="Return Amount" style="padding: 15px; text-align: right; font-weight: 600; color: #f44336;">
                             ₵${parseFloat(r.total_amount || 0).toFixed(2)}
                         </td>
-                        <td style="padding: 15px;">
+                        <td data-label="Original Sale" style="padding: 15px;">
                             <span style="color: #666; font-size: 12px;">RCP${r.original_transaction_id || 'N/A'}</span>
                         </td>
-                        <td style="padding: 15px; text-align: center;">
+                        <td data-label="Actions" style="padding: 15px; text-align: center;">
                             <button class="action-btn btn-print" onclick="viewReturnReceipt('${r.receipt_number}')" title="View Receipt">
                                 <i class="fas fa-receipt"></i>
                             </button>

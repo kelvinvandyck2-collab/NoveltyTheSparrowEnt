@@ -82,6 +82,8 @@
 
         /* Tables */
         .table-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; padding: 20px; }
+        .table-scroll-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+        .table-scroll-wrapper table { min-width: 480px; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 15px; color: #888; font-weight: 600; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #eee; }
         td { padding: 15px; border-bottom: 1px solid #eee; color: var(--text-color); font-size: 14px; }
@@ -154,6 +156,117 @@
 
         @media (max-width: 1200px) { .charts-grid { grid-template-columns: 1fr; } }
         @media (max-width: 1000px) { .intelligence-grid { grid-template-columns: 1fr; } }
+
+        /* ===================== MOBILE ===================== */
+        @media (max-width: 768px) {
+            /* Prevent any element from causing horizontal overflow */
+            *, *::before, *::after { box-sizing: border-box; }
+            html, body { overflow-x: hidden; width: 100%; }
+
+            /* Hide sidebar on mobile, make content full width */
+            .sidebar { display: none; }
+            .main-content { margin-left: 0 !important; padding: 16px !important; width: 100%; }
+            footer { margin-left: 0 !important; }
+
+            /* Header */
+            .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .header-controls { flex-wrap: wrap; width: 100%; }
+            .header-controls .control-select,
+            .header-controls .btn-control { flex: 1; min-width: 0; }
+
+            /* All grids → single column */
+            .kpi-grid,
+            .charts-grid,
+            .charts-grid.tri-grid,
+            .intelligence-grid,
+            .menu-grid { grid-template-columns: 1fr !important; }
+
+            /* Tax management 2-col grid */
+            .grid-container { grid-template-columns: 1fr !important; }
+
+            /* KPI values don't overflow */
+            .kpi-card { padding: 16px; }
+            .kpi-value { font-size: 22px; }
+
+            /* Table cards */
+            th { padding: 10px 12px; font-size: 11px; }
+            td { padding: 10px 12px; font-size: 13px; }
+            .table-scroll-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .table-scroll-wrapper table { min-width: 420px; }
+            .card-title { font-size: 14px; }
+            .table-card { padding: 12px; overflow: hidden; }
+
+            /* Vertical card-table layout */
+            .card-table { width: 100%; table-layout: fixed; }
+            .card-table thead { display: none; }
+            .card-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                padding: 4px 0;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                width: 100%;
+            }
+            .card-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .card-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+                width: 100%;
+                word-break: break-word;
+                white-space: normal;
+            }
+            .card-table td:last-child { border-bottom: none; }
+            .card-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 90px;
+                margin-right: 10px;
+            }
+            .card-table td:last-child > div,
+            .card-table td:last-child > button { flex-wrap: wrap; width: 100%; }
+
+            /* Card headers */
+            .card-header { flex-wrap: wrap; gap: 8px; }
+
+            /* Forms */
+            .filter-bar { flex-direction: column; }
+            .filter-group { width: 100%; }
+            .form-input, .control-select { width: 100%; }
+
+            /* Pagination */
+            .pagination-controls { justify-content: center !important; flex-wrap: wrap; }
+
+            /* Charts */
+            canvas { max-width: 100% !important; height: auto !important; }
+
+            /* Modal */
+            .modal-container { max-width: 95vw !important; margin: 10px auto; }
+            .modal-body { padding: 16px; }
+            .modal-footer { padding: 12px 16px; flex-wrap: wrap; }
+
+            /* AI modal */
+            #aiModal { padding-bottom: 90px; padding-right: 10px; }
+
+            /* FAB */
+            .fab-wrapper { bottom: 15px; right: 15px; }
+
+            /* Branch performance KPI grid */
+            .kpi-grid[style*="repeat(3"] { grid-template-columns: 1fr !important; }
+
+            /* Intelligence grid 2fr 1fr */
+            .intelligence-grid { grid-template-columns: 1fr !important; }
+        }
+
 
         /* Menu Grid for Approvals */
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
@@ -414,7 +527,7 @@
             </div>
 
             <!-- Peak Hours & High Value -->
-            <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-top: 20px;">
+            <div class="charts-grid" style="margin-top: 20px;">
                 <div class="chart-card">
                     <div class="card-header"><div class="card-title">Peak Trading Hours (This Month)</div></div>
                     <div style="height: 250px; position: relative;">
@@ -423,24 +536,24 @@
                 </div>
                 <div class="table-card" style="padding:0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     <div class="card-header" style="padding: 20px 25px;"><div class="card-title">High-Value Sales (This Month)</div></div>
-                    <table style="margin:0;">
+                    <table class="card-table" style="margin:0;">
                         <thead><tr><th>ID</th><th>Amount</th><th>Branch</th><th>Cashier</th><th>Time</th></tr></thead>
                         <tbody id="highValueTxnBody"><tr><td colspan="5" style="text-align:center;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="charts-grid" style="grid-template-columns: repeat(2, 1fr); margin-top:20px;">
+            <div class="charts-grid" style="margin-top:20px;">
                 <div class="table-card">
                     <div class="card-header"><div class="card-title">Top Selling Stocks</div></div>
-                    <table>
+                    <table class="card-table">
                         <thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr></thead>
                         <tbody id="dashboardTopSellingBody"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                     </table>
                 </div>
                 <div class="table-card">
                     <div class="card-header"><div class="card-title">Slow Moving Stocks</div></div>
-                    <table>
+                    <table class="card-table">
                         <thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr></thead>
                         <tbody id="dashboardSlowMovingBody"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
                     </table>
@@ -449,7 +562,7 @@
 
             <div class="table-card" style="margin-top: 20px;">
                 <div class="card-header"><div class="card-title">Staff Performance Summary</div></div>
-                <table>
+                <table class="card-table">
                     <thead><tr><th>Employee</th><th>Transactions</th><th>Sales Volume</th><th>Performance</th></tr></thead>
                     <tbody id="dashboardStaffBody">
                         <tr><td colspan="4" style="text-align:center;">Loading staff data...</td></tr>
@@ -545,17 +658,17 @@
                 <input type="text" id="pendingSearch" class="search-input" placeholder="Search pending approvals by name, branch, or manager..." onkeyup="filterPendingApprovals()">
             </div>
             <div class="table-card">
-                <div class="card-header">
+                <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
                     <div class="card-title">Pending Credit Approvals</div>
                     <button class="btn-control btn-white" onclick="loadPendingCreditApprovals()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
-                <table>
-            <thead><tr><th>Client Name</th><th>Credit Limit</th><th>Requested By</th><th>Branch</th><th>Date</th><th>Actions</th></tr></thead>
+                <table class="card-table">
+                    <thead><tr><th>Client Name</th><th>Credit Limit</th><th>Requested By</th><th>Branch</th><th>Date</th><th>Actions</th></tr></thead>
                     <tbody id="pendingCreditTableBody">
                         <tr><td colspan="6" style="text-align:center;">Loading approvals...</td></tr>
                     </tbody>
                 </table>
-                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center;">
+                <div class="pagination-controls" style="display: flex; justify-content: center; flex-wrap: wrap; padding-top: 15px; gap: 10px; align-items: center;">
                     <button class="btn-control btn-white" onclick="changePendingPage(-1)" id="btnPendingPrev" disabled style="padding: 5px 10px;">Previous</button>
                     <span id="pendingPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
                     <button class="btn-control btn-white" onclick="changePendingPage(1)" id="btnPendingNext" disabled style="padding: 5px 10px;">Next</button>
@@ -571,17 +684,17 @@
                 <input type="text" id="historySearch" class="search-input" placeholder="Search approval history..." onkeyup="filterApprovalHistory()">
             </div>
             <div class="table-card">
-                <div class="card-header">
+                <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
                     <div class="card-title">Approval History</div>
                     <button class="btn-control btn-white" onclick="loadApprovalHistory()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
-                <table>
+                <table class="card-table">
                     <thead><tr><th>Client Name</th><th>Credit Limit</th><th>Status</th><th>Date</th></tr></thead>
                     <tbody id="historyCreditTableBody">
                         <tr><td colspan="4" style="text-align:center;">Loading history...</td></tr>
                     </tbody>
                 </table>
-                <div class="pagination-controls" style="display: flex; justify-content: flex-end; padding-top: 15px; gap: 10px; align-items: center;">
+                <div class="pagination-controls" style="display: flex; justify-content: center; flex-wrap: wrap; padding-top: 15px; gap: 10px; align-items: center;">
                     <button class="btn-control btn-white" onclick="changeHistoryPage(-1)" id="btnHistoryPrev" disabled style="padding: 5px 10px;">Previous</button>
                     <span id="historyPageInfo" style="font-size: 13px; color: #666;">Page 1 of 1</span>
                     <button class="btn-control btn-white" onclick="changeHistoryPage(1)" id="btnHistoryNext" disabled style="padding: 5px 10px;">Next</button>
@@ -597,11 +710,11 @@
                 <input type="text" id="branchSearch" class="search-input" placeholder="Search branches..." onkeyup="filterBranches()">
             </div>
             <div class="table-card">
-                <div class="card-header">
+                <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
                     <div class="card-title">Branch Management & Performance</div>
                     <button class="btn-control btn-primary" onclick="openBranchModal()"><i class="fas fa-plus"></i> Add Branch</button>
                 </div>
-                <table>
+                <table class="card-table">
                     <thead>
                         <tr>
                             <th>Branch Name</th>
@@ -609,11 +722,11 @@
                             <th>VAT Rate</th>
                             <th>Transactions</th>
                             <th>Revenue</th>
-                            <th>Performance</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="branchTable">
-                        <tr><td colspan="5" style="text-align:center;">Loading data...</td></tr>
+                        <tr><td colspan="6" style="text-align:center;">Loading data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -675,7 +788,7 @@
                     <div class="card-title">Supply Chain Bottlenecks</div>
                     <button class="btn-control btn-white" onclick="loadOpsBottlenecks()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
-                <table>
+                <table class="card-table">
                     <thead><tr><th>Item Name</th><th>Branch</th><th>Stock Level</th><th>Reorder Level</th><th>Status</th></tr></thead>
                     <tbody id="opsTableBody">
                         <tr><td colspan="5" style="text-align:center;">Loading inventory data...</td></tr>
@@ -701,7 +814,7 @@
                     <div class="card-title">Suppliers (by Branch)</div>
                     <button class="btn-control btn-white" onclick="loadOpsSuppliers()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
-                <table>
+                <table class="card-table">
                     <thead><tr><th>Supplier</th><th>Contact</th><th>Branch</th><th>Phone</th><th>Email</th></tr></thead>
                     <tbody id="opsSuppliersBody"><tr><td colspan="5" style="text-align:center;">Loading suppliers...</td></tr></tbody>
                 </table>
@@ -725,7 +838,7 @@
                     <div class="card-title">Recent Purchase Orders</div>
                     <button class="btn-control btn-white" onclick="loadOpsPOs()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
-                <table>
+                <table class="card-table">
                     <thead><tr><th>PO #</th><th>Supplier</th><th>Branch</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody id="opsPOsBody"><tr><td colspan="6" style="text-align:center;">Loading purchase orders...</td></tr></tbody>
                 </table>
@@ -748,7 +861,7 @@
             <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
             
             <!-- Branch KPIs -->
-            <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+            <div class="kpi-grid" style="margin-bottom: 20px;">
                 <div class="kpi-card">
                     <div class="kpi-title">Total Network Revenue</div>
                     <div class="kpi-value" id="perfTotalRevenue">₵0.00</div>
@@ -767,7 +880,7 @@
                 </div>
             </div>
 
-            <div class="charts-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="charts-grid">
                 <div class="chart-card">
                     <div class="card-header"><div class="card-title">Revenue Share by Branch</div></div>
                     <div style="height: 300px; position: relative;">
@@ -784,7 +897,7 @@
 
             <div class="table-card" style="margin-top: 20px;">
                 <div class="card-header"><div class="card-title">Detailed Branch Rankings</div></div>
-                <table>
+                <table class="card-table">
                     <thead>
                         <tr>
                             <th>Rank</th>
@@ -814,10 +927,9 @@
                     <div class="card-title">User Management & Access Control</div>
                     <button style="background:var(--primary-color); color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer;" onclick="openManagerModal()">+ Invite Executive</button>
                 </div>
-                <table>
+                <table class="card-table">
                     <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Store</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody id="usersTableBody">
-                        <!-- Live Data -->
                         <tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>
                     </tbody>
                 </table>
@@ -839,7 +951,7 @@
         <div id="tab-tax-management" class="tab-content">
             <div onclick="switchTab('operations-hub')" class="back-link"><i class="fas fa-arrow-left"></i> Back to Operations</div>
             
-            <div class="grid-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <div class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-bottom: 30px;">
                 <!-- Left Column: Configuration -->
                 <div class="card" style="margin-bottom: 0; padding: 25px; background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     <div class="card-header">
@@ -949,7 +1061,7 @@
                     <div class="card-title">System Audit Logs</div>
                     <button class="btn-control btn-white" onclick="loadAuditLogs()" style="padding: 8px 12px; font-size: 13px;"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
-                <table>
+                <table class="card-table">
                     <thead>
                         <tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Details</th><th>IP</th></tr>
                     </thead>
@@ -1114,7 +1226,7 @@
                     <button class="close-modal" onclick="closeOpsPOModal()"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="modal-body">
-                    <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+                    <div style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; background: #f8fafc; padding: 15px; border-radius: 8px;">
                         <div>
                             <div style="font-size: 12px; color: #64748b;">PO Number</div>
                             <div style="font-weight: 600; font-size: 16px;" id="opsViewPOId">#</div>
@@ -1263,6 +1375,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', initPortal);
+
+        // Auto-wrap all tables inside .table-card with a scroll container for mobile
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.table-card > table, .table-card > div > table').forEach(tbl => {
+                if (tbl.parentElement.classList.contains('table-scroll-wrapper')) return;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-scroll-wrapper';
+                tbl.parentNode.insertBefore(wrapper, tbl);
+                wrapper.appendChild(tbl);
+            });
+        });
 
         let allPortalUsers = [];
         let filteredPortalUsers = [];
@@ -1563,12 +1686,12 @@
                 const perf = allBranchPerf.find(p => p.branch === b.location || p.branch === b.name) || { txn_count: 0, revenue: 0 };
                 return `
                 <tr>
-                    <td style="font-weight:600; color:var(--primary-color);">${b.name}</td>
-                    <td>${b.location || '-'}</td>
-                    <td>${b.vat_rate > 0 ? b.vat_rate + '%' : '-'}</td>
-                    <td>${perf.txn_count || 0}</td>
-                    <td style="font-weight:600;">₵${parseFloat(perf.revenue || 0).toLocaleString()}</td>
-                    <td>
+                    <td data-label="Branch Name" style="font-weight:600; color:var(--primary-color);">${b.name}</td>
+                    <td data-label="Location">${b.location || '-'}</td>
+                    <td data-label="VAT Rate">${b.vat_rate > 0 ? b.vat_rate + '%' : '-'}</td>
+                    <td data-label="Transactions">${perf.txn_count || 0}</td>
+                    <td data-label="Revenue" style="font-weight:600;">₵${parseFloat(perf.revenue || 0).toLocaleString()}</td>
+                    <td data-label="Action">
                         <button class="btn-control btn-white" style="padding:4px 10px; font-size:11px;" onclick="editBranch(${b.id})">Edit / Set VAT</button>
                     </td>
                 </tr>
@@ -1751,11 +1874,11 @@
                     if(txns.length > 0) {
                         tbody.innerHTML = txns.map(t => `
                             <tr>
-                                <td style="padding:12px 25px;">#${(t.receipt_number || t.id).toString().slice(-6)}</td>
-                                <td style="padding:12px 25px; font-weight:bold; color:#2e7d32;">₵${parseFloat(t.total_amount).toLocaleString()}</td>
-                                <td style="padding:12px 25px;">${t.store_location || 'Main'}</td>
-                                <td style="padding:12px 25px;">${t.cashier_name || 'Unknown'}</td>
-                                <td style="padding:12px 25px; color:#666; font-size:12px;">${new Date(t.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                                <td data-label="ID">#${(t.receipt_number || t.id).toString().slice(-6)}</td>
+                                <td data-label="Amount" style="font-weight:bold; color:#2e7d32;">₵${parseFloat(t.total_amount).toLocaleString()}</td>
+                                <td data-label="Branch">${t.store_location || 'Main'}</td>
+                                <td data-label="Cashier">${t.cashier_name || 'Unknown'}</td>
+                                <td data-label="Time" style="color:#666; font-size:12px;">${new Date(t.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
                             </tr>
                         `).join('');
                     } else tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No data available</td></tr>';
@@ -1770,9 +1893,9 @@
             if (topProducts && topProducts.length > 0) {
                 topBody.innerHTML = topProducts.slice(0, 5).map(p => `
                     <tr>
-                        <td style="font-weight:500;">${p.name}</td>
-                        <td>${p.units_sold || p.count || 0}</td>
-                        <td>₵${parseFloat(p.revenue || 0).toLocaleString()}</td>
+                        <td data-label="Product" style="font-weight:500;">${p.name}</td>
+                        <td data-label="Units Sold">${p.units_sold || p.count || 0}</td>
+                        <td data-label="Revenue">₵${parseFloat(p.revenue || 0).toLocaleString()}</td>
                     </tr>
                 `).join('');
             } else {
@@ -1782,9 +1905,9 @@
             if (slowMoving && slowMoving.length > 0) {
                 slowBody.innerHTML = slowMoving.slice(0, 5).map(p => `
                     <tr>
-                        <td style="font-weight:500;">${p.name}</td>
-                        <td>${p.units_sold || p.count || 0}</td>
-                        <td>₵${parseFloat(p.revenue || 0).toLocaleString()}</td>
+                        <td data-label="Product" style="font-weight:500;">${p.name}</td>
+                        <td data-label="Units Sold">${p.units_sold || p.count || 0}</td>
+                        <td data-label="Revenue">₵${parseFloat(p.revenue || 0).toLocaleString()}</td>
                     </tr>
                 `).join('');
             } else {
@@ -1971,13 +2094,13 @@
 
                     return `
                     <tr>
-                        <td style="font-weight:500;">${u.fullName || u.name}</td>
-                        <td>${u.username}</td>
-                        <td style="text-transform:capitalize;">${u.role}</td>
-                        <td>${u.store || 'Headquarters'}</td>
-                        <td><span class="status-badge ${u.status === 'Active' ? 'status-good' : 'status-warn'}">${u.status}</span></td>
-                        <td>
-                            <div style="display:flex; gap:5px;">${editBtn}${actionBtn}</div>
+                        <td data-label="Name" style="font-weight:500;">${u.fullName || u.name}</td>
+                        <td data-label="Username">${u.username}</td>
+                        <td data-label="Role" style="text-transform:capitalize;">${u.role}</td>
+                        <td data-label="Store">${u.store || 'Headquarters'}</td>
+                        <td data-label="Status"><span class="status-badge ${u.status === 'Active' ? 'status-good' : 'status-warn'}">${u.status}</span></td>
+                        <td data-label="Actions">
+                            <div style="display:flex; gap:5px; flex-wrap:wrap;">${editBtn}${actionBtn}</div>
                         </td>
                     </tr>
                 `}).join('');
@@ -2162,12 +2285,12 @@
                     const details = log.details ? JSON.stringify(log.details) : '-';
                     return `
                         <tr>
-                            <td style="font-size:13px;">${new Date(log.created_at).toLocaleString()}</td>
-                            <td>${log.user_name || 'System'}</td>
-                            <td><span class="status-badge" style="background:#f1f5f9; color:#475569; text-transform:capitalize;">${log.user_role || '-'}</span></td>
-                            <td style="font-weight:600; color:var(--primary-color);">${log.action}</td>
-                            <td style="font-size:12px; color:#555; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title='${details}'>${details}</td>
-                            <td style="font-size:12px; color:#888;">${log.ip_address || '-'}</td>
+                            <td data-label="Time" style="font-size:13px;">${new Date(log.created_at).toLocaleString()}</td>
+                            <td data-label="User">${log.user_name || 'System'}</td>
+                            <td data-label="Role"><span class="status-badge" style="background:#f1f5f9; color:#475569; text-transform:capitalize;">${log.user_role || '-'}</span></td>
+                            <td data-label="Action" style="font-weight:600; color:var(--primary-color);">${log.action}</td>
+                            <td data-label="Details" style="font-size:12px; color:#555; word-break:break-all;">${details}</td>
+                            <td data-label="IP" style="font-size:12px; color:#888;">${log.ip_address || '-'}</td>
                         </tr>
                     `;
                 }).join('');
@@ -2272,15 +2395,17 @@
                     
                     return `
                     <tr>
-                        <td style="font-weight:500;">${c.name} ${typeLabel}</td>
-                        <td>₵${parseFloat(displayLimit).toLocaleString()}</td>
-                        <td>${c.created_by_name || '<span style="color:#999;font-style:italic;">Unknown</span>'}</td>
-                        <td>${c.branch || '<span style="color:#999;font-style:italic;">Unknown</span>'}</td>
-                        <td>${new Date(c.created_at).toLocaleDateString()}</td>
-                        <td>
-                            <button class="btn-control btn-white" style="padding:4px 10px; font-size:11px; display:inline-flex; margin-right:5px;" onclick="viewCustomerDetails(${c.id})"><i class="fas fa-eye"></i> View</button>
-                            <button class="btn-control btn-primary" style="padding:4px 10px; font-size:11px; display:inline-flex; margin-right:5px;" onclick="approveCreditCustomer(${c.id})">Approve</button>
-                            <button class="btn-control btn-white" style="padding:4px 10px; font-size:11px; display:inline-flex; color:#c62828; border-color:#ffcdd2;" onclick="rejectCreditCustomer(${c.id})">Reject</button>
+                        <td data-label="Client Name" style="font-weight:500;">${c.name} ${typeLabel}</td>
+                        <td data-label="Credit Limit">₵${parseFloat(displayLimit).toLocaleString()}</td>
+                        <td data-label="Requested By">${c.created_by_name || '<span style="color:#999;font-style:italic;">Unknown</span>'}</td>
+                        <td data-label="Branch">${c.branch || '<span style="color:#999;font-style:italic;">Unknown</span>'}</td>
+                        <td data-label="Date">${new Date(c.created_at).toLocaleDateString()}</td>
+                        <td data-label="Actions">
+                            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                                <button class="btn-control btn-white" style="padding:4px 10px; font-size:11px;" onclick="viewCustomerDetails(${c.id})"><i class="fas fa-eye"></i> View</button>
+                                <button class="btn-control btn-primary" style="padding:4px 10px; font-size:11px;" onclick="approveCreditCustomer(${c.id})">Approve</button>
+                                <button class="btn-control btn-white" style="padding:4px 10px; font-size:11px; color:#c62828; border-color:#ffcdd2;" onclick="rejectCreditCustomer(${c.id})">Reject</button>
+                            </div>
                         </td>
                     </tr>
                 `}).join('');
@@ -2312,10 +2437,10 @@
                     let statusColor = c.status === 'Active' ? 'status-good' : 'status-warn';
                     return `
                     <tr>
-                        <td style="font-weight:500;">${c.name}</td>
-                        <td>₵${parseFloat(c.credit_limit).toLocaleString()}</td>
-                        <td><span class="status-badge ${statusColor}">${c.status}</span></td>
-                        <td>${new Date(c.created_at).toLocaleDateString()}</td>
+                        <td data-label="Client Name" style="font-weight:500;">${c.name}</td>
+                        <td data-label="Credit Limit">₵${parseFloat(c.credit_limit).toLocaleString()}</td>
+                        <td data-label="Status"><span class="status-badge ${statusColor}">${c.status}</span></td>
+                        <td data-label="Date">${new Date(c.created_at).toLocaleDateString()}</td>
                     </tr>
                 `}).join('');
             } else {
@@ -2365,7 +2490,7 @@
             const limitLabel = isLimitRequest ? 'Requested New Limit' : 'Requested Credit Limit';
 
             const detailsHtml = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                     <div class="form-group"><label class="form-label">Full Name</label><div class="form-input" style="background:#f8fafc;">${customer.name}</div></div>
                     <div class="form-group"><label class="form-label">Account Number</label><div class="form-input" style="background:#f8fafc;">${customer.account_number || 'Pending'}</div></div>
                     <div class="form-group"><label class="form-label">Phone</label><div class="form-input" style="background:#f8fafc;">${customer.phone || 'N/A'}</div></div>
@@ -2434,10 +2559,10 @@
 
                     const rows = stats.map(s => `
                         <tr>
-                            <td style="font-weight:500;">${s.name}</td>
-                            <td>${s.transactions}</td>
-                            <td>₵${parseFloat(s.sales).toLocaleString()}</td>
-                            <td><span class="status-badge ${s.performance === 'High' ? 'status-good' : 'status-warn'}">${s.performance || 'Active'}</span></td>
+                            <td data-label="Employee" style="font-weight:500;">${s.name}</td>
+                            <td data-label="Transactions">${s.transactions}</td>
+                            <td data-label="Sales Volume">₵${parseFloat(s.sales).toLocaleString()}</td>
+                            <td data-label="Performance"><span class="status-badge ${s.performance === 'High' ? 'status-good' : 'status-warn'}">${s.performance || 'Active'}</span></td>
                         </tr>
                     `).join('');
 
@@ -2702,12 +2827,12 @@
                     const statusText = i.stock < 0 ? 'NEGATIVE STOCK' : (i.stock === 0 ? 'OUT OF STOCK' : 'LOW STOCK');
                     
                     return `
-                    <tr style="${isCritical ? 'background: rgba(239, 68, 68, 0.02);' : ''}">
-                        <td style="font-weight:600; color:var(--primary-color);">${i.name}</td>
-                        <td><span style="font-size:12px; color:#666; background:#f1f5f9; padding:2px 8px; border-radius:4px;">${i.branch}</span></td>
-                        <td style="${isCritical ? 'color:#c62828;' : 'color:#ef6c00;'} font-weight:bold;">${i.stock}</td>
-                        <td style="color:#64748b;">${i.reorder}</td>
-                        <td>
+                    <tr>
+                        <td data-label="Item Name" style="font-weight:600; color:var(--primary-color);">${i.name}</td>
+                        <td data-label="Branch"><span style="font-size:12px; color:#666; background:#f1f5f9; padding:2px 8px; border-radius:4px;">${i.branch}</span></td>
+                        <td data-label="Stock Level" style="${isCritical ? 'color:#c62828;' : 'color:#ef6c00;'} font-weight:bold;">${i.stock}</td>
+                        <td data-label="Reorder Level" style="color:#64748b;">${i.reorder}</td>
+                        <td data-label="Status">
                             <span class="status-badge ${statusClass}" style="letter-spacing:0.5px; font-size:10px;">${statusText}</span>
                         </td>
                     </tr>
@@ -2784,7 +2909,7 @@
                     const contact = s.contact_person || s.contact || '-';
                     const phone = s.phone || '-';
                     const email = s.email || '-';
-                    return `<tr><td style="font-weight:600;">${s.name}</td><td>${contact}</td><td>${branchName}</td><td>${phone}</td><td>${email}</td></tr>`;
+                    return `<tr><td data-label="Supplier" style="font-weight:600;">${s.name}</td><td data-label="Contact">${contact}</td><td data-label="Branch">${branchName}</td><td data-label="Phone">${phone}</td><td data-label="Email">${email}</td></tr>`;
                 }).join('');
             }
             updatePaginationControls('suppliers', filteredOpsSuppliersData.length, opsSuppliersPage);
@@ -2870,7 +2995,7 @@
                     const supplierName = p.supplier_name || 'Unknown';
                     const total = p.total_amount || p.total || 0;
                     const status = p.status || p.Status || 'Pending';
-                    return `<tr><td>#${poId}</td><td style="font-weight:600;">${supplierName}</td><td>${branchName}</td><td>₵${parseFloat(total).toLocaleString()}</td><td><span class="status-badge ${status.toLowerCase() === 'received' ? 'status-good' : 'status-warn'}">${status}</span></td><td><button class="btn-control btn-white" style="padding:4px 10px; font-size:11px;" onclick="viewOpsPO(${poId})">View</button></td></tr>`;
+                    return `<tr><td data-label="PO #">#${poId}</td><td data-label="Supplier" style="font-weight:600;">${supplierName}</td><td data-label="Branch">${branchName}</td><td data-label="Total">₵${parseFloat(total).toLocaleString()}</td><td data-label="Status"><span class="status-badge ${status.toLowerCase() === 'received' ? 'status-good' : 'status-warn'}">${status}</span></td><td data-label="Actions"><button class="btn-control btn-white" style="padding:4px 10px; font-size:11px;" onclick="viewOpsPO(${poId})">View</button></td></tr>`;
                 }).join('');
             }
             updateOpsPOsPagination();
@@ -3016,12 +3141,12 @@
 
                 return `
                     <tr>
-                        <td>${rankIcon}${index + 1}</td>
-                        <td style="font-weight:600; color:var(--primary-color);">${b.branch || b.name}</td>
-                        <td>₵${revenue.toLocaleString()}</td>
-                        <td>${txns.toLocaleString()}</td>
-                        <td>₵${avgTicket.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                        <td>
+                        <td data-label="Rank">${rankIcon}${index + 1}</td>
+                        <td data-label="Branch Name" style="font-weight:600; color:var(--primary-color);">${b.branch || b.name}</td>
+                        <td data-label="Revenue">₵${revenue.toLocaleString()}</td>
+                        <td data-label="Transactions">${txns.toLocaleString()}</td>
+                        <td data-label="Avg. Ticket">₵${avgTicket.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td data-label="Contribution">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <div style="flex:1; height:6px; background:#eee; border-radius:3px; overflow:hidden;">
                                     <div style="width:${contribution}%; height:100%; background:var(--primary-color);"></div>

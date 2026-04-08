@@ -157,14 +157,78 @@
         }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
 
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; }
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); z-index: 1000; transition: transform 0.3s ease; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 20px; padding-top: 70px; }
             .mobile-menu-btn { display: block; }
             .overlay.active { display: block; }
             .stats-grid { grid-template-columns: 1fr; }
             footer { margin-left: 0; }
+
+            /* Recent Transactions card-table */
+            .recent-txn-table thead { display: none; }
+            .recent-txn-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .recent-txn-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .recent-txn-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .recent-txn-table td:last-child { border-bottom: none; }
+            .recent-txn-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 80px;
+                margin-right: 10px;
+            }
+
+            /* Cashier table card-table */
+            .cashier-table thead { display: none; }
+            .cashier-table tbody tr {
+                display: block;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                background: white;
+            }
+            .cashier-table tbody tr:last-child { border-bottom: 1px solid #e2e8f0; }
+            .cashier-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 9px 14px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 13px;
+            }
+            .cashier-table td:last-child { border-bottom: none; }
+            .cashier-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+                min-width: 80px;
+                margin-right: 10px;
+            }
         }
     </style>
 </head>
@@ -243,7 +307,7 @@
                 <h3>Recent Transactions</h3>
                 <a href="reports" class="btn-primary">View All</a>
             </div>
-            <table>
+            <table class="recent-txn-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -267,7 +331,7 @@
             <div class="section-header">
                 <h3>Sales by Cashier</h3>
             </div>
-            <table>
+            <table class="cashier-table">
                 <thead>
                     <tr>
                         <th>Cashier Name</th>
@@ -453,9 +517,9 @@
             if (cashierStats && cashierStats.length > 0) {
                 cashierBody.innerHTML = cashierStats.map(cashier => `
                     <tr>
-                        <td>${cashier.cashier || 'Unknown'}</td>
-                        <td>${cashier.transaction_count || 0}</td>
-                        <td>₵${parseFloat(cashier.total_sales || 0).toFixed(2)}</td>
+                        <td data-label="Cashier">${cashier.cashier || 'Unknown'}</td>
+                        <td data-label="Transactions">${cashier.transaction_count || 0}</td>
+                        <td data-label="Total Sales">₵${parseFloat(cashier.total_sales || 0).toFixed(2)}</td>
                     </tr>
                 `).join('');
             } else {
@@ -471,12 +535,12 @@
                     
                     return `
                         <tr>
-                            <td>#${(txn.receipt_number || txn.id || '---').toString().slice(-6)}</td>
-                            <td>${txn.store_location || 'N/A'}</td>
-                            <td>${txn.customer_name || 'Walk-in Customer'}</td>
-                            <td>₵${parseFloat(txn.total_amount || 0).toFixed(2)}</td>
-                            <td><span class="status ${txn.status || 'completed'}">${txn.status || 'Completed'}</span></td>
-                            <td>${timeStr}</td>
+                            <td data-label="ID">#${(txn.receipt_number || txn.id || '---').toString().slice(-6)}</td>
+                            <td data-label="Location">${txn.store_location || 'N/A'}</td>
+                            <td data-label="Customer">${txn.customer_name || 'Walk-in Customer'}</td>
+                            <td data-label="Amount">₵${parseFloat(txn.total_amount || 0).toFixed(2)}</td>
+                            <td data-label="Status"><span class="status ${txn.status || 'completed'}">${txn.status || 'Completed'}</span></td>
+                            <td data-label="Time">${timeStr}</td>
                         </tr>
                     `;
                 }).join('');

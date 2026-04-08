@@ -26,7 +26,7 @@
             color: white;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
-        .brand { font-size: 24px; font-weight: 700; letter-spacing: 1px; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+        .brand { font-size: 24px; font-weight: 700; letter-spacing: 1px; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
         .back-btn { color: white; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 14px; opacity: 0.9; }
         .back-btn:hover { opacity: 1; }
 
@@ -104,12 +104,26 @@
             from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }
         }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            header { padding: 0 15px; height: 60px; }
+            .brand { font-size: 14px; gap: 5px; }
+            .brand img { width: 120px !important; height: 25px !important; }
+            .back-btn { font-size: 0; }
+            .back-btn i { font-size: 18px; }
+
+            .container { margin: 20px auto; padding: 20px; }
+            
+            .summary-grid { grid-template-columns: 1fr; gap: 10px; }
+            .digital-totals { flex-direction: column; text-align: center; gap: 10px; }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="brand"><img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;"> FOOTPRINT</div>
+        <div class="brand"><img src="logo.png" style="width: 200px; height: 40px; object-fit: contain;"> THE SPARROW ENT</div>
         <a href="pos" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Register</a>
     </header>
 

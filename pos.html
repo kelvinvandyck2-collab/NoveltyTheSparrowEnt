@@ -29,7 +29,7 @@
         padding:0 25px;
         position:relative;
     }
-    .brand { font-size:24px; letter-spacing:1px; font-weight:700; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; }
+    .brand { font-size:24px; letter-spacing:1px; font-weight:700; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
 
     .user-menu {
         display:flex;
@@ -672,6 +672,43 @@
     .notif-item-desc { font-size: 12px; color: #666; line-height: 1.4; }
     .notif-item-time { font-size: 10px; color: #999; margin-top: 5px; }
     .notif-empty { padding: 30px; text-align: center; color: #aaa; font-size: 13px; }
+
+    /* Mobile Responsiveness for POS */
+    @media (max-width: 992px) {
+        header { padding: 0 10px; height: 60px; }
+        .brand { font-size: 13px; gap: 4px; }
+        .brand img { width: 100px !important; height: 20px !important; }
+        #dateTime { display: none; }
+        
+        .user-menu { gap: 10px; }
+        .notif-wrapper { margin-right: 0; }
+        .user-pill { padding: 4px 8px 4px 4px; gap: 5px; }
+        .user-avatar { width: 26px; height: 26px; font-size: 12px; }
+        .user-pill span { display: none; }
+
+        .pos-layout { padding: 10px; }
+        
+        .search-bar { flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .search-bar > div { flex: 0 0 100% !important; }
+        .search-bar input { padding: 12px; font-size: 14px; }
+        .search-bar button { padding: 10px; border-radius: 6px; flex: 1; }
+
+        .cart-section { flex-direction: column; border-radius: 8px; }
+        .cart-main { border-right: none; border-bottom: 2px solid var(--border); flex: 1.5; min-height: 250px; }
+        .cart-summary { flex: none; padding: 15px; }
+
+        .cart-labels { font-size: 9px; padding: 8px 2px; }
+        .cart-item { padding: 8px 2px; gap: 4px; }
+        .cart-item-name { font-size: 11px; white-space: normal; line-height: 1.2; }
+        .cart-item-details { font-size: 9px; }
+        .cart-item-price { font-size: 11px; }
+        .cart-item .promo-input { font-size: 9px; padding: 2px; }
+        .qty-btn { width: 18px; height: 18px; font-size: 10px; }
+
+        .total { font-size: 16px; padding-top: 8px; }
+        .actions { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+        .btn { padding: 10px 2px; font-size: 9px; border-radius: 4px; }
+    }
 
     </style>
 </head>
